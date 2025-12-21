@@ -8,14 +8,20 @@ public partial class NetConnectPanel : PanelContainer
     private LineEdit? _host;
     private SpinBox? _port;
 
+    private Control? _hostRow;
+    private Control? _portRow;
+
     private Button? _startServer;
     private Button? _connect;
     private Button? _disconnect;
 
     public override void _Ready()
     {
-        // HomeScreen layout: Control is root, NetRoot is sibling.
-        _net = GetNodeOrNull<NetRoot>("../NetRoot");
+        // NetRoot is at ../../NetRoot from UI/NetConnect.
+        _net = GetNodeOrNull<NetRoot>("../../NetRoot");
+
+        _hostRow = GetNodeOrNull<Control>("VBox/HostRow");
+        _portRow = GetNodeOrNull<Control>("VBox/PortRow");
 
         _host = GetNodeOrNull<LineEdit>("VBox/HostRow/Host");
         _port = GetNodeOrNull<SpinBox>("VBox/PortRow/Port");
@@ -24,7 +30,7 @@ public partial class NetConnectPanel : PanelContainer
         _connect = GetNodeOrNull<Button>("VBox/Buttons/Connect");
         _disconnect = GetNodeOrNull<Button>("VBox/Buttons/Disconnect");
 
-        if (_net == null || _host == null || _port == null || _startServer == null || _connect == null || _disconnect == null)
+        if (_net == null || _hostRow == null || _portRow == null || _host == null || _port == null || _startServer == null || _connect == null || _disconnect == null)
         {
             GD.PushWarning("NetConnectPanel: missing nodes or NetRoot");
             return;
@@ -54,14 +60,18 @@ public partial class NetConnectPanel : PanelContainer
 
     public override void _Process(double delta)
     {
-        if (_net == null || _startServer == null || _connect == null || _disconnect == null)
+        if (_net == null || _hostRow == null || _portRow == null || _startServer == null || _connect == null || _disconnect == null)
             return;
 
         var online = Multiplayer.MultiplayerPeer != null;
-        _disconnect.Disabled = !online;
 
-        // Don’t allow switching modes while online.
-        _startServer.Disabled = online;
-        _connect.Disabled = online;
+        // When connected/listening, get out of the way so you see the 3D view.
+        _hostRow.Visible = !online;
+        _portRow.Visible = !online;
+        _startServer.Visible = !online;
+        _connect.Visible = !online;
+        _disconnect.Visible = online;
+
+        _disconnect.Disabled = !online;
     }
 }

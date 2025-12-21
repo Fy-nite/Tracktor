@@ -1,30 +1,24 @@
 [gd_scene load_steps=6 format=3 uid="uid://bjbth8k4r3gn2"]
 
-[ext_resource type="Script" uid="uid://c1j4u65fr3gt7" path="res://Scripts/Net/NetRoot.cs" id="1_netroot"]
-[ext_resource type="Script" uid="uid://chq2mbodeo3gq" path="res://Scripts/Net/NetDebugLabel.cs" id="2_netdebug"]
-[ext_resource type="Script" uid="uid://b8s5atnaccna0" path="res://Scripts/Net/NetConnectPanel.cs" id="3_netpanel"]
-[ext_resource type="Script" uid="uid://dcu5k8p8rsk5d" path="res://Scripts/Net/SceneSync.cs" id="4_scenesync"]
-[ext_resource type="PackedScene" uid="uid://dpqcroexmyr5v" path="res://assets/Scenes/MainGame.tscn" id="5_maingame"]
+[ext_resource type="Script" uid="uid://bvttos0kiefax" path="res://CSharp/Net/NetDebugLabel.cs" id="1_ksj1l"]
+[ext_resource type="Script" uid="uid://o1t11yd8dec0" path="res://CSharp/Net/NetConnectPanel.cs" id="2_3272g"]
+[ext_resource type="Script" uid="uid://dd4net5bhn11e" path="res://CSharp/Net/NetRoot.cs" id="3_4d5n3"]
+[ext_resource type="Script" uid="uid://b0gx56bn2n0u5" path="res://CSharp/Net/SceneSync.cs" id="4_wrh72"]
+[ext_resource type="PackedScene" uid="uid://chcni4ntjdjpv" path="res://assets/Scenes/MainGame.tscn" id="5_maingame"]
 
-[node name="Control" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="HomeScreen" type="Node"]
 
-[node name="NetDebug" type="Label" parent="."]
-layout_mode = 0
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="NetDebug" type="Label" parent="UI"]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 340.0
 offset_bottom = 60.0
 text = "Net: ..."
-script = ExtResource("2_netdebug")
+script = ExtResource("1_ksj1l")
 
-[node name="NetConnect" type="PanelContainer" parent="."]
-layout_mode = 1
+[node name="NetConnect" type="PanelContainer" parent="UI"]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -33,57 +27,57 @@ offset_top = 2.0
 offset_right = -1.0
 offset_bottom = 103.0
 grow_horizontal = 0
-script = ExtResource("3_netpanel")
+script = ExtResource("2_3272g")
 
-[node name="VBox" type="VBoxContainer" parent="NetConnect"]
+[node name="VBox" type="VBoxContainer" parent="UI/NetConnect"]
 layout_mode = 2
 
-[node name="HostRow" type="HBoxContainer" parent="NetConnect/VBox"]
+[node name="HostRow" type="HBoxContainer" parent="UI/NetConnect/VBox"]
 layout_mode = 2
 
-[node name="HostLabel" type="Label" parent="NetConnect/VBox/HostRow"]
+[node name="HostLabel" type="Label" parent="UI/NetConnect/VBox/HostRow"]
 layout_mode = 2
 text = "Host"
 
-[node name="Host" type="LineEdit" parent="NetConnect/VBox/HostRow"]
+[node name="Host" type="LineEdit" parent="UI/NetConnect/VBox/HostRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "127.0.0.1"
 
-[node name="PortRow" type="HBoxContainer" parent="NetConnect/VBox"]
+[node name="PortRow" type="HBoxContainer" parent="UI/NetConnect/VBox"]
 layout_mode = 2
 
-[node name="PortLabel" type="Label" parent="NetConnect/VBox/PortRow"]
+[node name="PortLabel" type="Label" parent="UI/NetConnect/VBox/PortRow"]
 layout_mode = 2
 text = "Port"
 
-[node name="Port" type="SpinBox" parent="NetConnect/VBox/PortRow"]
+[node name="Port" type="SpinBox" parent="UI/NetConnect/VBox/PortRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = 1.0
 max_value = 65535.0
 value = 7777.0
 
-[node name="Buttons" type="HBoxContainer" parent="NetConnect/VBox"]
+[node name="Buttons" type="HBoxContainer" parent="UI/NetConnect/VBox"]
 layout_mode = 2
 
-[node name="StartServer" type="Button" parent="NetConnect/VBox/Buttons"]
+[node name="StartServer" type="Button" parent="UI/NetConnect/VBox/Buttons"]
 layout_mode = 2
 text = "Start Server"
 
-[node name="Connect" type="Button" parent="NetConnect/VBox/Buttons"]
+[node name="Connect" type="Button" parent="UI/NetConnect/VBox/Buttons"]
 layout_mode = 2
 text = "Connect"
 
-[node name="Disconnect" type="Button" parent="NetConnect/VBox/Buttons"]
+[node name="Disconnect" type="Button" parent="UI/NetConnect/VBox/Buttons"]
 layout_mode = 2
 text = "Disconnect"
 
 [node name="NetRoot" type="Node" parent="."]
-script = ExtResource("1_netroot")
+script = ExtResource("3_4d5n3")
 
 [node name="SceneSync" type="Node" parent="NetRoot"]
-script = ExtResource("4_scenesync")
+script = ExtResource("4_wrh72")
 SyncRootPath = NodePath("../../MainGame")
 
 [node name="MainGame" parent="." instance=ExtResource("5_maingame")]

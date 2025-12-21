@@ -1,3 +1,20 @@
-[gd_scene format=3 uid="uid://dpqcroexmyr5v"]
+[gd_scene load_steps=2 format=3 uid="uid://chcni4ntjdjpv"]
+
+[sub_resource type="CameraAttributesPhysical" id="CameraAttributesPhysical_atsxf"]
 
 [node name="MainGame" type="Node3D"]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.54623413, -0.08107133, 0.08843994)
+use_collision = true
+size = Vector3(12.1293335, 0.11463574, 16.17395)
+
+[node name="LightmapGI" type="LightmapGI" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6196365, 0)
+camera_attributes = SubResource("CameraAttributesPhysical_atsxf")
+
+[node name="SpotLight3D" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 2.9802322e-08, 1, 0, -1, 2.9802322e-08, 0, 10.068512, 0)
+light_energy = 0.835
+spot_range = 19.046413
+spot_angle = 66.63183

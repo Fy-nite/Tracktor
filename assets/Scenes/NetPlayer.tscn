@@ -1,6 +1,12 @@
-[gd_scene format=3]
+[gd_scene load_steps=2 format=3 uid="uid://cntakwbuqhxlq"]
 
-[ext_resource type="Script" path="res://Scripts/Net/PlayerAvatar.cs" id="1_player"]
+[ext_resource type="Script" path="res://CSharp/Net/PlayerAvatar.cs" id="1_player"]
 
-[node name="NetPlayer" type="Node3D"]
+[node name="NetPlayer" type="CharacterBody3D"]
 script = ExtResource("1_player")
+
+[node name="LookPivot" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="LookPivot"]
+position = Vector3(0, 1.6, 0)
+current = false

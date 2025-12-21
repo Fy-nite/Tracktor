@@ -16,7 +16,6 @@ public partial class NetRoot : Node
     public string ConnectionStatus { get; private set; } = "Offline";
 
     private readonly Dictionary<long, int> _playerEntityByPeer = new();
-    private readonly ServerSimulation _serverSim = new();
 
     private SceneSync? _sceneSync;
 
@@ -111,7 +110,6 @@ public partial class NetRoot : Node
         ConnectionStatus = "Offline";
 
         _playerEntityByPeer.Clear();
-        _serverSim.Players.ToString(); // no-op to keep sim referenced
         _sceneSync?.ClearSpawnedEntities(freeNodes: true);
     }
 
@@ -154,6 +152,16 @@ public partial class NetRoot : Node
         foreach (var kv in _playerEntityByPeer)
             RpcId(peerId, nameof(ClientBindPlayer), kv.Key, kv.Value);
 
+        // Send current positions to the joining peer
+        foreach (var kv in _playerEntityByPeer)
+        {
+            var pId = kv.Key;
+            if (_sceneSync.TryGetEntityNode(kv.Value, out var node))
+            {
+                RpcId(peerId, nameof(ClientSetPlayerPosition), pId, node.GlobalPosition, node.GlobalRotation);
+            }
+        }
+
         // Broadcast the new player's bind mapping to everyone.
         Rpc(nameof(ClientBindPlayer), peerId, _playerEntityByPeer[peerId]);
     }
@@ -164,8 +172,6 @@ public partial class NetRoot : Node
 
         if (Multiplayer.IsServer())
         {
-            _serverSim.RemovePlayer(peerId);
-
             if (_sceneSync != null && _playerEntityByPeer.TryGetValue(peerId, out var entityId))
                 _sceneSync.ServerDespawn(entityId);
 
@@ -186,12 +192,11 @@ public partial class NetRoot : Node
         var spawnPos = new Vector3((peerId - 1) * 1.5f, 0, 0);
         var entityId = _sceneSync.ServerSpawn("res://assets/Scenes/NetPlayer.tscn", new Transform3D(Basis.Identity, spawnPos));
         _playerEntityByPeer[peerId] = entityId;
-        _serverSim.EnsurePlayer(peerId, ToNumerics(spawnPos));
 
         if (_sceneSync.TryGetEntityNode(entityId, out var node) && node is PlayerAvatar avatar)
         {
             avatar.PeerId = peerId;
-            avatar.IsLocalPlayer = false;
+            avatar.IsLocalPlayer = (Multiplayer.MultiplayerPeer != null && peerId == Multiplayer.GetUniqueId());
             avatar.Name = $"Player_{peerId}";
         }
     }
@@ -219,35 +224,52 @@ public partial class NetRoot : Node
         _playerEntityByPeer.Remove(peerId);
     }
 
-    // Client -> Server: send local input (local prediction is done client-side).
+    // Client -> Server: send local position updates.
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
-    private void ServerSubmitInput(int sequence, float deltaSeconds, Vector3 moveDir)
+    private void ServerUpdatePlayerPosition(Vector3 position, Vector3 rotation)
     {
         if (!Multiplayer.IsServer())
             return;
 
-        if (_sceneSync == null)
-            return;
-
         var sender = Multiplayer.GetRemoteSenderId();
-        ServerEnsurePlayer(sender);
-
         if (!_playerEntityByPeer.TryGetValue(sender, out var entityId))
             return;
-        if (!_sceneSync.TryGetEntityNode(entityId, out var node) || node is not PlayerAvatar avatar)
-            return;
 
-        var input = new PlayerInput(sequence, deltaSeconds, ToNumerics(moveDir));
-        var newState = _serverSim.ApplyInput(sender, input);
+        // Update the server-side node position
+        if (_sceneSync.TryGetEntityNode(entityId, out var node))
+        {
+            node.GlobalPosition = position;
+            node.GlobalRotation = rotation;
+        }
 
-        // Move the authoritative server-side player node. SceneSync will replicate its transform.
-        avatar.GlobalPosition = ToGodot(newState.Position);
+        // Broadcast to all other clients
+        foreach (var peer in Multiplayer.GetPeers())
+        {
+            if (peer != sender)
+                RpcId(peer, nameof(ClientSetPlayerPosition), sender, position, rotation);
+        }
     }
 
-    public void SubmitLocalInput(int sequence, float deltaSeconds, Vector3 moveDir)
+    [Rpc(MultiplayerApi.RpcMode.Authority, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
+    private void ClientSetPlayerPosition(long peerId, Vector3 position, Vector3 rotation)
+    {
+        if (Multiplayer.GetUniqueId() == peerId)
+            return; // ignore for self
+
+        if (!_playerEntityByPeer.TryGetValue(peerId, out var entityId))
+            return;
+
+        if (_sceneSync.TryGetEntityNode(entityId, out var node))
+        {
+            node.GlobalPosition = position;
+            node.GlobalRotation = rotation;
+        }
+    }
+
+    public void SendPlayerPosition(Vector3 pos, Vector3 rot)
     {
         // Server is always peer 1 in Godot ENet.
-        RpcId(1, nameof(ServerSubmitInput), sequence, deltaSeconds, moveDir);
+        RpcId(1, nameof(ServerUpdatePlayerPosition), pos, rot);
     }
 
     private static NVec3 ToNumerics(Vector3 v) => new(v.X, v.Y, v.Z);

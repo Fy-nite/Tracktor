@@ -6,7 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="CSharp\**\*.cs" />
+    <Compile Remove="CSharp\Core\**\*.cs" />
+    <Compile Remove="CSharp\Traktor-Protocol\**\*.cs" />
+    <Compile Remove="CSharp\WorldController\**\*.cs" />
+      <Compile Remove="CSharp\**\*.cs" />
+      <Compile Include="CSharp\Net\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

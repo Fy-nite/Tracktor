@@ -290,8 +290,14 @@ public partial class SceneSync : Node
     [Rpc(MultiplayerApi.RpcMode.Authority, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
     private void ClientTransformDelta(int entityId, Transform3D transform)
     {
-        if (_entityById.TryGetValue(entityId, out var node) && IsInstanceValid(node))
-            node.GlobalTransform = transform;
+        if (!_entityById.TryGetValue(entityId, out var node) || !IsInstanceValid(node))
+            return;
+
+        // Don't apply deltas to local player's entity, as it's client-authoritative.
+        if (node is PlayerAvatar avatar && avatar.IsLocalPlayer)
+            return;
+
+        node.GlobalTransform = transform;
     }
 
     [Rpc(MultiplayerApi.RpcMode.Authority)]
