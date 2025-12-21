@@ -1,0 +1,19 @@
+[gd_resource type="TextMesh" load_steps=4 format=3 uid="uid://be6s2en6dn6e2"]
+
+[ext_resource type="Shader" uid="uid://chnramsool1vk" path="res://assets/Scenes/Black.gdshader" id="1_tuuuj"]
+
+[sub_resource type="SystemFont" id="SystemFont_4i1j6"]
+font_names = PackedStringArray("DejaVu Sans Mono")
+font_weight = 100
+font_stretch = 50
+msdf_size = 503
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tuuuj"]
+render_priority = 0
+shader = ExtResource("1_tuuuj")
+
+[resource]
+material = SubResource("ShaderMaterial_tuuuj")
+text = "HelloWorld.oir"
+font = SubResource("SystemFont_4i1j6")
+uppercase = true

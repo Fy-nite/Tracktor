@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://ciqnxd2wrgg5g"]
+
+[ext_resource type="PackedScene" uid="uid://bkw4cnt0ysvdr" path="res://assets/editor.blend" id="1_84wnq"]
+[ext_resource type="TextMesh" uid="uid://be6s2en6dn6e2" path="res://assets/Scenes/Text.tres" id="2_3rabd"]
+
+[node name="Editor" type="Node3D"]
+
+[node name="editorPanel" parent="." instance=ExtResource("1_84wnq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0002257675, -0.004945159, 0.0018000603)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="editorPanel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8829584, 0.31073228)
+mesh = ExtResource("2_3rabd")

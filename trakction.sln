@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11310.294 d18.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traktor-Core", "CSharp\Core\Traktor-Core.csproj", "{583D4B0D-2602-E37F-7FE0-2B345E07E1E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "world", "CSharp\WorldController\world.csproj", "{BA2CA077-A21D-8A36-5AD6-0AF634836100}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traktor-Protocol", "CSharp\Traktor-Protocol\Traktor-Protocol.csproj", "{ACAD587D-C474-559D-554F-2EEEB9A9E22D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		ExportDebug|Any CPU = ExportDebug|Any CPU
+		ExportRelease|Any CPU = ExportRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{583D4B0D-2602-E37F-7FE0-2B345E07E1E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{583D4B0D-2602-E37F-7FE0-2B345E07E1E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{583D4B0D-2602-E37F-7FE0-2B345E07E1E0}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{583D4B0D-2602-E37F-7FE0-2B345E07E1E0}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{583D4B0D-2602-E37F-7FE0-2B345E07E1E0}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{583D4B0D-2602-E37F-7FE0-2B345E07E1E0}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+		{BA2CA077-A21D-8A36-5AD6-0AF634836100}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA2CA077-A21D-8A36-5AD6-0AF634836100}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA2CA077-A21D-8A36-5AD6-0AF634836100}.ExportDebug|Any CPU.ActiveCfg = Release|Any CPU
+		{BA2CA077-A21D-8A36-5AD6-0AF634836100}.ExportDebug|Any CPU.Build.0 = Release|Any CPU
+		{BA2CA077-A21D-8A36-5AD6-0AF634836100}.ExportRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{BA2CA077-A21D-8A36-5AD6-0AF634836100}.ExportRelease|Any CPU.Build.0 = Release|Any CPU
+		{ACAD587D-C474-559D-554F-2EEEB9A9E22D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACAD587D-C474-559D-554F-2EEEB9A9E22D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACAD587D-C474-559D-554F-2EEEB9A9E22D}.ExportDebug|Any CPU.ActiveCfg = Release|Any CPU
+		{ACAD587D-C474-559D-554F-2EEEB9A9E22D}.ExportDebug|Any CPU.Build.0 = Release|Any CPU
+		{ACAD587D-C474-559D-554F-2EEEB9A9E22D}.ExportRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{ACAD587D-C474-559D-554F-2EEEB9A9E22D}.ExportRelease|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
