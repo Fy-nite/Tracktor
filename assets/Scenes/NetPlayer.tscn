@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://cntakwbuqhxlq"]
+[gd_scene load_steps=3 format=3 uid="uid://cntakwbuqhxlq"]
 
-[ext_resource type="Script" path="res://CSharp/Net/PlayerAvatar.cs" id="1_player"]
+[ext_resource type="Script" uid="uid://co67tvcgbkreg" path="res://CSharp/Net/PlayerAvatar.cs" id="1_player"]
+[ext_resource type="Script" uid="uid://bjpmu5sklv5h8" path="res://addons/raytraced_audio/raytraced_audio_listener.gd" id="2_ypw64"]
 
 [node name="NetPlayer" type="CharacterBody3D"]
 script = ExtResource("1_player")
@@ -8,5 +9,10 @@ script = ExtResource("1_player")
 [node name="LookPivot" type="Node3D" parent="."]
 
 [node name="Camera3D" type="Camera3D" parent="LookPivot"]
-position = Vector3(0, 1.6, 0)
-current = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+
+[node name="RaytracedAudioListener" type="AudioListener3D" parent="."]
+doppler_tracking = 2
+current = true
+script = ExtResource("2_ypw64")
+metadata/_custom_type_script = "uid://bjpmu5sklv5h8"

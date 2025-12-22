@@ -22,7 +22,6 @@ public partial class PlayerAvatar : CharacterBody3D
     [Export] public NodePath LookPivotPath = new();
     [Export] public float MaxPitchDegrees = 80.0f;
 
-    private int _sequence;
     private NetRoot? _net;
     private Node3D? _lookPivot;
     private Camera3D? _camera;
@@ -30,6 +29,9 @@ public partial class PlayerAvatar : CharacterBody3D
     private bool _mouseCaptured;
     private bool _userManuallyReleased;
     private int _sendCounter;
+    private int _localWarmupFrames;
+
+    private const float MaxSendPositionMagnitude = 5000.0f;
 
     private float _yaw;
     private float _pitch;
@@ -101,14 +103,25 @@ public partial class PlayerAvatar : CharacterBody3D
         var moveWorldDir = ReadMoveWorldDir();
         ApplyLocalMovement(moveWorldDir, dt);
 
-        // Send position update to server periodically
+        // Send position update to server periodically (after a short warm-up).
         _sendCounter++;
-        if (_sendCounter % 3 == 0) // every 3rd frame
+        if (_localWarmupFrames < 10)
         {
-            _net?.SendPlayerPosition(GlobalPosition, GlobalRotation);
+            _localWarmupFrames++;
+            return;
         }
 
-        // Removed input submission and sequence
+        // 12 Hz-ish at 60fps
+        if (_sendCounter % 5 != 0)
+            return;
+
+        var pos = GlobalPosition;
+        if (!IsFinite(pos) || pos.Length() > MaxSendPositionMagnitude)
+            return;
+
+        _net?.SendPlayerPosition(pos, GlobalRotation);
+        
+
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -136,8 +149,8 @@ public partial class PlayerAvatar : CharacterBody3D
         // Uses Godot default UI actions (these are usually mapped to keyboard + dpad + left stick).
         var v2 = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down", GamepadMoveDeadzone);
 
-        // Godot 3D: forward is -Z.
-        var local = new Vector3(v2.X, 0, -v2.Y);
+        // Godot 3D: adjust for desired forward direction.
+        var local = new Vector3(v2.X, 0, v2.Y);
         if (local.LengthSquared() < 1e-6f)
             return Vector3.Zero;
 
@@ -161,6 +174,7 @@ public partial class PlayerAvatar : CharacterBody3D
             v.Y = JumpVelocity;
 
         Velocity = v;
+        
         MoveAndSlide();
     }
 
@@ -239,6 +253,9 @@ public partial class PlayerAvatar : CharacterBody3D
             _mouseCaptured = true;
         }
     }
+
+    private static bool IsFinite(Vector3 v)
+        => float.IsFinite(v.X) && float.IsFinite(v.Y) && float.IsFinite(v.Z);
 
     private void ApplyLookRotation()
     {

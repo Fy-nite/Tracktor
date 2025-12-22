@@ -1,12 +1,18 @@
-[gd_scene load_steps=6 format=3 uid="uid://bjbth8k4r3gn2"]
+[gd_scene load_steps=9 format=3 uid="uid://bjbth8k4r3gn2"]
 
 [ext_resource type="Script" uid="uid://bvttos0kiefax" path="res://CSharp/Net/NetDebugLabel.cs" id="1_ksj1l"]
 [ext_resource type="Script" uid="uid://o1t11yd8dec0" path="res://CSharp/Net/NetConnectPanel.cs" id="2_3272g"]
 [ext_resource type="Script" uid="uid://dd4net5bhn11e" path="res://CSharp/Net/NetRoot.cs" id="3_4d5n3"]
 [ext_resource type="Script" uid="uid://b0gx56bn2n0u5" path="res://CSharp/Net/SceneSync.cs" id="4_wrh72"]
 [ext_resource type="PackedScene" uid="uid://chcni4ntjdjpv" path="res://assets/Scenes/MainGame.tscn" id="5_maingame"]
+[ext_resource type="PackedScene" uid="uid://bootstrap" path="res://assets/Scenes/OpenXrBootstrap.tscn" id="6_bootstrap"]
+[ext_resource type="PackedScene" uid="uid://playerrig" path="res://assets/Scenes/XrPlayerRig.tscn" id="7_playerrig"]
+[ext_resource type="Script" uid="uid://4hh1ncgg20pu" path="res://CSharp/HomeScreen.cs" id="8_homescreen"]
 
 [node name="HomeScreen" type="Node"]
+script = ExtResource("8_homescreen")
+XrBootstrapScene = ExtResource("6_bootstrap")
+XrPlayerRigScene = ExtResource("7_playerrig")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
@@ -72,6 +78,14 @@ text = "Connect"
 [node name="Disconnect" type="Button" parent="UI/NetConnect/VBox/Buttons"]
 layout_mode = 2
 text = "Disconnect"
+
+[node name="VrButton" type="Button" parent="UI/NetConnect/VBox/Buttons"]
+layout_mode = 2
+text = "Start VR"
+
+[node name="SpawnBox" type="Button" parent="UI/NetConnect/VBox/Buttons"]
+layout_mode = 2
+text = "Spawn Box"
 
 [node name="NetRoot" type="Node" parent="."]
 script = ExtResource("3_4d5n3")

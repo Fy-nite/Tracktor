@@ -1,6 +1,6 @@
 ﻿namespace world;
 
-public class Class1
+public class Builder
 {
-
+	
 }

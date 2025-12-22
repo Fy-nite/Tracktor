@@ -15,6 +15,23 @@ run/main_scene="uid://bjbth8k4r3gn2"
 config/features=PackedStringArray("4.5", "C#")
 config/icon="res://assets/icon.svg"
 
+[audio]
+
+general/3d_panning_strength=1.45
+
 [dotnet]
 
 project/assembly_name="trakction"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/raytraced_audio/plugin.cfg")
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[raytraced_audio]
+
+reverb_bus=&"RaytracedReverb"
+ambient_bus=&"RaytracedAmbient"

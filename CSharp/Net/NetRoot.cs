@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Traktor.Core.Net;
+using Trakction.XR;
 using NVec3 = System.Numerics.Vector3;
 
 public partial class NetRoot : Node
@@ -17,7 +18,11 @@ public partial class NetRoot : Node
 
     private readonly Dictionary<long, int> _playerEntityByPeer = new();
 
+    private const float MaxAllowedPositionMagnitude = 5000.0f;
+
     private SceneSync? _sceneSync;
+
+    private ServerRepl? _repl;
 
     public override void _Ready()
     {
@@ -56,18 +61,43 @@ public partial class NetRoot : Node
         PortInUse = port;
 
         // Important: Only autostart when explicitly requested.
-        if (wantsServer)
+        // if (wantsServer)
+        // {
+        //     IsServerMode = true;
+        //     StartServer(port);
+
+            // Start REPL automatically for headless/dedicated server runs, or when explicitly requested.
+            var wantsRepl = args.Contains("--repl");
+            var isHeadless = DisplayServer.GetName().ToString().Equals("headless", StringComparison.OrdinalIgnoreCase)
+                || OS.HasFeature("dedicated_server");
+
+            if (wantsRepl || isHeadless)
+            {
+                _repl = new ServerRepl { Name = "ServerRepl" };
+                AddChild(_repl);
+            }
+        // }
+        // else if (wantsClient)
+        // {
+        //     IsServerMode = false;
+        //     StartClient(host, port);
+        // }
+        // else
+        // {
+        //     IsServerMode = false;
+        //     ConnectionStatus = "Offline";
+        // }
+        if (OS.HasFeature("Server"))
         {
+            // Code for headless server mode
+            GD.Print("Running in headless server mode.");
             IsServerMode = true;
             StartServer(port);
         }
-        else if (wantsClient)
-        {
-            IsServerMode = false;
-            StartClient(host, port);
-        }
         else
         {
+            // Code for client/GUI mode
+            GD.Print("Running in client mode.");
             IsServerMode = false;
             ConnectionStatus = "Offline";
         }
@@ -75,6 +105,111 @@ public partial class NetRoot : Node
         _sceneSync = GetNodeOrNull<SceneSync>("SceneSync");
         if (_sceneSync == null)
             GD.PushWarning("NetRoot: missing SceneSync child; player spawning will not work.");
+    }
+
+    public int ServerSpawnEntity(string packedScenePath, Vector3 position)
+    {
+        if (!Multiplayer.IsServer())
+        {
+            GD.PrintErr("ServerSpawnEntity: server-only");
+            return 0;
+        }
+
+        if (_sceneSync == null)
+        {
+            GD.PrintErr("ServerSpawnEntity: missing SceneSync");
+            return 0;
+        }
+
+        return _sceneSync.ServerSpawn(packedScenePath, new Transform3D(Basis.Identity, position));
+    }
+
+    public int ServerSpawnBuiltin(string nodeType, Godot.Collections.Dictionary props, Vector3 position)
+    {
+        if (!Multiplayer.IsServer())
+        {
+            GD.PrintErr("ServerSpawnBuiltin: server-only");
+            return 0;
+        }
+
+        if (_sceneSync == null)
+        {
+            GD.PrintErr("ServerSpawnBuiltin: missing SceneSync");
+            return 0;
+        }
+
+        return _sceneSync.ServerSpawnBuiltin(nodeType, props, new Transform3D(Basis.Identity, position));
+    }
+
+    /// <summary>
+    /// Server helper to spawn a simple Box primitive above the server's player entity.
+    /// Visible action for a server UI button.
+    /// </summary>
+    public void ServerSpawnBoxAboveSelf()
+    {
+        if (!Multiplayer.IsServer())
+        {
+            GD.PrintErr("ServerSpawnBoxAboveSelf: server-only");
+            return;
+        }
+
+        if (_sceneSync == null)
+        {
+            GD.PrintErr("ServerSpawnBoxAboveSelf: missing SceneSync");
+            return;
+        }
+
+        var selfId = Multiplayer.GetUniqueId();
+        if (!_playerEntityByPeer.TryGetValue(selfId, out var entityId))
+        {
+            GD.PrintErr("ServerSpawnBoxAboveSelf: no player entity for server peer");
+            return;
+        }
+
+        if (!_sceneSync.TryGetEntityNode(entityId, out var node))
+        {
+            GD.PrintErr("ServerSpawnBoxAboveSelf: couldn't find player node");
+            return;
+        }
+
+        var spawnPos = node.GlobalPosition + new Vector3(0, 2.0f, 0);
+
+        var props = new Godot.Collections.Dictionary
+        {
+            { "size", new Vector3(0.5f, 0.5f, 0.5f) },
+            { "color", new Color(0.2f, 0.6f, 1.0f) }
+        };
+
+        ServerSpawnBuiltin("Box", props, spawnPos);
+        GD.Print("ServerSpawnBoxAboveSelf: spawned box above server player at " + spawnPos);
+    }
+
+    public void ServerDespawnEntity(int entityId)
+    {
+        if (!Multiplayer.IsServer())
+        {
+            GD.PrintErr("ServerDespawnEntity: server-only");
+            return;
+        }
+
+        _sceneSync?.ServerDespawn(entityId);
+    }
+
+    public void DebugPrintEntities()
+    {
+        if (_sceneSync == null)
+        {
+            GD.Print("No SceneSync.");
+            return;
+        }
+
+        var ids = _sceneSync.GetEntityIds();
+        GD.Print($"Entities: {ids.Length}");
+        foreach (var id in ids)
+        {
+            if (_sceneSync.TryGetEntityNode(id, out var node))
+                GD.Print($"  {id}: {node.Name} ({node.SceneFilePath}) pos={node.GlobalPosition}");
+        }
     }
 
     public void StartServerFromUi(int port)
@@ -111,6 +246,33 @@ public partial class NetRoot : Node
 
         _playerEntityByPeer.Clear();
         _sceneSync?.ClearSpawnedEntities(freeNodes: true);
+        
+        // If we were a client, also clear the main game scene children so the 3D world is removed on disconnect.
+        // Leave the MainGame node itself in place so the UI can re-enter the scene.
+        try
+        {
+            if (!IsServerMode)
+            {
+                var root = GetTree()?.Root;
+                if (root != null)
+                {
+                    var mainGame = root.GetNodeOrNull<Node>("MainGame");
+                    if (mainGame != null)
+                    {
+                        foreach (var child in mainGame.GetChildren())
+                        {
+                            if (child is Node n && n.IsInsideTree())
+                                n.QueueFree();
+                        }
+                        GD.Print("NetRoot: cleared MainGame children after disconnect.");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            GD.PrintErr($"StopNetworking cleanup error: {ex.Message}");
+        }
     }
 
     private void StartServer(int port)
@@ -158,7 +320,17 @@ public partial class NetRoot : Node
             var pId = kv.Key;
             if (_sceneSync.TryGetEntityNode(kv.Value, out var node))
             {
-                RpcId(peerId, nameof(ClientSetPlayerPosition), pId, node.GlobalPosition, node.GlobalRotation);
+                var pos = node.GlobalPosition;
+                var rot = node.GlobalRotation;
+
+                if (!IsFinite(pos) || pos.Length() > MaxAllowedPositionMagnitude)
+                {
+                    GD.PrintErr($"OnPeerConnected: NOT sending invalid pos for peer {pId} to joining {peerId}: {pos}");
+                    pos = Vector3.Zero;
+                    rot = Vector3.Zero;
+                }
+
+                RpcId(peerId, nameof(ClientSetPlayerPosition), pId, pos, rot);
             }
         }
 
@@ -189,7 +361,10 @@ public partial class NetRoot : Node
         if (_playerEntityByPeer.ContainsKey(peerId))
             return;
 
-        var spawnPos = new Vector3((peerId - 1) * 1.5f, 0, 0);
+        // IMPORTANT: peerId is not guaranteed to be small/contiguous (it can be a large random-ish value).
+        // Never derive spawn positions from peerId.
+        var spawnIndex = _playerEntityByPeer.Count;
+        var spawnPos = new Vector3(spawnIndex * 1.5f, 0, 0);
         var entityId = _sceneSync.ServerSpawn("res://assets/Scenes/NetPlayer.tscn", new Transform3D(Basis.Identity, spawnPos));
         _playerEntityByPeer[peerId] = entityId;
 
@@ -231,6 +406,13 @@ public partial class NetRoot : Node
         if (!Multiplayer.IsServer())
             return;
 
+        if (!IsFinite(position) || position.Length() > MaxAllowedPositionMagnitude)
+        {
+            var senderBad = Multiplayer.GetRemoteSenderId();
+            GD.PrintErr($"ServerUpdatePlayerPosition: rejecting out-of-range pos from peer {senderBad}: {position}");
+            return;
+        }
+
         var sender = Multiplayer.GetRemoteSenderId();
         if (!_playerEntityByPeer.TryGetValue(sender, out var entityId))
             return;
@@ -250,11 +432,17 @@ public partial class NetRoot : Node
         }
     }
 
-    [Rpc(MultiplayerApi.RpcMode.Authority, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
+    [Rpc(MultiplayerApi.RpcMode.Authority, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     private void ClientSetPlayerPosition(long peerId, Vector3 position, Vector3 rotation)
     {
         if (Multiplayer.GetUniqueId() == peerId)
             return; // ignore for self
+
+        if (!IsFinite(position) || position.Length() > MaxAllowedPositionMagnitude)
+        {
+            GD.PrintErr($"ClientSetPlayerPosition: ignoring out-of-range pos for peer {peerId}: {position}");
+            return;
+        }
 
         if (!_playerEntityByPeer.TryGetValue(peerId, out var entityId))
             return;
@@ -268,9 +456,72 @@ public partial class NetRoot : Node
 
     public void SendPlayerPosition(Vector3 pos, Vector3 rot)
     {
-        // Server is always peer 1 in Godot ENet.
+        if (Multiplayer.MultiplayerPeer == null)
+            return;
+
+        // If we're the server (host), don't RPC to ourselves (Godot disallows this by default).
+        // Apply locally and broadcast to other peers.
+        if (Multiplayer.IsServer())
+        {
+            var selfId = Multiplayer.GetUniqueId(); // server is always peer 1 in ENet
+
+            if (_sceneSync != null && _playerEntityByPeer.TryGetValue(selfId, out var entityId) && _sceneSync.TryGetEntityNode(entityId, out var node))
+            {
+                node.GlobalPosition = pos;
+                node.GlobalRotation = rot;
+            }
+
+            foreach (var peer in Multiplayer.GetPeers())
+            {
+                if (peer != selfId)
+                    RpcId(peer, nameof(ClientSetPlayerPosition), selfId, pos, rot);
+            }
+
+            return;
+        }
+
+        // Client -> server.
         RpcId(1, nameof(ServerUpdatePlayerPosition), pos, rot);
     }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+    private void ServerStartVr(long peerId)
+    {
+        if (!Multiplayer.IsServer())
+            return;
+
+        GD.Print($"Peer {peerId} started VR mode");
+
+        // Despawn the regular player avatar
+        if (_playerEntityByPeer.TryGetValue(peerId, out var oldEntityId))
+        {
+            _sceneSync?.ServerDespawn(oldEntityId);
+            _playerEntityByPeer.Remove(peerId);
+        }
+
+        // Spawn the VR player rig
+        var spawnIndex = _playerEntityByPeer.Count;
+        var spawnPos = new Vector3(spawnIndex * 1.5f, 0, 0);
+        var newEntityId = _sceneSync.ServerSpawn("res://assets/Scenes/XrPlayerRig.tscn", new Transform3D(Basis.Identity, spawnPos));
+        _playerEntityByPeer[peerId] = newEntityId;
+
+        if (_sceneSync.TryGetEntityNode(newEntityId, out var node) && node is XrPlayerRig rig)
+        {
+            rig.PeerId = peerId;
+            rig.IsLocalPlayer = (Multiplayer.MultiplayerPeer != null && peerId == Multiplayer.GetUniqueId());
+        }
+    }
+
+    public void StartVr()
+    {
+        if (Multiplayer.MultiplayerPeer == null)
+            return;
+
+        RpcId(1, nameof(ServerStartVr), Multiplayer.GetUniqueId());
+    }
+
+    private static bool IsFinite(Vector3 v)
+        => float.IsFinite(v.X) && float.IsFinite(v.Y) && float.IsFinite(v.Z);
 
     private static NVec3 ToNumerics(Vector3 v) => new(v.X, v.Y, v.Z);
     private static Vector3 ToGodot(NVec3 v) => new(v.X, v.Y, v.Z);

@@ -1,13 +1,31 @@
-[gd_scene load_steps=2 format=3 uid="uid://chcni4ntjdjpv"]
+[gd_scene load_steps=10 format=3 uid="uid://chcni4ntjdjpv"]
+
+[ext_resource type="Script" uid="uid://8kuxfg0sgt74" path="res://assets/Scenes/meow.cs" id="1_3uwud"]
+[ext_resource type="AudioStream" uid="uid://b0f8s2bd10pc7" path="res://assets/kenney ui audio/click1.ogg" id="1_fd8mk"]
+[ext_resource type="Script" uid="uid://dkb8ltjc6067n" path="res://addons/raytraced_audio/raytraced_audio_player_3d.gd" id="1_iji55"]
+[ext_resource type="AudioStream" uid="uid://bwp5hc76kl344" path="res://assets/kenney ui audio/click2.ogg" id="2_3uwud"]
+[ext_resource type="AudioStream" uid="uid://07qgg2x635jx" path="res://assets/kenney ui audio/click3.ogg" id="3_pgo4w"]
+[ext_resource type="AudioStream" uid="uid://gkxt72x1yjm5" path="res://assets/kenney ui audio/click4.ogg" id="4_oniu7"]
+[ext_resource type="AudioStream" uid="uid://0upce0auwo6a" path="res://assets/kenney ui audio/click5.ogg" id="5_6jp01"]
 
 [sub_resource type="CameraAttributesPhysical" id="CameraAttributesPhysical_atsxf"]
+
+[sub_resource type="AudioStreamPlaylist" id="AudioStreamPlaylist_dgnyt"]
+shuffle = true
+stream_count = 5
+stream_0 = ExtResource("1_fd8mk")
+stream_1 = ExtResource("2_3uwud")
+stream_2 = ExtResource("3_pgo4w")
+stream_3 = ExtResource("4_oniu7")
+stream_4 = ExtResource("5_6jp01")
 
 [node name="MainGame" type="Node3D"]
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.54623413, -0.08107133, 0.08843994)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8646469, -0.08107133, 4.2240753)
 use_collision = true
-size = Vector3(12.1293335, 0.11463574, 16.17395)
+size = Vector3(34.57274, 0.11463574, 40.719513)
+script = ExtResource("1_3uwud")
 
 [node name="LightmapGI" type="LightmapGI" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6196365, 0)
@@ -15,6 +33,13 @@ camera_attributes = SubResource("CameraAttributesPhysical_atsxf")
 
 [node name="SpotLight3D" type="SpotLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 2.9802322e-08, 1, 0, -1, 2.9802322e-08, 0, 10.068512, 0)
-light_energy = 0.835
+light_energy = 2.519
 spot_range = 19.046413
-spot_angle = 66.63183
+spot_angle = 48.584366
+
+[node name="RaytracedAudioPlayer3D" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.547043, 0.75955236, 0)
+stream = SubResource("AudioStreamPlaylist_dgnyt")
+autoplay = true
+script = ExtResource("1_iji55")
+metadata/_custom_type_script = "uid://dkb8ltjc6067n"

@@ -11,6 +11,10 @@
     <Compile Remove="CSharp\WorldController\**\*.cs" />
       <Compile Remove="CSharp\**\*.cs" />
       <Compile Include="CSharp\Net\**\*.cs" />
+      <Compile Include="CSharp\Builders\**\*.cs" />
+      <Compile Include="CSharp\Interaction\**\*.cs" />
+      <Compile Include="CSharp\PhysicalUI\**\*.cs" />
+      <Compile Include="CSharp\XR\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,6 +2,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using Trakction.XR;
 
 /// <summary>
 /// Minimal, server-authoritative scene syncing for Node3D instances.
@@ -48,6 +49,85 @@ public partial class SceneSync : Node
 
         node = null!;
         return false;
+    }
+
+    private Vector3? GetVector3FromProps(Godot.Collections.Dictionary props, string key)
+    {
+        if (props == null)
+            return null;
+
+        try
+        {
+            if (props.ContainsKey(key))
+            {
+                var val = props[key];
+                try
+                {
+                    return (Vector3)val;
+                }
+                catch { }
+
+                try
+                {
+                    var arr = (Godot.Collections.Array)val;
+                    if (arr != null && arr.Count >= 3)
+                        return new Vector3(Convert.ToSingle(arr[0]), Convert.ToSingle(arr[1]), Convert.ToSingle(arr[2]));
+                }
+                catch { }
+            }
+
+            if (props.ContainsKey(key + "_x") && props.ContainsKey(key + "_y") && props.ContainsKey(key + "_z"))
+            {
+                return new Vector3(
+                    Convert.ToSingle(props[key + "_x"]),
+                    Convert.ToSingle(props[key + "_y"]),
+                    Convert.ToSingle(props[key + "_z"]));
+            }
+        }
+        catch (Exception)
+        {
+        }
+
+        return null;
+    }
+
+    private float? GetFloatFromProps(Godot.Collections.Dictionary props, string key)
+    {
+        if (props == null)
+            return null;
+
+        try
+        {
+            if (props.ContainsKey(key))
+            {
+                var val = props[key];
+                try
+                {
+                    return (float)val;
+                }
+                catch { }
+
+                try
+                {
+                    return Convert.ToSingle(val);
+                }
+                catch { }
+            }
+        }
+        catch (Exception)
+        {
+        }
+
+        return null;
+    }
+
+    public int[] GetEntityIds()
+    {
+        var ids = new int[_entityById.Count];
+        var i = 0;
+        foreach (var kv in _entityById)
+            ids[i++] = kv.Key;
+        return ids;
     }
 
     public void ClearSpawnedEntities(bool freeNodes = true)
@@ -123,6 +203,10 @@ public partial class SceneSync : Node
             var id = kv.Key;
             var node = kv.Value;
             if (!IsInstanceValid(node))
+                continue;
+
+            // Players are updated via NetRoot position RPCs (client-authoritative). Avoid double-sync.
+            if (node is PlayerAvatar)
                 continue;
 
             var scenePath = node.SceneFilePath;
@@ -219,6 +303,34 @@ public partial class SceneSync : Node
         return id;
     }
 
+    /// <summary>
+    /// Server-only: spawn a built-in Node3D (limited whitelist) and replicate it to clients.
+    /// Props is a Godot.Collections.Dictionary with simple properties (e.g. for CSGBox3D: { "size": Vector3 }).
+    /// </summary>
+    public int ServerSpawnBuiltin(string nodeType, Godot.Collections.Dictionary props, Transform3D transform, Node? parent = null)
+    {
+        if (!Multiplayer.IsServer())
+            throw new InvalidOperationException("ServerSpawnBuiltin is server-only");
+
+        var node = CreateBuiltinNode(nodeType);
+        if (node == null)
+            throw new InvalidOperationException($"Unsupported builtin node type: {nodeType}");
+
+        ApplyPropsToNode(node, props);
+
+        var actualParent = parent ?? _syncRoot;
+        actualParent.AddChild(node);
+        node.GlobalTransform = transform;
+
+        var id = _nextEntityId++;
+        RegisterEntity(id, node);
+
+        var parentPath = _syncRoot.GetPathTo(actualParent);
+        Rpc(nameof(ClientSpawnBuiltin), id, nodeType, props, parentPath.ToString(), transform);
+
+        return id;
+    }
+
     public void ServerDespawn(int entityId)
     {
         if (!Multiplayer.IsServer())
@@ -239,6 +351,60 @@ public partial class SceneSync : Node
 
         // Helpful for debugging in the remote scene tree.
         node.SetMeta("net_entity_id", entityId);
+    }
+
+    private Node3D? CreateBuiltinNode(string nodeType)
+    {
+        // Provide safe, engine-level builtins via MeshInstance3D when possible.
+        return nodeType switch
+        {
+            "Box" => CreateBoxInstance(),
+            "Sphere" => CreateSphereInstance(),
+            _ => null,
+        };
+    }
+
+    private MeshInstance3D CreateBoxInstance()
+    {
+        var mesh = new BoxMesh();
+        var inst = new MeshInstance3D();
+        inst.Mesh = mesh;
+        return inst;
+    }
+
+    private MeshInstance3D CreateSphereInstance()
+    {
+        var mesh = new SphereMesh();
+        var inst = new MeshInstance3D();
+        inst.Mesh = mesh;
+        return inst;
+    }
+
+    private void ApplyPropsToNode(Node3D node, Godot.Collections.Dictionary props)
+    {
+        if (props == null)
+            return;
+
+        try
+        {
+            if (node is MeshInstance3D mi && mi.Mesh is BoxMesh bmesh)
+            {
+                var v = GetVector3FromProps(props, "size");
+                if (v != null)
+                    bmesh.Size = v.Value;
+            }
+
+            if (node is MeshInstance3D mi2 && mi2.Mesh is SphereMesh smesh)
+            {
+                var r = GetFloatFromProps(props, "radius");
+                if (r.HasValue)
+                    smesh.Radius = r.Value;
+            }
+        }
+        catch (Exception e)
+        {
+            GD.PrintErr($"ApplyPropsToNode error: {e.Message}");
+        }
     }
 
     private void UnregisterEntity(int entityId)
@@ -279,6 +445,34 @@ public partial class SceneSync : Node
     }
 
     [Rpc(MultiplayerApi.RpcMode.Authority)]
+    private void ClientSpawnBuiltin(int entityId, string nodeType, Godot.Collections.Dictionary props, string parentPath, Transform3D transform)
+    {
+        if (_entityById.ContainsKey(entityId))
+            return;
+
+        var node = CreateBuiltinNode(nodeType);
+        if (node == null)
+        {
+            GD.PrintErr($"ClientSpawnBuiltin: unsupported node type: {nodeType}");
+            return;
+        }
+
+        ApplyPropsToNode(node, props);
+
+        Node parent = _syncRoot;
+        if (!string.IsNullOrWhiteSpace(parentPath))
+        {
+            var maybe = _syncRoot.GetNodeOrNull<Node>(parentPath);
+            if (maybe != null)
+                parent = maybe;
+        }
+
+        parent.AddChild(node);
+        node.GlobalTransform = transform;
+        RegisterEntity(entityId, node);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority)]
     private void ClientDespawnEntity(int entityId)
     {
         if (_entityById.TryGetValue(entityId, out var node) && IsInstanceValid(node))
@@ -295,6 +489,10 @@ public partial class SceneSync : Node
 
         // Don't apply deltas to local player's entity, as it's client-authoritative.
         if (node is PlayerAvatar avatar && avatar.IsLocalPlayer)
+            return;
+
+        // Don't apply deltas to local VR player's rig, as it's client-authoritative.
+        if (node is XrPlayerRig rig && rig.IsLocalPlayer)
             return;
 
         node.GlobalTransform = transform;

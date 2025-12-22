@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bootstrap"]
+
+[ext_resource type="Script" path="res://CSharp/XR/OpenXrBootstrap.cs" id="bootstrap_script"]
+
+[node name="OpenXrBootstrap" type="Node"]
+script = ExtResource("bootstrap_script")
