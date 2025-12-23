@@ -1,9 +1,8 @@
 using Godot;
-using Trakction.XR;
+
 
 public partial class HomeScreen : Node
 {
-    [Export] public PackedScene XrBootstrapScene { get; set; }
     [Export] public PackedScene XrPlayerRigScene { get; set; }
     [Export] public string StartVrAction { get; set; } = "ui_accept";
 
@@ -13,7 +12,7 @@ public partial class HomeScreen : Node
 
     public override void _Ready()
     {
-        mainGame = GetNode("MainGame");
+        mainGame = GetNode("VRRenderer/MainGame");
         _net = GetNode<NetRoot>("NetRoot");
 
         // Connect VR button signal
@@ -29,15 +28,41 @@ public partial class HomeScreen : Node
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        // Toggle UI / physical panel with Escape (ui_cancel)
+        if (@event.IsActionPressed("ui_cancel"))
+        {
+            // Avoid toggling when typing into fields
+            // var focus = GetFocusOwner();
+            // if (!(focus is LineEdit))
+            // {
+            //     // Toggle canvas UI visibility
+            //     var ui = GetNode<CanvasLayer>("UI");
+            //     ui.Visible = !ui.Visible;
+            //
+            //     // Try to find the spawner toggle node in the main game and call its toggle method
+            //     var spawnerToggle = mainGame.FindChild("SpawnerToggle", true, false);
+            //     if (spawnerToggle != null)
+            //     {
+            //         // Call the GDScript method 'toggle_panel' if available
+            //         if (spawnerToggle.HasMethod("toggle_panel"))
+            //             spawnerToggle.Call("toggle_panel");
+            //         else if (spawnerToggle.HasMethod("open_panel") && ui.Visible == false)
+            //             spawnerToggle.Call("open_panel");
+            //         else if (spawnerToggle.HasMethod("close_panel") && ui.Visible == true)
+            //             spawnerToggle.Call("close_panel");
+            //     }
+            // }
+        }
+
         if (_vrStarted)
             return;
 
         if (@event.IsActionPressed(StartVrAction))
         {
             // Avoid triggering while typing into a LineEdit
-            var focus = GetFocusOwner();
-            if (focus is LineEdit)
-                return;
+            // var focus = GetFocusOwner();
+            // if (focus is LineEdit)
+            //     return;
 
             OnVrButtonPressed();
         }
@@ -48,35 +73,18 @@ public partial class HomeScreen : Node
         if (_vrStarted)
             return;
         _vrStarted = true;
-        // Instantiate and add OpenXrBootstrap
-        if (XrBootstrapScene != null)
-        {
-            var bootstrap = XrBootstrapScene.Instantiate<Node>();
-            AddChild(bootstrap);
-        }
 
-        // If not in multiplayer, instantiate VR rig locally
-        if (Multiplayer.MultiplayerPeer == null)
-        {
-            if (XrPlayerRigScene != null)
-            {
-                var rig = XrPlayerRigScene.Instantiate<Node3D>();
-                if (rig is XrPlayerRig xrRig)
-                {
-                    xrRig.IsLocalPlayer = true;
-                    xrRig.PeerId = 1; // Local peer
-                }
-                mainGame.AddChild(rig);
-            }
-        }
-        else
-        {
-            // Notify server to switch to VR player
-            _net?.StartVr();
-        }
+        // Always use the networked method to spawn the VR player
+        _net?.StartVr();
 
         // Optionally hide UI or transition
         GetNode<CanvasLayer>("UI").Visible = false;
+    }
+
+    // Remove local instantiation logic; spawning is now handled by NetRoot
+    private void OnXrEnabledHandler()
+    {
+        // No-op: VR player spawning is handled by NetRoot and network events
     }
 
     private void OnSpawnBoxPressed()

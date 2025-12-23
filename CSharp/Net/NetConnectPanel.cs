@@ -14,6 +14,7 @@ public partial class NetConnectPanel : PanelContainer
     private Button? _startServer;
     private Button? _connect;
     private Button? _disconnect;
+    private Button? _vr;
 
     public override void _Ready()
     {
@@ -29,6 +30,7 @@ public partial class NetConnectPanel : PanelContainer
         _startServer = GetNodeOrNull<Button>("VBox/Buttons/StartServer");
         _connect = GetNodeOrNull<Button>("VBox/Buttons/Connect");
         _disconnect = GetNodeOrNull<Button>("VBox/Buttons/Disconnect");
+        _vr = GetNodeOrNull<Button>("VBox/Buttons/VrButton");
 
         if (_net == null || _hostRow == null || _portRow == null || _host == null || _port == null || _startServer == null || _connect == null || _disconnect == null)
         {
@@ -55,6 +57,10 @@ public partial class NetConnectPanel : PanelContainer
         _disconnect.Pressed += () =>
         {
             _net.StopNetworking();
+        };
+        _vr.Pressed += () =>
+        {
+            _net.StartVr();
         };
     }
 

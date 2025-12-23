@@ -7,14 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Libs\OCRuntime\OCRuntime.csproj" />
     <ProjectReference Include="..\Traktor-Data\Traktor-Data.csproj" />
     <ProjectReference Include="..\Traktor-Protocol\Traktor-Protocol.csproj" />
     <ProjectReference Include="..\WorldController\world.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="NewFolder\" />
+    <Folder Include="Assets\Shaders\" />
   </ItemGroup>
 
 </Project>

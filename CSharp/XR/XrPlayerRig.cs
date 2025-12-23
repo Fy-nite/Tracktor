@@ -1,202 +1,91 @@
-#nullable enable
-using System;
 using Godot;
-using Trakction.Interaction;
+using System;
 
-namespace Trakction.XR;
-
-/// <summary>
-/// Minimal XR player rig: XROrigin3D (current) + XRCamera3D + L/R XRController3D.
-/// Attaches an InteractorRay3D to each controller so you can reuse the physical UI interaction system.
-/// </summary>
-public partial class XrPlayerRig : XROrigin3D
+namespace Trakction.XR
 {
-    public long PeerId { get; set; }
-    public bool IsLocalPlayer { get; set; }
-
-    [Export] public bool EnsureChildren { get; set; } = true;
-
-    [Export] public float RayMaxDistance { get; set; } = 3.0f;
-
-    // OpenXR action map button names (these are the action names exposed by the XR interface).
-    // If these are empty, the rays will fall back to InputMap-driven actions.
-    [Export] public string GripButtonName { get; set; } = "grip_click";
-    [Export] public string TriggerButtonName { get; set; } = "trigger_click";
-
-    // InputMap fallback actions (non-XR or if you prefer mapping in InputMap).
-    [Export] public string GrabAction { get; set; } = "grab";
-
-    // The interaction action is still driven by Godot's InputMap.
-    // You can map this to a VR controller trigger via the OpenXR action map / input bindings.
-    [Export] public string InteractAction { get; set; } = "ui_accept";
-
-    public override void _Ready()
+    /// <summary>
+    /// Simple wrapper Node3D that loads/instantiates a player scene (e.g. your GDScript `player.tscn`) as a child.
+    /// Exposes IsLocalPlayer and PeerId so C# code can set them before/after instantiation.
+    /// Set the `PlayerScene` export to `res://Gdscript/player.tscn` in the inspector.
+    /// </summary>
+    public partial class XrPlayerRig : Node3D
     {
-        _net = FindNetRoot(this);
-        Current = true;
+        [Export] public PackedScene PlayerScene { get; set; }
 
-        if (!EnsureChildren)
-            return;
+        // These are simple fields the HomeScreen can set. You can use them inside the instantiated player
+        // if you expose/propagate them from the instantiated node (for GDScript scenes you'd need to call
+        // methods or set properties on the child after instantiation).
+        public bool IsLocalPlayer { get; set; }
+        public long PeerId { get; set; }
 
-        EnsureRig();
-    }
+        private Node3D? _playerInstance;
 
-    public override void _PhysicsProcess(double delta)
-    {
-        if (!IsLocalPlayer)
+        public override void _Ready()
         {
-            if (_camera != null)
-                _camera.Current = false;
-            return;
-        }
-
-        EnsureLocalVrActive();
-
-        // Send position update to server periodically, similar to PlayerAvatar.
-        // Use a counter to send at ~12 Hz.
-        _sendCounter++;
-        if (_sendCounter % 5 != 0)
-            return;
-
-        var pos = GlobalPosition;
-        if (!IsFinite(pos) || pos.Length() > MaxSendPositionMagnitude)
-            return;
-
-        _net?.SendPlayerPosition(pos, GlobalRotation);
-    }
-
-    private void EnsureLocalVrActive()
-    {
-        if (_camera != null)
-            _camera.Current = true;
-    }
-
-    private NetRoot? _net;
-    private XRCamera3D? _camera;
-    private int _sendCounter;
-    private const float MaxSendPositionMagnitude = 5000.0f;
-
-    private static NetRoot? FindNetRoot(Node? start)
-    {
-        var node = start;
-        while (node != null)
-        {
-            if (node is NetRoot nr)
-                return nr;
-            node = node.GetParent();
-        }
-
-        // Fallback: locate via group.
-        var tree = Godot.Engine.GetMainLoop() as SceneTree;
-        if (tree == null)
-            return null;
-
-        foreach (var n in tree.GetNodesInGroup("net_root"))
-        {
-            if (n is NetRoot nr)
-                return nr;
-        }
-
-        return null;
-    }
-
-    private void EnsureRig()
-    {
-        EnsureCamera();
-        EnsureController("LeftController", tracker: "left_hand", pose: "aim");
-        EnsureController("RightController", tracker: "right_hand", pose: "aim");
-    }
-
-    private void EnsureCamera()
-    {
-        _camera = GetNodeOrNull<XRCamera3D>("XRCamera3D");
-        if (_camera != null)
-            return;
-
-        _camera = new XRCamera3D { Name = "XRCamera3D" };
-        AddChild(_camera);
-    }
-
-    private void EnsureController(string name, string tracker, string pose)
-    {
-        var controller = GetNodeOrNull<XRController3D>(name);
-        if (controller == null)
-        {
-            controller = new XRController3D { Name = name };
-            AddChild(controller);
-        }
-
-        // XRController3D inherits tracker/pose from XRNode3D.
-        controller.Tracker = new StringName(tracker);
-        controller.Pose = new StringName(pose);
-
-        // Attach interactor to the controller so rays follow controller tracking.
-        var interactor = controller.GetNodeOrNull<InteractorRay3D>("InteractorRay3D");
-        if (interactor == null)
-        {
-            interactor = new InteractorRay3D { Name = "InteractorRay3D" };
-            controller.AddChild(interactor);
-        }
-
-        var grabber = controller.GetNodeOrNull<GrabberRay3D>("GrabberRay3D");
-        if (grabber == null)
-        {
-            grabber = new GrabberRay3D { Name = "GrabberRay3D" };
-            controller.AddChild(grabber);
-        }
-
-        interactor.InteractAction = InteractAction;
-        interactor.MaxDistance = RayMaxDistance;
-
-        grabber.GrabAction = GrabAction;
-        grabber.MaxDistance = RayMaxDistance;
-
-        WireControllerButtons(controller, interactor, grabber);
-    }
-
-    private void WireControllerButtons(XRController3D controller, InteractorRay3D interactor, GrabberRay3D grabber)
-    {
-        // Avoid duplicate connections when EnsureController runs multiple times.
-        const string metaKey = "trakction_xr_button_wired";
-        if (controller.HasMeta(metaKey) && controller.GetMeta(metaKey).AsBool())
-            return;
-
-        controller.SetMeta(metaKey, true);
-
-        if (!string.IsNullOrWhiteSpace(TriggerButtonName))
-        {
-            controller.Connect(
-                "button_pressed",
-                Callable.From((string buttonName) =>
+            // Instantiate the player scene if provided. Keep the wrapper so we can reuse or hide instead
+            // of freeing constantly.
+            if (PlayerScene != null)
+            {
+                var inst = PlayerScene.Instantiate();
+                if (inst is Node3D n3d)
                 {
-                    if (string.Equals(buttonName, TriggerButtonName, StringComparison.OrdinalIgnoreCase))
-                        interactor.TryInteract();
-                })
-            );
+                    _playerInstance = n3d;
+                    AddChild(n3d);
+
+                    // Try to propagate the IsLocalPlayer/PeerId values to the instantiated node.
+                    // For GDScript scenes, you can call methods or set exported properties using Call or Set.
+                    // We'll attempt both common patterns in a best-effort, non-throwing way.
+                    PropagatePlayerFlags();
+                }
+                else
+                {
+                    // If it's not Node3D, just add it and keep a reference as Node
+                    AddChild(inst);
+                }
+            }
         }
 
-        if (!string.IsNullOrWhiteSpace(GripButtonName))
+        public void Initialize(bool isLocal, int peerId)
         {
-            controller.Connect(
-                "button_pressed",
-                Callable.From((string buttonName) =>
-                {
-                    if (string.Equals(buttonName, GripButtonName, StringComparison.OrdinalIgnoreCase))
-                        grabber.TryGrab();
-                })
-            );
+            IsLocalPlayer = isLocal;
+            PeerId = peerId;
+            PropagatePlayerFlags();
+        }
 
-            controller.Connect(
-                "button_released",
-                Callable.From((string buttonName) =>
+        private void PropagatePlayerFlags()
+        {
+            if (_playerInstance == null)
+                return;
+
+            // 1) Try common C#-style properties (works if the instance has a C# script with exposed members)
+            try
+            {
+                // Use Set to set exported properties by name (works for GDScript exported props too).
+                _playerInstance.Set("IsLocalPlayer", IsLocalPlayer);
+                _playerInstance.Set("PeerId", PeerId);
+            }
+            catch
+            {
+                // ignore failures - not all scenes expose those properties
+            }
+
+            // 2) Try calling a well-known method if present on the player scene (GDScript or other script)
+            try
+            {
+                if (_playerInstance.HasMethod("initialize_for_local_player"))
                 {
-                    if (string.Equals(buttonName, GripButtonName, StringComparison.OrdinalIgnoreCase))
-                        grabber.Release();
-                })
-            );
+                    _playerInstance.Call("initialize_for_local_player", IsLocalPlayer, PeerId);
+                }
+                else if (_playerInstance.HasMethod("initialize"))
+                {
+                    _playerInstance.Call("initialize", IsLocalPlayer, PeerId);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
         }
     }
-
-    private static bool IsFinite(Vector3 v)
-        => float.IsFinite(v.X) && float.IsFinite(v.Y) && float.IsFinite(v.Z);
 }
+

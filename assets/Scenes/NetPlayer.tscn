@@ -1,18 +1,26 @@
-[gd_scene load_steps=3 format=3 uid="uid://cntakwbuqhxlq"]
+[gd_scene load_steps=5 format=3 uid="uid://cntakwbuqhxlq"]
 
 [ext_resource type="Script" uid="uid://co67tvcgbkreg" path="res://CSharp/Net/PlayerAvatar.cs" id="1_player"]
 [ext_resource type="Script" uid="uid://bjpmu5sklv5h8" path="res://addons/raytraced_audio/raytraced_audio_listener.gd" id="2_ypw64"]
+[ext_resource type="Script" uid="uid://dq5wm4fn68pw" path="res://CSharp/Construction/SpawnerPanelToggle.cs" id="3_yx70u"]
+[ext_resource type="PackedScene" uid="uid://c0wh32s2nv1fx" path="res://assets/Scenes/Creation/SpawnerPanel.tscn" id="4_ba2l3"]
 
 [node name="NetPlayer" type="CharacterBody3D"]
 script = ExtResource("1_player")
 
 [node name="LookPivot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9513743, 0)
 
 [node name="Camera3D" type="Camera3D" parent="LookPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.011376262, 0)
 
 [node name="RaytracedAudioListener" type="AudioListener3D" parent="."]
 doppler_tracking = 2
 current = true
 script = ExtResource("2_ypw64")
 metadata/_custom_type_script = "uid://bjpmu5sklv5h8"
+
+[node name="Panel" type="Node3D" parent="."]
+script = ExtResource("3_yx70u")
+PanelScene = ExtResource("4_ba2l3")
+CameraPath = NodePath("../LookPivot/Camera3D")

@@ -1,0 +1,18 @@
+[gd_scene load_steps=5 format=3 uid="uid://c0wh32s2nv1fx"]
+
+[ext_resource type="Script" uid="uid://clakyouhour8o" path="res://CSharp/Construction/SpawnerPanelBuilder.cs" id="1_w106n"]
+[ext_resource type="Script" uid="uid://b3n7taiddkn8f" path="res://CSharp/PhysicalUI/PhysicalScrollBox3D.cs" id="2_sitfa"]
+[ext_resource type="Script" uid="uid://o8dws41v5jq1" path="res://CSharp/Construction/Spawner.cs" id="3_sitfa"]
+[ext_resource type="PackedScene" uid="uid://ciqnxd2wrgg5g" path="res://assets/Scenes/Editor.tscn" id="4_bb0w4"]
+
+[node name="SpawnerPanel" type="Node3D"]
+script = ExtResource("1_w106n")
+SpawnerPath = NodePath("ScrollPanel/Node3D")
+
+[node name="ScrollPanel" type="Node3D" parent="."]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
+script = ExtResource("2_sitfa")
+
+[node name="Node3D" type="Node3D" parent="ScrollPanel"]
+script = ExtResource("3_sitfa")
+SpawnableScenes = [ExtResource("4_bb0w4")]

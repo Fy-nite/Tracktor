@@ -1,0 +1,264 @@
+[gd_scene load_steps=13 format=3 uid="uid://cuykppkolnxrw"]
+
+[ext_resource type="Script" path="res://CSharp/PhysicalUI/TemplateUiPhysicalGenerator3D.cs" id="1_template_ui_gen"]
+[ext_resource type="Script" path="res://CSharp/PhysicalUI/PhysicalHitBoxButton3D.cs" id="2_hitbox_button"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mowoy"]
+albedo_color = Color(0.23392546, 0.23392546, 0.23392543, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0ki08"]
+albedo_color = Color(0.32544088, 0.3254409, 0.32544088, 1)
+
+[sub_resource type="TextMesh" id="TextMesh_8mngl"]
+material = SubResource("StandardMaterial3D_0ki08")
+text = "ObjectIR Runtime"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lp3ed"]
+albedo_color = Color(0.13242465, 0.26542476, 0.36841473, 1)
+
+[sub_resource type="TextMesh" id="TextMesh_4ms23"]
+material = SubResource("StandardMaterial3D_0ki08")
+text = "File:"
+
+[sub_resource type="TextMesh" id="TextMesh_mowoy"]
+material = SubResource("StandardMaterial3D_0ki08")
+text = "Main:"
+
+[sub_resource type="SystemFont" id="SystemFont_0ki08"]
+font_names = PackedStringArray("Arial Rounded MT")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8mngl"]
+albedo_color = Color(0.446777, 0.44677705, 0.44677705, 1)
+
+[sub_resource type="TextMesh" id="TextMesh_lp3ed"]
+material = SubResource("StandardMaterial3D_8mngl")
+text = "Item 1"
+font = SubResource("SystemFont_0ki08")
+curve_step = 0.1
+
+[sub_resource type="TextMesh" id="TextMesh_y1pk5"]
+material = SubResource("StandardMaterial3D_8mngl")
+text = "root://Rooms/Charlie/Item.gltf"
+font = SubResource("SystemFont_0ki08")
+curve_step = 0.1
+
+[node name="TemplateUI" type="Node3D"]
+script = ExtResource("1_template_ui_gen")
+
+[node name="Root" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06558189, 1.0718216, -0.029103786)
+size = Vector3(1.814331, 2.4733887, 0.111572266)
+material = SubResource("StandardMaterial3D_mowoy")
+
+[node name="Right Side Components" type="Node3D" parent="Root"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.47801098, 0, 0.062488988)
+
+[node name="Scroll_backing" type="CSGBox3D" parent="Root/Right Side Components"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.017608643, 0)
+size = Vector3(0.82855225, 2.0813599, 0.009765625)
+
+[node name="LeftSideScroll" type="Node3D" parent="Root/Right Side Components/Scroll_backing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4545989, 0.017608643, -0.062488988)
+
+[node name="Component" type="Node3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, 0.95938313, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll/Component"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.02949357, 0.023787498, 0)
+mesh = SubResource("TextMesh_8mngl")
+
+[node name="Heading" type="CSGBox3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll/Component"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0046907067, 0, 0)
+size = Vector3(0.8013916, 0.10546875, 0.009765625)
+
+[node name="Content" type="CSGBox3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll/Component"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0046907067, -0.4459591, 0)
+size = Vector3(0.8013916, 0.7282715, 0.009765625)
+material = SubResource("StandardMaterial3D_lp3ed")
+
+[node name="Item" type="MeshInstance3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll/Component/Content"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.32272124, 0.1306516, 0)
+mesh = SubResource("TextMesh_4ms23")
+
+[node name="TextContent" type="CSGBox3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll/Component/Content/Item"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8654992, 0, 0.01693993)
+size = Vector3(0.93573, 0.10546875, 0.009765625)
+
+[node name="Item2" type="MeshInstance3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll/Component/Content"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29822102, 0.017995358, 0)
+mesh = SubResource("TextMesh_mowoy")
+
+[node name="TextContent" type="CSGBox3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll/Component/Content/Item2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8164046, 0, 0.01693993)
+size = Vector3(0.93573, 0.10546875, 0.009765625)
+
+[node name="Item3" type="MeshInstance3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll/Component/Content"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.32272124, -0.11947131, 0)
+mesh = SubResource("TextMesh_4ms23")
+
+[node name="TextContent" type="CSGBox3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll/Component/Content/Item3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8654992, 0, 0.01693993)
+size = Vector3(0.93573, 0.10546875, 0.009765625)
+
+[node name="Closebutton" type="CSGBox3D" parent="Root/Right Side Components/Scroll_backing/LeftSideScroll/Component/Content"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3701867, 0.47620058, 0.01693993)
+size = Vector3(0.052268982, 0.041015625, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Close"
+
+[node name="LefttSide Hiericy" type="Node3D" parent="Root"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45621613, 0, 0.061787724)
+
+[node name="Scroll_backing" type="CSGBox3D" parent="Root/LefttSide Hiericy"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.017608643, 0)
+size = Vector3(0.82855225, 2.0813599, 0.009765625)
+
+[node name="RightSideScroll" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.44383228, 0.017608643, -0.062488988)
+
+[node name="Item" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, 0.9682318, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="Item2" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, 0.82145536, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item2"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="Item3" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, 0.6625005, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item3"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="Item4" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, 0.51174295, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item4"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="Item5" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, 0.36103022, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item5"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="Item6" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, 0.18593371, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item6"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="Item7" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, -0.02573049, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item7"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="Item8" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, -0.24321294, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item8"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item8"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="Item9" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, -0.41780198, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item9"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item9"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="Item10" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, -0.6422671, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item10"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item10"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="Item11" type="Node3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44987795, -0.8928354, 0.06833708)
+
+[node name="TitleText" type="MeshInstance3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item11"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.29914647, 0, 0)
+mesh = SubResource("TextMesh_lp3ed")
+
+[node name="ActiveTogglebutton" type="CSGBox3D" parent="Root/LefttSide Hiericy/Scroll_backing/RightSideScroll/Item11"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3460783, 0, 0)
+size = Vector3(0.099853516, 0.10546875, 0.009765625)
+script = ExtResource("2_hitbox_button")
+Prompt = "Toggle"
+
+[node name="TitleText" type="MeshInstance3D" parent="Root"]
+transform = Transform3D(0.515, 0, 0, 0, 0.515, 0, 0, 0, 0.515, -0.23043501, 1.165886, 0.08354396)
+mesh = SubResource("TextMesh_y1pk5")

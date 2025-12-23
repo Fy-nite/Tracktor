@@ -10,9 +10,15 @@ namespace Trakction.XR;
 /// </summary>
 public partial class OpenXrBootstrap : Node
 {
+    [Signal] public delegate void XrEnabledEventHandler();
+
     [Export] public bool AutoStart { get; set; } = true;
     [Export] public string InterfaceName { get; set; } = "OpenXR";
     [Export] public bool DisableVsync { get; set; } = true;
+    [Export] public bool ShowDiagnosticsOverlay { get; set; } = true;
+
+    private CanvasLayer? _diagLayer;
+    private Label? _diagLabel;
 
     public override void _Ready()
     {
@@ -20,24 +26,56 @@ public partial class OpenXrBootstrap : Node
             return;
 
         TryEnableXr();
+
+        if (ShowDiagnosticsOverlay && Engine.IsEditorHint() == false)
+            CreateDiagnosticsOverlay();
     }
 
-    public override void _Process(double delta)
+    private void CreateDiagnosticsOverlay()
     {
-        if (GetTree().Root.GetViewport().UseXR)
-            return;
+        try
+        {
+            var root = GetTree().Root;
+            if (root == null)
+                return;
 
-        // Retry if not set
-        TryEnableXr();
+            // Only create once
+            if (_diagLayer != null)
+                return;
+
+            _diagLayer = new CanvasLayer();
+            _diagLayer.Name = "XrDiagnostics";
+            var lbl = new Label();
+            lbl.Name = "XrDiagLabel";
+            lbl.Text = "XR: initializing...";
+            lbl.AddThemeColorOverride("font_color", new Color(1, 0.8f, 0));
+            lbl.SetPosition(new Vector2(8, 8));
+            _diagLayer.AddChild(lbl);
+            root.AddChild(_diagLayer);
+            _diagLabel = lbl;
+        }
+        catch { }
+    }
+
+    private void UpdateDiagnosticsOverlay(string text)
+    {
+        try
+        {
+            if (_diagLabel != null)
+                _diagLabel.Text = text;
+        }
+        catch { }
     }
 
     public bool TryEnableXr()
     {
         GD.Print("Trying to enable XR");
+        UpdateDiagnosticsOverlay("XR: trying to enable...");
         var xrInterface = XRServer.FindInterface(InterfaceName);
         if (xrInterface == null)
         {
             GD.PushWarning($"XR interface '{InterfaceName}' not found. Is the OpenXR plugin enabled?");
+            UpdateDiagnosticsOverlay($"XR: interface '{InterfaceName}' not found");
             return false;
         }
 
@@ -50,9 +88,12 @@ public partial class OpenXrBootstrap : Node
             if (!ok)
             {
                 GD.PushWarning($"Failed to initialize XR interface '{InterfaceName}'.");
+                UpdateDiagnosticsOverlay($"XR: failed to initialize '{InterfaceName}'");
                 return false;
             }
         }
+
+        UpdateDiagnosticsOverlay($"XR: interface '{InterfaceName}' initialized");
 
         if (DisableVsync)
         {
@@ -66,12 +107,17 @@ public partial class OpenXrBootstrap : Node
         if (marked)
         {
             GD.Print($"XR enabled via '{InterfaceName}' (viewport flagged).");
+            UpdateDiagnosticsOverlay($"XR enabled: {InterfaceName}");
+            // Emit a signal so other scripts (like HomeScreen) can wait for XR readiness before creating XR-only nodes.
+            EmitSignal(nameof(XrEnabled));
             return true;
         }
 
         // If we failed, dump viewports for deeper diagnostics.
         GD.PushWarning("Failed to mark any viewport with UseXR; dumping viewports for diagnostics.");
+        UpdateDiagnosticsOverlay("XR: no viewport flagged with UseXR");
         DumpViewports();
+
         return false;
     }
 
@@ -102,6 +148,19 @@ public partial class OpenXrBootstrap : Node
                         }
                     }
                 }
+
+                // Mark viewports inside the currently loaded scene (recursively)
+                var currentScene = tree.CurrentScene;
+                if (currentScene != null)
+                {
+                    GD.Print($"Attempting to mark viewports in current scene '{currentScene.Name}'");
+                    var found = MarkViewportsInNodeRecursive(currentScene);
+                    if (found)
+                    {
+                        GD.Print("Marked one or more viewports inside current scene.");
+                        any = true;
+                    }
+                }
             }
 
             // Also try the viewport this node belongs to (if different).
@@ -112,10 +171,59 @@ public partial class OpenXrBootstrap : Node
                 GD.Print("Marked node's viewport UseXR = true");
                 any = true;
             }
+
+            // As a last resort, scan the SceneTree root's Node children recursively for any Viewport nodes
+            try
+            {
+                var rt = GetTree()?.Root;
+                if (rt != null)
+                {
+                    foreach (var child in rt.GetChildren())
+                    {
+                        if (child is Node n)
+                        {
+                            var found = MarkViewportsInNodeRecursive(n);
+                            if (found)
+                                any = true;
+                        }
+                    }
+                }
+            }
+            catch { /* ignore */ }
         }
         catch (Exception e)
         {
             GD.PrintErr($"EnsureUseXrMarked exception: {e.Message}");
+        }
+
+        return any;
+    }
+
+    // Recursively search a node and its children for Viewport nodes and set UseXR=true on them.
+    private bool MarkViewportsInNodeRecursive(Node node)
+    {
+        var any = false;
+        try
+        {
+            if (node is Viewport vp)
+            {
+                vp.UseXR = true;
+                GD.Print($"Marked viewport '{vp.Name}' UseXR = true (recursive)");
+                any = true;
+            }
+
+            foreach (var childObj in node.GetChildren())
+            {
+                if (childObj is Node child)
+                {
+                    if (MarkViewportsInNodeRecursive(child))
+                        any = true;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            GD.PrintErr($"MarkViewportsInNodeRecursive error on node '{node?.Name}': {e.Message}");
         }
 
         return any;
@@ -136,6 +244,43 @@ public partial class OpenXrBootstrap : Node
                 var initialized = initProp.Invoke(xrInterface, null);
                 GD.Print($"XR interface IsInitialized: {initialized}");
             }
+
+            // Print basic type info and available methods/properties for diagnostics
+            GD.Print($"XR Interface CLR type: {type.FullName}");
+
+            var props = type.GetProperties();
+            if (props.Length > 0)
+            {
+                GD.Print("XR Interface properties:");
+                foreach (var p in props)
+                {
+                    try
+                    {
+                        var val = p.GetValue(xrInterface);
+                        GD.Print($"  {p.Name} = {val}");
+                    }
+                    catch { GD.Print($"  {p.Name} (unreadable)"); }
+                }
+            }
+
+            var methods = type.GetMethods();
+            GD.Print($"XR Interface methods (count={methods.Length}):");
+            for (int i = 0; i < methods.Length && i < 50; i++)
+            {
+                GD.Print($"  {methods[i].Name}");
+            }
+
+            // Try to call a 'GetName' or 'Name' if present
+            var getNameMethod = type.GetMethod("GetName") ?? type.GetMethod("GetID") ?? type.GetMethod("Name");
+            if (getNameMethod != null)
+            {
+                try
+                {
+                    var nameVal = getNameMethod.Invoke(xrInterface, null);
+                    GD.Print($"XR Interface reported name: {nameVal}");
+                }
+                catch { /* ignore */ }
+            }
         }
         catch (Exception e)
         {
@@ -151,6 +296,7 @@ public partial class OpenXrBootstrap : Node
             if (tree == null)
             {
                 GD.PrintErr("DumpViewports: SceneTree is null");
+                UpdateDiagnosticsOverlay("XR: no SceneTree");
                 return;
             }
 
@@ -158,16 +304,19 @@ public partial class OpenXrBootstrap : Node
             if (root == null)
             {
                 GD.PrintErr("DumpViewports: Root viewport is null");
+                UpdateDiagnosticsOverlay("XR: no root viewport");
                 return;
             }
 
             GD.Print($"DumpViewports: Root.UseXR = {root.UseXR}");
+            UpdateDiagnosticsOverlay($"Root.UseXR = {root.UseXR}");
 
             foreach (var child in root.GetChildren())
             {
                     if (child is Viewport vp)
                     {
                         GD.Print($"Child viewport '{vp.Name}': UseXR={vp.UseXR}");
+                        UpdateDiagnosticsOverlay($"Child viewport '{vp.Name}': UseXR={vp.UseXR}");
                     }
                 else
                 {
@@ -177,11 +326,15 @@ public partial class OpenXrBootstrap : Node
 
             var nodeVp = GetViewport();
             if (nodeVp != null)
+            {
                 GD.Print($"Node's viewport '{nodeVp.Name}': UseXR={nodeVp.UseXR}");
+                UpdateDiagnosticsOverlay($"Node viewport '{nodeVp.Name}': UseXR={nodeVp.UseXR}");
+            }
         }
         catch (Exception e)
         {
             GD.PrintErr($"DumpViewports exception: {e.Message}");
+            UpdateDiagnosticsOverlay($"XR DumpViewports error: {e.Message}");
         }
     }
 }

@@ -502,7 +502,7 @@ public partial class NetRoot : Node
         // Spawn the VR player rig
         var spawnIndex = _playerEntityByPeer.Count;
         var spawnPos = new Vector3(spawnIndex * 1.5f, 0, 0);
-        var newEntityId = _sceneSync.ServerSpawn("res://assets/Scenes/XrPlayerRig.tscn", new Transform3D(Basis.Identity, spawnPos));
+        var newEntityId = _sceneSync.ServerSpawn("res://Gdscript/player.tscn", new Transform3D(Basis.Identity, spawnPos));
         _playerEntityByPeer[peerId] = newEntityId;
 
         if (_sceneSync.TryGetEntityNode(newEntityId, out var node) && node is XrPlayerRig rig)
@@ -516,7 +516,11 @@ public partial class NetRoot : Node
     {
         if (Multiplayer.MultiplayerPeer == null)
             return;
-
+        if (Multiplayer.IsServer())
+        {
+            ServerStartVr(Multiplayer.GetUniqueId());
+            return; // we're the server already; don't RpcId(1, ...) which tries to call the authority on ourselves
+        }
         RpcId(1, nameof(ServerStartVr), Multiplayer.GetUniqueId());
     }
 

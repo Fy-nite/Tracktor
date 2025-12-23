@@ -10,6 +10,14 @@
     <Compile Remove="CSharp\Traktor-Protocol\**\*.cs" />
     <Compile Remove="CSharp\WorldController\**\*.cs" />
       <Compile Remove="CSharp\**\*.cs" />
+      <Compile Include="CSharp\Construction\Inspector.cs" />
+      <Compile Include="CSharp\Construction\InspectorPanel2D.cs" />
+      <Compile Include="CSharp\Construction\InspectorPanelService.cs" />
+      <Compile Include="CSharp\Construction\Spawner.cs" />
+      <Compile Include="CSharp\Construction\SpawnerPanelBuilder.cs" />
+      <Compile Include="CSharp\Construction\SpawnerPanelToggle.cs" />
+      <Compile Include="CSharp\HomeWorld\HomeWorld.cs" />
+      <Compile Include="CSharp\HomeScreen.cs" />
       <Compile Include="CSharp\Net\**\*.cs" />
       <Compile Include="CSharp\Builders\**\*.cs" />
       <Compile Include="CSharp\Interaction\**\*.cs" />

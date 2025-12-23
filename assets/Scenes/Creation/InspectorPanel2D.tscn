@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3 uid="uid://inspector2d"]
+
+[ext_resource type="Script" uid="uid://cnt0ihgpymbex" path="res://CSharp/Construction/InspectorPanel2D.cs" id="1_inspector_script"]
+
+[node name="InspectorPanel2D" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_inspector_script")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 72.0
+offset_right = 420.0
+offset_bottom = 720.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="TopRow" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/VBox/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "World Hierarchy"
+
+[node name="Close" type="Button" parent="Panel/VBox/TopRow"]
+layout_mode = 2
+text = "Close"
+
+[node name="Tree" type="Tree" parent="Panel/VBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3

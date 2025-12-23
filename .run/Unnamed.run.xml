@@ -1,0 +1,9 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Unnamed" type="GodotRunConfiguration" factoryName="GodotRunConfiguration" singleton="false" nameIsGenerated="true">
+    <option name="debugPaths" value="true" />
+    <option name="debugShapes" value="true" />
+    <option name="godotExe" value="C:\Users\GAMER\Godot\Editors\4.5.1-stable-mono\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe" />
+    <option name="tscn" value="D:\godotprojects\trakction\HomeScreen.tscn" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -1,0 +1,22 @@
+[gd_resource type="Environment" load_steps=4 format=3 uid="uid://cskvsgdjp3cmg"]
+
+[ext_resource type="Texture2D" uid="uid://dt6y2q7ee4iai" path="res://assets/mud_road_puresky_2k.exr" id="1_3o2oh"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_02tn6"]
+panorama = ExtResource("1_3o2oh")
+
+[sub_resource type="Sky" id="Sky_1mjbj"]
+sky_material = SubResource("PanoramaSkyMaterial_02tn6")
+
+[resource]
+background_mode = 2
+sky = SubResource("Sky_1mjbj")
+ambient_light_source = 3
+reflected_light_source = 2
+tonemap_mode = 1
+ssil_enabled = true
+sdfgi_enabled = true
+sdfgi_use_occlusion = true
+glow_strength = 0.81
+adjustment_enabled = true
+adjustment_saturation = 2.29

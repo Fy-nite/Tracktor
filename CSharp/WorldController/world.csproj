@@ -10,4 +10,8 @@
     <PackageReference Include="System.Text.Json" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\objectruntime\Runtimes\ObjectIR.Core\ObjectIR.Core.csproj" />
+  </ItemGroup>
+
 </Project>
