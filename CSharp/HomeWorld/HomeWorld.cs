@@ -11,6 +11,7 @@ public partial class HomeWorld : Node3D
     {
         // var world = GenerateWorld();
         // AddChild(world);
+        AddToGroup("net_sync");
     }
     public static Node GenerateWorld()
     {

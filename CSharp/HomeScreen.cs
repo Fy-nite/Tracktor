@@ -21,7 +21,7 @@ public partial class HomeScreen : Node
         {
             // Instance and add the main game scene
             mainGame = MainScene.Instantiate();
-            AddChild(mainGame);
+            FindChild("SceneSync").AddChild(mainGame);
         }
         
         _net = GetNode<NetRoot>("NetRoot");
