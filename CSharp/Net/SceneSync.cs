@@ -2,6 +2,8 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using Godot.Collections;
+
 // dopn't import thism it doesn't exist.
 // and we already have a different scene for XR players.
 // using Traktion.XR;
@@ -45,7 +47,7 @@ public partial class SceneSync : Node
     // Add Node3D nodes to this group to have their transforms synced by relative NodePath.
     [Export] public string PathSyncGroup = "net_sync";
 
-    private static readonly Dictionary<string, Func<Node3D>> _nodeFactories = new()
+    private static readonly System.Collections.Generic.Dictionary<string, Func<Node3D>> _nodeFactories = new()
     {
         ["Box"] = () => { var mesh = new BoxMesh(); var inst = new MeshInstance3D(); inst.Mesh = mesh; return inst; },
         ["Sphere"] = () => { var mesh = new SphereMesh(); var inst = new MeshInstance3D(); inst.Mesh = mesh; return inst; },
@@ -54,14 +56,14 @@ public partial class SceneSync : Node
     private Node _syncRoot = null!;
 
     private int _nextEntityId = 1;
-    private readonly Dictionary<int, Node3D> _entityById = new();
-    private readonly Dictionary<Node3D, int> _idByEntity = new();
-    private readonly Dictionary<int, Transform3D> _lastSentTransform = new();
+    private readonly System.Collections.Generic.Dictionary<int, Node3D> _entityById = new();
+    private readonly System.Collections.Generic.Dictionary<Node3D, int> _idByEntity = new();
+    private readonly System.Collections.Generic.Dictionary<int, Transform3D> _lastSentTransform = new();
 
-    private readonly Dictionary<string, Node3D> _pathEntityByRelPath = new();
-    private readonly Dictionary<string, Transform3D> _lastSentPathTransform = new();
+    private readonly System.Collections.Generic.Dictionary<string, Node3D> _pathEntityByRelPath = new();
+    private readonly System.Collections.Generic.Dictionary<string, Transform3D> _lastSentPathTransform = new();
 
-    private readonly Dictionary<int, string> _spawnKeyById = new();
+    private readonly System.Collections.Generic.Dictionary<int, string> _spawnKeyById = new();
 
     private double _sendAccumulator;
 
@@ -77,74 +79,44 @@ public partial class SceneSync : Node
         return false;
     }
 
-    private Vector3? GetVector3FromProps(Godot.Collections.Dictionary props, string key)
+    private static string VariantToString(Variant v)
     {
-        if (props == null)
-            return null;
-
-        try
-        {
-            if (props.ContainsKey(key))
-            {
-                var val = props[key];
-                try
-                {
-                    return (Vector3)val;
-                }
-                catch { }
-
-                try
-                {
-                    var arr = (Godot.Collections.Array)val;
-                    if (arr != null && arr.Count >= 3)
-                        return new Vector3(Convert.ToSingle(arr[0]), Convert.ToSingle(arr[1]), Convert.ToSingle(arr[2]));
-                }
-                catch { }
-            }
-
-            if (props.ContainsKey(key + "_x") && props.ContainsKey(key + "_y") && props.ContainsKey(key + "_z"))
-            {
-                return new Vector3(
-                    Convert.ToSingle(props[key + "_x"]),
-                    Convert.ToSingle(props[key + "_y"]),
-                    Convert.ToSingle(props[key + "_z"]));
-            }
-        }
-        catch (Exception)
-        {
-        }
-
-        return null;
+        try { return v.AsString(); }
+        catch { return v.ToString(); }
     }
 
-    private float? GetFloatFromProps(Godot.Collections.Dictionary props, string key)
+    private static bool TryGetVector3(Godot.Collections.Dictionary dict, string key, out Vector3 value)
     {
-        if (props == null)
-            return null;
+        value = default;
+        if (!dict.ContainsKey(key))
+            return false;
 
         try
         {
-            if (props.ContainsKey(key))
-            {
-                var val = props[key];
-                try
-                {
-                    return (float)val;
-                }
-                catch { }
-
-                try
-                {
-                    return Convert.ToSingle(val);
-                }
-                catch { }
-            }
+            value = ((Variant)dict[key]).AsVector3();
+            return true;
         }
-        catch (Exception)
+        catch
         {
+            return false;
         }
+    }
 
-        return null;
+    private static bool TryGetArray(Godot.Collections.Dictionary dict, string key, out Godot.Collections.Array value)
+    {
+        value = default!;
+        if (!dict.ContainsKey(key))
+            return false;
+
+        try
+        {
+            value = ((Variant)dict[key]).AsGodotArray();
+            return value != null;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public int[] GetEntityIds()
@@ -223,6 +195,39 @@ public partial class SceneSync : Node
 
         // Refresh in case the server added path-synced nodes since boot.
         ReindexPathSyncedNodes();
+
+        // One-shot mirror of static hierarchy for late join.
+        if (MirrorHierarchyOnJoin)
+        {
+            try
+            {
+                // Prefer mirroring children under sync root rather than the sync root itself.
+                // If you want to mirror a single generated root (like HomeWorld.GenerateWorld()),
+                // put it under a dedicated SyncRootPath container.
+                var container = new Node3D { Name = "MirroredRoot" };
+                foreach (var child in _syncRoot.GetChildren())
+                {
+                    if (child is not Node ch)
+                        continue;
+                    if (ch is not Node3D)
+                        continue;
+                    var typeName = ch.GetType().Name;
+                    if (!_mirroredTypeAllowList.Contains(typeName))
+                        continue;
+                    container.AddChild(ch.Duplicate() as Node);
+                }
+
+                // Serialize from the temporary container so we don't leak SceneSync/NetRoot, etc.
+                var snapshot = SerializeMirroredSubtree(container);
+                container.QueueFree();
+
+                RpcId(peerId, nameof(ClientApplyMirroredHierarchy), snapshot);
+            }
+            catch (Exception e)
+            {
+                GD.PrintErr($"MirrorHierarchyOnJoin failed: {e.Message}");
+            }
+        }
 
         // Snapshot: tell the joining client about all existing entities.
         foreach (var kv in _entityById)
@@ -396,6 +401,40 @@ public partial class SceneSync : Node
         }
     }
 
+    private Vector3? GetVector3FromProps(Dictionary props, string key)
+    {
+        if (props.ContainsKey(key))
+        {
+            try
+            {
+                return ((Variant)props[key]).AsVector3();
+            }
+            catch
+            {
+                GD.PrintErr($"GetVector3FromProps: invalid Vector3 for key '{key}'");
+            }
+        }
+
+        return null;
+    }
+
+    private float? GetFloatFromProps(Dictionary props, string key)
+    {
+        if (props.ContainsKey(key))
+        {
+            try
+            {
+                return ((Variant)props[key]).AsSingle();
+            }
+            catch
+            {
+                GD.PrintErr($"GetFloatFromProps: invalid float for key '{key}'");
+            }
+        }
+
+        return null;
+    }
+
     private void UnregisterEntity(int entityId)
     {
         if (_entityById.TryGetValue(entityId, out var node))
@@ -497,6 +536,427 @@ public partial class SceneSync : Node
             return;
 
         node.GlobalTransform = transform;
+    }
+
+    // --- Static hierarchy mirroring (one-shot snapshot on join) ---
+    [Export] public bool MirrorHierarchyOnJoin = true;
+
+    // Allow-list of node types we will instantiate when mirroring hierarchy.
+    // Keep this tight for safety.
+    private static readonly HashSet<string> _mirroredTypeAllowList = new(StringComparer.Ordinal)
+    {
+        nameof(Node3D),
+        nameof(Marker3D),
+
+        // Common gameplay nodes
+        nameof(StaticBody3D),
+        nameof(RigidBody3D),
+        nameof(CharacterBody3D),
+        nameof(Area3D),
+
+        // Rendering
+        nameof(MeshInstance3D),
+        nameof(CpuParticles3D),
+        nameof(GpuParticles3D),
+
+        // Lighting
+        nameof(OmniLight3D),
+        nameof(SpotLight3D),
+        nameof(DirectionalLight3D),
+
+        // Collisions
+        nameof(CollisionShape3D),
+        nameof(CollisionPolygon3D),
+
+        // CSG (common for prototyping/world building)
+        nameof(CsgBox3D),
+        nameof(CsgSphere3D),
+        nameof(CsgCylinder3D),
+        nameof(CsgTorus3D),
+    };
+
+    private Godot.Collections.Dictionary SerializeMirroredSubtree(Node node)
+    {
+        // Dictionary layout:
+        // {
+        //   "t": "Node3D" | "CsgBox3D",
+        //   "n": "Name",
+        //   "p": Vector3 (position),
+        //   "r": Vector3 (rotation),
+        //   "s": Vector3 (scale),
+        //   "c": Array<Dictionary> children
+        // }
+
+        var dict = new Godot.Collections.Dictionary();
+        dict["t"] = node.GetType().Name;
+        dict["n"] = node.Name;
+
+        if (node is Node3D n3d)
+        {
+            dict["p"] = n3d.Position;
+            dict["r"] = n3d.Rotation;
+            dict["s"] = n3d.Scale;
+            dict["v"] = n3d.Visible;
+        }
+
+        // Minimal per-type properties (safe + common)
+        if (node is MeshInstance3D mi)
+        {
+            // Resource references are safe to send as-is (they'll arrive as Variants).
+            dict["mesh"] = mi.Mesh;
+            dict["mat0"] = mi.GetSurfaceOverrideMaterial(0);
+        }
+
+        if (node is VisualInstance3D vi)
+        {
+            dict["layers"] = vi.Layers;
+        }
+
+        if (node is Light3D light)
+        {
+            dict["lc"] = light.LightColor;
+            dict["le"] = light.LightEnergy;
+            dict["sh"] = light.ShadowEnabled;
+        }
+
+        if (node is CollisionShape3D cs)
+        {
+            dict["shape"] = cs.Shape;
+            dict["disabled"] = cs.Disabled;
+        }
+
+        if (node is CollisionPolygon3D cp)
+        {
+            dict["depth"] = cp.Depth;
+            dict["polygon"] = cp.Polygon;
+            dict["disabled"] = cp.Disabled;
+        }
+
+        // CSG primitives
+        if (node is CsgPrimitive3D csg)
+        {
+            dict["csg_op"] = (int)csg.Operation;
+            dict["csg_snap"] = csg.Snap;
+            // dict["csg_smooth"] = csg.SmoothFaces;
+            dict["csg_mat"] = csg.MaterialOverride;
+        }
+
+        if (node is CsgBox3D csgBox)
+            dict["size"] = csgBox.Size;
+        if (node is CsgSphere3D csgSphere)
+            dict["radius"] = csgSphere.Radius;
+        if (node is CsgCylinder3D csgCyl)
+        {
+            dict["radius"] = csgCyl.Radius;
+            dict["height"] = csgCyl.Height;
+        }
+        // if (node is CsgCapsule3D csgCap)
+        // {
+        //     dict["radius"] = csgCap.Radius;
+        //     dict["height"] = csgCap.Height;
+        // }
+        if (node is CsgTorus3D csgTor)
+        {
+            dict["inner_radius"] = csgTor.InnerRadius;
+            dict["outer_radius"] = csgTor.OuterRadius;
+        }
+
+        var children = new Godot.Collections.Array<Godot.Collections.Dictionary>();
+        foreach (var child in node.GetChildren())
+        {
+            if (child is not Node ch)
+                continue;
+
+            // Only mirror spatial-ish nodes.
+            if (ch is not Node3D)
+                continue;
+
+            var typeName = ch.GetType().Name;
+            if (!_mirroredTypeAllowList.Contains(typeName))
+                continue;
+
+            children.Add(SerializeMirroredSubtree(ch));
+        }
+
+        dict["c"] = children;
+        return dict;
+    }
+
+    private static bool TryGetBool(Godot.Collections.Dictionary dict, string key, out bool value)
+    {
+        value = default;
+        if (!dict.ContainsKey(key))
+            return false;
+
+        try
+        {
+            value = ((Variant)dict[key]).AsBool();
+            return true;
+        }
+        catch { return false; }
+    }
+
+    private static bool TryGetInt(Godot.Collections.Dictionary dict, string key, out int value)
+    {
+        value = default;
+        if (!dict.ContainsKey(key))
+            return false;
+
+        try
+        {
+            value = (int)((Variant)dict[key]).AsInt64();
+            return true;
+        }
+        catch { return false; }
+    }
+
+    private static bool TryGetFloat(Godot.Collections.Dictionary dict, string key, out float value)
+    {
+        value = default;
+        if (!dict.ContainsKey(key))
+            return false;
+
+        try
+        {
+            value = ((Variant)dict[key]).AsSingle();
+            return true;
+        }
+        catch { return false; }
+    }
+
+    private static bool TryGetColor(Godot.Collections.Dictionary dict, string key, out Color value)
+    {
+        value = default;
+        if (!dict.ContainsKey(key))
+            return false;
+
+        try
+        {
+            value = ((Variant)dict[key]).AsColor();
+            return true;
+        }
+        catch { return false; }
+    }
+
+    private static bool TryGetUInt(Godot.Collections.Dictionary dict, string key, out uint value)
+    {
+        value = default;
+        if (!dict.ContainsKey(key))
+            return false;
+
+        try
+        {
+            value = (uint)((Variant)dict[key]).AsUInt64();
+            return true;
+        }
+        catch { return false; }
+    }
+
+    private static bool TryGetResource<T>(Godot.Collections.Dictionary dict, string key, out T? value) where T : Resource
+    {
+        value = null;
+        if (!dict.ContainsKey(key))
+            return false;
+
+        try
+        {
+            value = ((Variant)dict[key]).AsGodotObject() as T;
+            return value != null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private Node InstantiateMirroredNode(Godot.Collections.Dictionary snapshot)
+    {
+        var typeName = snapshot.ContainsKey("t") ? VariantToString((Variant)snapshot["t"]) : "";
+        var name = snapshot.ContainsKey("n") ? VariantToString((Variant)snapshot["n"]) : "";
+
+        if (string.IsNullOrWhiteSpace(typeName) || !_mirroredTypeAllowList.Contains(typeName))
+            throw new InvalidOperationException($"MirrorHierarchy: type '{typeName}' not allowed");
+
+        Node node = typeName switch
+        {
+            nameof(Node3D) => new Node3D(),
+            nameof(Marker3D) => new Marker3D(),
+
+            nameof(StaticBody3D) => new StaticBody3D(),
+            nameof(RigidBody3D) => new RigidBody3D(),
+            nameof(CharacterBody3D) => new CharacterBody3D(),
+            nameof(Area3D) => new Area3D(),
+
+            nameof(MeshInstance3D) => new MeshInstance3D(),
+            nameof(CpuParticles3D) => new CpuParticles3D(),
+            nameof(GpuParticles3D) => new GpuParticles3D(),
+
+            nameof(OmniLight3D) => new OmniLight3D(),
+            nameof(SpotLight3D) => new SpotLight3D(),
+            nameof(DirectionalLight3D) => new DirectionalLight3D(),
+
+            nameof(CollisionShape3D) => new CollisionShape3D(),
+            nameof(CollisionPolygon3D) => new CollisionPolygon3D(),
+
+            nameof(CsgBox3D) => new CsgBox3D(),
+            nameof(CsgSphere3D) => new CsgSphere3D(),
+            nameof(CsgCylinder3D) => new CsgCylinder3D(),
+            // nameof(CsgCapsule3D) => new CsgCapsule3D(),
+            nameof(CsgTorus3D) => new CsgTorus3D(),
+
+            _ => throw new InvalidOperationException($"MirrorHierarchy: unsupported type '{typeName}'"),
+        };
+
+        if (!string.IsNullOrWhiteSpace(name))
+            node.Name = name;
+
+        if (node is Node3D n3d)
+        {
+            if (TryGetVector3(snapshot, "p", out var p))
+                n3d.Position = p;
+            if (TryGetVector3(snapshot, "r", out var r))
+                n3d.Rotation = r;
+            if (TryGetVector3(snapshot, "s", out var s))
+                n3d.Scale = s;
+            if (TryGetBool(snapshot, "v", out var vis))
+                n3d.Visible = vis;
+        }
+
+        if (node is VisualInstance3D vi)
+        {
+            if (TryGetUInt(snapshot, "layers", out var layers))
+                vi.Layers = layers;
+        }
+
+        if (node is MeshInstance3D mi)
+        {
+            if (TryGetResource<Mesh>(snapshot, "mesh", out var mesh))
+                mi.Mesh = mesh;
+            if (TryGetResource<Material>(snapshot, "mat0", out var mat0))
+                mi.SetSurfaceOverrideMaterial(0, mat0);
+        }
+
+        if (node is Light3D light)
+        {
+            if (TryGetColor(snapshot, "lc", out var c))
+                light.LightColor = c;
+            if (TryGetFloat(snapshot, "le", out var e))
+                light.LightEnergy = e;
+            // if (TryGetFloat(snapshot, "lr", out var range))
+                // light.LightRange = range;
+            if (TryGetBool(snapshot, "sh", out var sh))
+                light.ShadowEnabled = sh;
+        }
+
+        if (node is CollisionShape3D cs)
+        {
+            if (TryGetResource<Shape3D>(snapshot, "shape", out var shape))
+                cs.Shape = shape;
+            if (TryGetBool(snapshot, "disabled", out var disabled))
+                cs.Disabled = disabled;
+        }
+
+        if (node is CollisionPolygon3D cp)
+        {
+            if (TryGetFloat(snapshot, "depth", out var depth))
+                cp.Depth = depth;
+            if (snapshot.ContainsKey("polygon"))
+            {
+                try { cp.Polygon = ((Variant)snapshot["polygon"]).AsVector2Array(); }
+                catch { }
+            }
+            if (TryGetBool(snapshot, "disabled", out var disabled))
+                cp.Disabled = disabled;
+        }
+
+        if (node is CsgPrimitive3D csg)
+        {
+            if (TryGetInt(snapshot, "csg_op", out var op))
+                csg.Operation = (CsgShape3D.OperationEnum)op;
+            if (TryGetFloat(snapshot, "csg_snap", out var snap))
+                csg.Snap = snap;
+            // if (TryGetBool(snapshot, "csg_smooth", out var smooth))
+                // csg.SmoothFaces = smooth;
+            if (TryGetResource<Material>(snapshot, "csg_mat", out var mat))
+                csg.MaterialOverride = mat;
+        }
+
+        if (node is CsgBox3D csgBox)
+        {
+            if (TryGetVector3(snapshot, "size", out var size))
+                csgBox.Size = size;
+        }
+        if (node is CsgSphere3D csgSphere)
+        {
+            if (TryGetFloat(snapshot, "radius", out var radius))
+                csgSphere.Radius = radius;
+        }
+        if (node is CsgCylinder3D csgCyl)
+        {
+            if (TryGetFloat(snapshot, "radius", out var radius))
+                csgCyl.Radius = radius;
+            if (TryGetFloat(snapshot, "height", out var height))
+                csgCyl.Height = height;
+        }
+        // if (node is CsgCapsule3D csgCap)
+        // {
+        //     if (TryGetFloat(snapshot, "radius", out var radius))
+        //         csgCap.Radius = radius;
+        //     if (TryGetFloat(snapshot, "height", out var height))
+        //         csgCap.Height = height;
+        // }
+        if (node is CsgTorus3D csgTor)
+        {
+            if (TryGetFloat(snapshot, "inner_radius", out var inner))
+                csgTor.InnerRadius = inner;
+            if (TryGetFloat(snapshot, "outer_radius", out var outer))
+                csgTor.OuterRadius = outer;
+        }
+
+        foreach (var childSnap in snapshot.Values)
+        {
+            Node child;
+            try { child = InstantiateMirroredNode(childSnap.AsGodotDictionary()); }
+            catch (Exception e)
+            {
+                GD.PrintErr($"InstantiateMirroredNode child error: {e.Message}");
+                continue;
+            }
+
+            node.AddChild(child);
+        }
+
+        return node;
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority)]
+    private void ClientApplyMirroredHierarchy(Godot.Collections.Dictionary snapshot)
+    {
+        // Client-only: rebuild the mirrored hierarchy under _syncRoot.
+        // We only do this once; if you need incremental changes later, add patch messages.
+        if (Multiplayer.IsServer())
+            return;
+
+        // Clear previous children (but keep SceneSync and any other non-mirrored essentials if SyncRoot is self).
+        // If SyncRootPath points to a dedicated container node, this is safe.
+        foreach (var child in _syncRoot.GetChildren())
+        {
+            if (child is Node n)
+                n.QueueFree();
+        }
+
+        try
+        {
+            var rootNode = InstantiateMirroredNode(snapshot);
+            _syncRoot.AddChild(rootNode);
+        }
+        catch (Exception e)
+        {
+            GD.PrintErr($"ClientApplyMirroredHierarchy error: {e.Message}");
+        }
+
+        // Reindex any path-synced nodes that now exist.
+        ReindexPathSyncedNodes();
     }
 
     /// <summary>

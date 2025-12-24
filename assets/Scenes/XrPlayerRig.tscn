@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://playerrig"]
 
-[ext_resource type="Script" path="res://CSharp/XR/XrPlayerRig.cs" id="rig_script"]
+[ext_resource type="Script" uid="uid://cacaam07jy5bf" path="res://CSharp/XR/XrPlayerRig.cs" id="rig_script"]
 
 [node name="XrPlayerRig" type="XROrigin3D"]
 script = ExtResource("rig_script")

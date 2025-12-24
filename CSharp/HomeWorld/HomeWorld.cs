@@ -9,8 +9,9 @@ public partial class HomeWorld : Node3D
 {
     public override void _Ready()
     {
-        // var world = GenerateWorld();
-        // AddChild(world);
+        var world = GenerateWorld();
+        world.AddToGroup("net_sync");
+        AddChild(world);
         AddToGroup("net_sync");
     }
     public static Node GenerateWorld()
