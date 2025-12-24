@@ -10,8 +10,10 @@ config_version=5
 
 [application]
 
-config/name="trakction"
+config/name="Tracktion"
+config/version="V1.0"
 run/main_scene="uid://bjbth8k4r3gn2"
+run/enable_alt_space_menu=true
 config/features=PackedStringArray("4.5", "C#")
 config/icon="res://assets/icon.svg"
 
@@ -19,17 +21,25 @@ config/icon="res://assets/icon.svg"
 
 general/3d_panning_strength=1.45
 
-[autoload]
+[collada]
 
-OpenXRAuto="res://Gdscript/openxr_autostart.gd"
+use_ambient=true
+
+[compression]
+
+formats/zstd/long_distance_matching=true
 
 [dotnet]
 
 project/assembly_name="trakction"
 
+[editor]
+
+script/search_in_file_extensions=PackedStringArray("gd", "cs", "gdshader", "oir")
+
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/raytraced_audio/plugin.cfg")
+enabled=PackedStringArray("res://addons/gdterm/plugin.cfg", "res://addons/raytraced_audio/plugin.cfg")
 
 [input]
 
@@ -65,6 +75,7 @@ spawn_panel={
 
 [physics]
 
+3d/run_on_separate_thread=true
 3d/physics_engine="Jolt Physics"
 
 [raytraced_audio]
@@ -72,6 +83,11 @@ spawn_panel={
 reverb_bus=&"RaytracedReverb"
 ambient_bus=&"RaytracedAmbient"
 
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true
+
 [xr]
 
 openxr/enabled=true
+openxr/extensions/hand_tracking=true

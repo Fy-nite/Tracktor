@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://v3q1vcfvl02b"
 path.s3tc="res://.godot/imported/right_hand_file3.jpg-72fdfaf64d2f7de735b89717c802f65d.s3tc.ctex"
+path.etc2="res://.godot/imported/right_hand_file3.jpg-72fdfaf64d2f7de735b89717c802f65d.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://addons/xr-kit/physics-movement/assets/valve_hand_models/right_hand_file3.jpg"
-dest_files=["res://.godot/imported/right_hand_file3.jpg-72fdfaf64d2f7de735b89717c802f65d.s3tc.ctex"]
+dest_files=["res://.godot/imported/right_hand_file3.jpg-72fdfaf64d2f7de735b89717c802f65d.s3tc.ctex", "res://.godot/imported/right_hand_file3.jpg-72fdfaf64d2f7de735b89717c802f65d.etc2.ctex"]
 
 [params]
 

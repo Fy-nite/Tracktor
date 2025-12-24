@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://33f8rp4dhlqq"
 path.s3tc="res://.godot/imported/vr_glove_color_red.jpg-eed85615a8b6e21a26cf994294620cd8.s3tc.ctex"
+path.etc2="res://.godot/imported/vr_glove_color_red.jpg-eed85615a8b6e21a26cf994294620cd8.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://addons/xr-kit/physics-movement/assets/valve_hand_models/textures/vr_glove_color_red.jpg"
-dest_files=["res://.godot/imported/vr_glove_color_red.jpg-eed85615a8b6e21a26cf994294620cd8.s3tc.ctex"]
+dest_files=["res://.godot/imported/vr_glove_color_red.jpg-eed85615a8b6e21a26cf994294620cd8.s3tc.ctex", "res://.godot/imported/vr_glove_color_red.jpg-eed85615a8b6e21a26cf994294620cd8.etc2.ctex"]
 
 [params]
 
