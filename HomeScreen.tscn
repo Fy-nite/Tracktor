@@ -1,12 +1,12 @@
 [gd_scene load_steps=8 format=3 uid="uid://bjbth8k4r3gn2"]
 
-[ext_resource type="Script" uid="uid://bvttos0kiefax" path="res://CSharp/Net/NetDebugLabel.cs" id="1_ksj1l"]
-[ext_resource type="Script" uid="uid://o1t11yd8dec0" path="res://CSharp/Net/NetConnectPanel.cs" id="2_3272g"]
-[ext_resource type="Script" uid="uid://dd4net5bhn11e" path="res://CSharp/Net/NetRoot.cs" id="3_4d5n3"]
+[ext_resource type="Script" uid="uid://bohtaxmyjxk0j" path="res://CSharp/Net/NetDebugLabel.cs" id="1_ksj1l"]
+[ext_resource type="Script" uid="uid://d3uf2ku0bl441" path="res://CSharp/Net/NetConnectPanel.cs" id="2_3272g"]
+[ext_resource type="Script" uid="uid://xp08f3vh748a" path="res://CSharp/Net/NetRoot.cs" id="3_4d5n3"]
 [ext_resource type="PackedScene" uid="uid://cpj7vtj6gr3tv" path="res://Gdscript/player.tscn" id="3_wrh72"]
-[ext_resource type="Script" uid="uid://b0gx56bn2n0u5" path="res://CSharp/Net/SceneSync.cs" id="4_wrh72"]
+[ext_resource type="Script" uid="uid://bp0vpmn3sh2y7" path="res://CSharp/Net/SceneSync.cs" id="4_wrh72"]
 [ext_resource type="PackedScene" uid="uid://chcni4ntjdjpv" path="res://assets/Scenes/MainGame.tscn" id="5_maingame"]
-[ext_resource type="Script" uid="uid://4hh1ncgg20pu" path="res://CSharp/HomeScreen.cs" id="8_homescreen"]
+[ext_resource type="Script" uid="uid://bswn7axotlg4l" path="res://CSharp/HomeScreen.cs" id="8_homescreen"]
 
 [node name="HomeScreen" type="Node"]
 script = ExtResource("8_homescreen")

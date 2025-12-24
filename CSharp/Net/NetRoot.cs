@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -9,140 +9,140 @@ using NVec3 = System.Numerics.Vector3;
 
 public partial class NetRoot : Node
 {
-    [Export] public int Port = 7777;
+	[Export] public int Port = 7777;
 
-    public bool IsServerMode { get; private set; }
-    public string RemoteHost { get; private set; } = "127.0.0.1";
-    public int PortInUse { get; private set; }
-    public string ConnectionStatus { get; private set; } = "Offline";
+	public bool IsServerMode { get; private set; }
+	public string RemoteHost { get; private set; } = "127.0.0.1";
+	public int PortInUse { get; private set; }
+	public string ConnectionStatus { get; private set; } = "Offline";
 
-    private readonly Dictionary<long, int> _playerEntityByPeer = new();
+	private readonly Dictionary<long, int> _playerEntityByPeer = new();
 
-    private const float MaxAllowedPositionMagnitude = float.MaxValue;
+	private const float MaxAllowedPositionMagnitude = float.MaxValue;
 
-    private SceneSync? _sceneSync;
+	private SceneSync? _sceneSync;
 
-    private ServerRepl? _repl;
+	private ServerRepl? _repl;
 
-    public override void _Ready()
-    {
-        AddToGroup("net_root");
+	public override void _Ready()
+	{
+		AddToGroup("net_root");
 
-        Multiplayer.PeerConnected += OnPeerConnected;
-        Multiplayer.PeerDisconnected += OnPeerDisconnected;
-        Multiplayer.ConnectedToServer += () =>
-        {
-            ConnectionStatus = "Connected";
-            GD.Print("Connected to server");
-        };
-        Multiplayer.ConnectionFailed += () =>
-        {
-            ConnectionStatus = "ConnectionFailed";
-            GD.PrintErr("Connection failed");
-        };
+		Multiplayer.PeerConnected += OnPeerConnected;
+		Multiplayer.PeerDisconnected += OnPeerDisconnected;
+		Multiplayer.ConnectedToServer += () =>
+		{
+			ConnectionStatus = "Connected";
+			GD.Print("Connected to server");
+		};
+		Multiplayer.ConnectionFailed += () =>
+		{
+			ConnectionStatus = "ConnectionFailed";
+			GD.PrintErr("Connection failed");
+		};
 
-        var args = OS.GetCmdlineArgs().ToList();
+		var args = OS.GetCmdlineArgs().ToList();
 
-        var wantsServer = args.Contains("--server");
-        var connectIndex = args.IndexOf("--connect");
-        var wantsClient = connectIndex >= 0;
+		var wantsServer = args.Contains("--server");
+		var connectIndex = args.IndexOf("--connect");
+		var wantsClient = connectIndex >= 0;
 
-        var host = "127.0.0.1";
-        var port = Port;
+		var host = "127.0.0.1";
+		var port = Port;
 
-        if (wantsClient && connectIndex + 1 < args.Count)
-            host = args[connectIndex + 1];
+		if (wantsClient && connectIndex + 1 < args.Count)
+			host = args[connectIndex + 1];
 
-        var portIndex = args.IndexOf("--port");
-        if (portIndex >= 0 && portIndex + 1 < args.Count && int.TryParse(args[portIndex + 1], out var parsedPort))
-            port = parsedPort;
+		var portIndex = args.IndexOf("--port");
+		if (portIndex >= 0 && portIndex + 1 < args.Count && int.TryParse(args[portIndex + 1], out var parsedPort))
+			port = parsedPort;
 
-        RemoteHost = host;
-        PortInUse = port;
+		RemoteHost = host;
+		PortInUse = port;
 
-        // Important: Only autostart when explicitly requested.
-        // if (wantsServer)
-        // {
-        //     IsServerMode = true;
-        //     StartServer(port);
+		// Important: Only autostart when explicitly requested.
+		// if (wantsServer)
+		// {
+		//     IsServerMode = true;
+		//     StartServer(port);
 
-            // Start REPL automatically for headless/dedicated server runs, or when explicitly requested.
-            var wantsRepl = args.Contains("--repl");
-            var isHeadless = DisplayServer.GetName().ToString().Equals("headless", StringComparison.OrdinalIgnoreCase)
-                || OS.HasFeature("dedicated_server");
+			// Start REPL automatically for headless/dedicated server runs, or when explicitly requested.
+			var wantsRepl = args.Contains("--repl");
+			var isHeadless = DisplayServer.GetName().ToString().Equals("headless", StringComparison.OrdinalIgnoreCase)
+				|| OS.HasFeature("dedicated_server");
 
-            if (wantsRepl || isHeadless)
-            {
-                _repl = new ServerRepl { Name = "ServerRepl" };
-                AddChild(_repl);
-            }
-        // }
-        // else if (wantsClient)
-        // {
-        //     IsServerMode = false;
-        //     StartClient(host, port);
-        // }
-        // else
-        // {
-        //     IsServerMode = false;
-        //     ConnectionStatus = "Offline";
-        // }
-        if (OS.HasFeature("Server"))
-        {
-            // Code for headless server mode
-            GD.Print("Running in headless server mode.");
-            IsServerMode = true;
-            StartServer(port);
-        }
-        else
-        {
-            // Code for client/GUI mode
-            GD.Print("Running in client mode.");
-            IsServerMode = false;
-            ConnectionStatus = "Offline";
-        }
+			if (wantsRepl || isHeadless)
+			{
+				_repl = new ServerRepl { Name = "ServerRepl" };
+				AddChild(_repl);
+			}
+		// }
+		// else if (wantsClient)
+		// {
+		//     IsServerMode = false;
+		//     StartClient(host, port);
+		// }
+		// else
+		// {
+		//     IsServerMode = false;
+		//     ConnectionStatus = "Offline";
+		// }
+		if (OS.HasFeature("Server"))
+		{
+			// Code for headless server mode
+			GD.Print("Running in headless server mode.");
+			IsServerMode = true;
+			StartServer(port);
+		}
+		else
+		{
+			// Code for client/GUI mode
+			GD.Print("Running in client mode.");
+			IsServerMode = false;
+			ConnectionStatus = "Offline";
+		}
 
-        _sceneSync = GetNodeOrNull<SceneSync>("SceneSync");
-        if (_sceneSync == null)
-            GD.PushWarning("NetRoot: missing SceneSync child; player spawning will not work.");
-    }
+		_sceneSync = GetNodeOrNull<SceneSync>("SceneSync");
+		if (_sceneSync == null)
+			GD.PushWarning("NetRoot: missing SceneSync child; player spawning will not work.");
+	}
 
-    public int ServerSpawnEntity(string packedScenePath, Vector3 position)
-    {
-        if (!Multiplayer.IsServer())
-        {
-            GD.PrintErr("ServerSpawnEntity: server-only");
-            return 0;
-        }
+	public int ServerSpawnEntity(string packedScenePath, Vector3 position)
+	{
+		if (!Multiplayer.IsServer())
+		{
+			GD.PrintErr("ServerSpawnEntity: server-only");
+			return 0;
+		}
 
-        if (_sceneSync == null)
-        {
-            GD.PrintErr("ServerSpawnEntity: missing SceneSync");
-            return 0;
-        }
+		if (_sceneSync == null)
+		{
+			GD.PrintErr("ServerSpawnEntity: missing SceneSync");
+			return 0;
+		}
 
-        return _sceneSync.ServerSpawn(packedScenePath, new Transform3D(Basis.Identity, position));
-    }
+		return _sceneSync.ServerSpawn(packedScenePath, new Transform3D(Basis.Identity, position));
+	}
 
-    public int ServerSpawn(string spawnKey, Vector3 position, Godot.Collections.Dictionary? props = null)
-    {
-        if (!Multiplayer.IsServer())
-        {
-            GD.PrintErr("ServerSpawn: server-only");
-            return 0;
-        }
+	public int ServerSpawn(string spawnKey, Vector3 position, Godot.Collections.Dictionary? props = null)
+	{
+		if (!Multiplayer.IsServer())
+		{
+			GD.PrintErr("ServerSpawn: server-only");
+			return 0;
+		}
 
-        if (_sceneSync == null)
-        {
-            GD.PrintErr("ServerSpawn: missing SceneSync");
-            return 0;
-        }
+		if (_sceneSync == null)
+		{
+			GD.PrintErr("ServerSpawn: missing SceneSync");
+			return 0;
+		}
 
-        return _sceneSync.ServerSpawn(spawnKey, new Transform3D(Basis.Identity, position), null, props);
-    }
+		return _sceneSync.ServerSpawn(spawnKey, new Transform3D(Basis.Identity, position), null, props);
+	}
 
-    /// <summary>
-    /// Server helper to spawn a simple Box primitive above the server's player entity.
+	/// <summary>
+	/// Server helper to spawn a simple Box primitive above the server's player entity.
     /// Visible action for a server UI button.
     /// </summary>
     public void ServerSpawnBoxAboveSelf()
@@ -168,7 +168,7 @@ public partial class NetRoot : Node
 
         if (!_sceneSync.TryGetEntityNode(entityId, out var node))
         {
-            GD.PrintErr("ServerSpawnBoxAboveSelf: couldn't find player node");
+			GD.PrintErr("ServerSpawnBoxAboveSelf: couldn't find player node");
             return;
         }
 
@@ -176,19 +176,19 @@ public partial class NetRoot : Node
 
         var props = new Godot.Collections.Dictionary
         {
-            { "size", new Vector3(0.5f, 0.5f, 0.5f) },
-            { "color", new Color(0.2f, 0.6f, 1.0f) }
+			{ "size", new Vector3(0.5f, 0.5f, 0.5f) },
+			{ "color", new Color(0.2f, 0.6f, 1.0f) }
         };
 
-        ServerSpawn("Box", spawnPos, props);
-        GD.Print("ServerSpawnBoxAboveSelf: spawned box above server player at " + spawnPos);
+		ServerSpawn("Box", spawnPos, props);
+		GD.Print("ServerSpawnBoxAboveSelf: spawned box above server player at " + spawnPos);
     }
 
     public void ServerDespawnEntity(int entityId)
     {
         if (!Multiplayer.IsServer())
         {
-            GD.PrintErr("ServerDespawnEntity: server-only");
+			GD.PrintErr("ServerDespawnEntity: server-only");
             return;
         }
 
@@ -199,16 +199,16 @@ public partial class NetRoot : Node
     {
         if (_sceneSync == null)
         {
-            GD.Print("No SceneSync.");
+			GD.Print("No SceneSync.");
             return;
         }
 
         var ids = _sceneSync.GetEntityIds();
-        GD.Print($"Entities: {ids.Length}");
+		GD.Print($"Entities: {ids.Length}");
         foreach (var id in ids)
         {
             if (_sceneSync.TryGetEntityNode(id, out var node))
-                GD.Print($"  {id}: {node.Name} ({node.SceneFilePath}) pos={node.GlobalPosition}");
+				GD.Print($"  {id}: {node.Name} ({node.SceneFilePath}) pos={node.GlobalPosition}");
         }
     }
 
@@ -238,11 +238,11 @@ public partial class NetRoot : Node
         }
         catch (Exception ex)
         {
-            GD.PrintErr($"StopNetworking error: {ex.Message}");
+			GD.PrintErr($"StopNetworking error: {ex.Message}");
         }
 
         Multiplayer.MultiplayerPeer = null;
-        ConnectionStatus = "Offline";
+		ConnectionStatus = "Offline";
 
         _playerEntityByPeer.Clear();
         _sceneSync?.ClearSpawnedEntities(freeNodes: true);
@@ -256,18 +256,18 @@ public partial class NetRoot : Node
                 var root = GetTree()?.Root;
                 if (root != null)
                 {
-                    var mainGame = root.GetNodeOrNull<Node>("MainGame");
+					var mainGame = root.GetNodeOrNull<Node>("MainGame");
                     if (mainGame != null)
                     {
                         mainGame.QueueFree();
-                        GD.Print("StopNetworking: freed MainGame node.");
+						GD.Print("StopNetworking: freed MainGame node.");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            GD.PrintErr($"StopNetworking cleanup error: {ex.Message}");
+			GD.PrintErr($"StopNetworking cleanup error: {ex.Message}");
         }
     }
 
@@ -276,8 +276,8 @@ public partial class NetRoot : Node
         var peer = new ENetMultiplayerPeer();
         peer.CreateServer(port, maxClients: 32);
         Multiplayer.MultiplayerPeer = peer;
-        ConnectionStatus = "Listening";
-        GD.Print($"Server listening on {port}");
+		ConnectionStatus = "Listening";
+		GD.Print($"Server listening on {port}");
 
         // Spawn server's own player (peerId=1) so you can test in non-headless too.
         if (_sceneSync != null)
@@ -289,13 +289,13 @@ public partial class NetRoot : Node
         var peer = new ENetMultiplayerPeer();
         peer.CreateClient(host, port);
         Multiplayer.MultiplayerPeer = peer;
-        ConnectionStatus = "Connecting";
-        GD.Print($"Client connecting to {host}:{port}");
+		ConnectionStatus = "Connecting";
+		GD.Print($"Client connecting to {host}:{port}");
     }
 
     private void OnPeerConnected(long peerId)
     {
-        GD.Print($"Peer connected: {peerId}");
+		GD.Print($"Peer connected: {peerId}");
 
         if (!Multiplayer.IsServer())
             return;
@@ -321,10 +321,10 @@ public partial class NetRoot : Node
 
                 if (!IsFinite(pos) || pos.Length() > MaxAllowedPositionMagnitude)
                 {
-                    GD.PrintErr($"OnPeerConnected: NOT sending invalid pos for peer {pId} to joining {peerId}: {pos}");
+					GD.PrintErr($"OnPeerConnected: NOT sending invalid pos for peer {pId} to joining {peerId}: {pos}");
                     pos = Vector3.Zero;
                     rot = Vector3.Zero;
-                    GD.PrintErr("also, your not Finite!!!!");
+					GD.PrintErr("also, your not Finite!!!!");
                 }
 
                 RpcId(peerId, nameof(ClientSetPlayerPosition), pId, pos, rot);
@@ -337,7 +337,7 @@ public partial class NetRoot : Node
 
     private void OnPeerDisconnected(long peerId)
     {
-        GD.Print($"Peer disconnected: {peerId}");
+		GD.Print($"Peer disconnected: {peerId}");
 
         if (Multiplayer.IsServer())
         {
@@ -362,14 +362,14 @@ public partial class NetRoot : Node
         // Never derive spawn positions from peerId.
         var spawnIndex = _playerEntityByPeer.Count;
         var spawnPos = new Vector3(spawnIndex * 1.5f, 0, 0);
-        var entityId = _sceneSync.ServerSpawn("res://assets/Scenes/NetPlayer.tscn", new Transform3D(Basis.Identity, spawnPos));
+		var entityId = _sceneSync.ServerSpawn("res://assets/Scenes/NetPlayer.tscn", new Transform3D(Basis.Identity, spawnPos));
         _playerEntityByPeer[peerId] = entityId;
 
         if (_sceneSync.TryGetEntityNode(entityId, out var node) && node is PlayerAvatar avatar)
         {
             avatar.PeerId = peerId;
             avatar.IsLocalPlayer = (Multiplayer.MultiplayerPeer != null && peerId == Multiplayer.GetUniqueId());
-            avatar.Name = $"Player_{peerId}";
+			avatar.Name = $"Player_{peerId}";
         }
     }
 
@@ -387,7 +387,7 @@ public partial class NetRoot : Node
 
         avatar.PeerId = peerId;
         avatar.IsLocalPlayer = (Multiplayer.MultiplayerPeer != null && peerId == Multiplayer.GetUniqueId());
-        avatar.Name = $"Player_{peerId}";
+		avatar.Name = $"Player_{peerId}";
     }
 
     [Rpc(MultiplayerApi.RpcMode.Authority)]
@@ -406,7 +406,7 @@ public partial class NetRoot : Node
         if (!IsFinite(position) || position.Length() > MaxAllowedPositionMagnitude)
         {
             var senderBad = Multiplayer.GetRemoteSenderId();
-            GD.PrintErr($"ServerUpdatePlayerPosition: rejecting out-of-range pos from peer {senderBad}: {position}");
+			GD.PrintErr($"ServerUpdatePlayerPosition: rejecting out-of-range pos from peer {senderBad}: {position}");
             return;
         }
 
@@ -437,7 +437,7 @@ public partial class NetRoot : Node
 
         if (!IsFinite(position) || position.Length() > MaxAllowedPositionMagnitude)
         {
-            GD.PrintErr($"ClientSetPlayerPosition: ignoring out-of-range pos for peer {peerId}: {position}");
+			GD.PrintErr($"ClientSetPlayerPosition: ignoring out-of-range pos for peer {peerId}: {position}");
             return;
         }
 
@@ -487,7 +487,7 @@ public partial class NetRoot : Node
         if (!Multiplayer.IsServer())
             return;
 
-        GD.Print($"Peer {peerId} started VR mode");
+		GD.Print($"Peer {peerId} started VR mode");
 
         // Despawn the regular player avatar
         if (_playerEntityByPeer.TryGetValue(peerId, out var oldEntityId))
@@ -499,7 +499,7 @@ public partial class NetRoot : Node
         // Spawn the VR player rig
         var spawnIndex = _playerEntityByPeer.Count;
         var spawnPos = new Vector3(spawnIndex * 1.5f, 0, 0);
-        var newEntityId = _sceneSync.ServerSpawn("res://Gdscript/player.tscn", new Transform3D(Basis.Identity, spawnPos));
+		var newEntityId = _sceneSync.ServerSpawn("res://Gdscript/player.tscn", new Transform3D(Basis.Identity, spawnPos));
         _playerEntityByPeer[peerId] = newEntityId;
 
         if (_sceneSync.TryGetEntityNode(newEntityId, out var node) && node is XrPlayerRig rig)

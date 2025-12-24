@@ -1,6 +1,6 @@
-﻿namespace Traktor.Core;
+namespace Traktor.Core;
 
 public static class CoreInfo
 {
-    public const string Name = "Traktor.Core";
+	public const string Name = "Traktor.Core";
 }

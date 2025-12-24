@@ -1,11 +1,11 @@
-﻿using System.Reflection;
+using System.Reflection;
 
 namespace Traktor.Core.Utilities;
 
 public class Utilities
 {
-    /// <summary>
-    /// Loads an embedded resource from the assembly's resources.
+	/// <summary>
+	/// Loads an embedded resource from the assembly's resources.
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
