@@ -39,7 +39,7 @@ public partial class PlayerAvatar : CharacterBody3D
     public override void _Ready()
     {
         _net = FindNetRoot(this);
-        
+        AddToGroup("net_sync");
         _ui = (CanvasLayer)GetTree().Root.FindChild("UI");
         if (_ui != null)
             _ui.Visible = true;
