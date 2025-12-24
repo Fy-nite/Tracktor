@@ -18,7 +18,7 @@ public partial class NetRoot : Node
 
     private readonly Dictionary<long, int> _playerEntityByPeer = new();
 
-    private const float MaxAllowedPositionMagnitude = 5000.0f;
+    private const float MaxAllowedPositionMagnitude = float.MaxValue;
 
     private SceneSync? _sceneSync;
 
@@ -124,21 +124,21 @@ public partial class NetRoot : Node
         return _sceneSync.ServerSpawn(packedScenePath, new Transform3D(Basis.Identity, position));
     }
 
-    public int ServerSpawnBuiltin(string nodeType, Godot.Collections.Dictionary props, Vector3 position)
+    public int ServerSpawn(string spawnKey, Vector3 position, Godot.Collections.Dictionary? props = null)
     {
         if (!Multiplayer.IsServer())
         {
-            GD.PrintErr("ServerSpawnBuiltin: server-only");
+            GD.PrintErr("ServerSpawn: server-only");
             return 0;
         }
 
         if (_sceneSync == null)
         {
-            GD.PrintErr("ServerSpawnBuiltin: missing SceneSync");
+            GD.PrintErr("ServerSpawn: missing SceneSync");
             return 0;
         }
 
-        return _sceneSync.ServerSpawnBuiltin(nodeType, props, new Transform3D(Basis.Identity, position));
+        return _sceneSync.ServerSpawn(spawnKey, new Transform3D(Basis.Identity, position), null, props);
     }
 
     /// <summary>
@@ -180,7 +180,7 @@ public partial class NetRoot : Node
             { "color", new Color(0.2f, 0.6f, 1.0f) }
         };
 
-        ServerSpawnBuiltin("Box", props, spawnPos);
+        ServerSpawn("Box", spawnPos, props);
         GD.Print("ServerSpawnBoxAboveSelf: spawned box above server player at " + spawnPos);
     }
 
@@ -248,7 +248,7 @@ public partial class NetRoot : Node
         _sceneSync?.ClearSpawnedEntities(freeNodes: true);
         
         // If we were a client, also clear the main game scene children so the 3D world is removed on disconnect.
-        // Leave the MainGame node itself in place so the UI can re-enter the scene.
+        // Since we refractored, nuke Maingame as our scene hirarchy root is different now.
         try
         {
             if (!IsServerMode)
@@ -259,12 +259,8 @@ public partial class NetRoot : Node
                     var mainGame = root.GetNodeOrNull<Node>("MainGame");
                     if (mainGame != null)
                     {
-                        foreach (var child in mainGame.GetChildren())
-                        {
-                            if (child is Node n && n.IsInsideTree())
-                                n.QueueFree();
-                        }
-                        GD.Print("NetRoot: cleared MainGame children after disconnect.");
+                        mainGame.QueueFree();
+                        GD.Print("StopNetworking: freed MainGame node.");
                     }
                 }
             }
@@ -328,6 +324,7 @@ public partial class NetRoot : Node
                     GD.PrintErr($"OnPeerConnected: NOT sending invalid pos for peer {pId} to joining {peerId}: {pos}");
                     pos = Vector3.Zero;
                     rot = Vector3.Zero;
+                    GD.PrintErr("also, your not Finite!!!!");
                 }
 
                 RpcId(peerId, nameof(ClientSetPlayerPosition), pId, pos, rot);

@@ -16,6 +16,7 @@
       <Compile Include="CSharp\Construction\Spawner.cs" />
       <Compile Include="CSharp\Construction\SpawnerPanelBuilder.cs" />
       <Compile Include="CSharp\Construction\SpawnerPanelToggle.cs" />
+      <Compile Include="CSharp\DashboardGenerator.cs" />
       <Compile Include="CSharp\HomeWorld\HomeWorld.cs" />
       <Compile Include="CSharp\HomeScreen.cs" />
       <Compile Include="CSharp\Net\**\*.cs" />
@@ -27,5 +28,10 @@
 
   <ItemGroup>
     <ProjectReference Include="CSharp\Core\Traktor-Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="CSharp\DashboardGenerator.cs.uid" />
+    <None Include="CSharp\PhysicalUI\Dashboard.cs.uid" />
   </ItemGroup>
 </Project>

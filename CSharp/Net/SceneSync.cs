@@ -2,7 +2,25 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using Trakction.XR;
+// dopn't import thism it doesn't exist.
+// and we already have a different scene for XR players.
+// using Traktion.XR;
+
+
+
+/*
+ *
+ * // Spawn a PackedScene
+int id = sceneSync.ServerSpawn("res://scenes/MyObject.tscn", transform);
+
+// Spawn a built-in box with custom size
+var props = new Godot.Collections.Dictionary { { "size", new Vector3(2, 1, 1) } };
+int id = sceneSync.ServerSpawn("Box", transform, parent, props);
+
+// Register and spawn a custom node
+SceneSync.RegisterNodeFactory("MyCustomNode", () => new MyCustomNode3D());
+int id = sceneSync.ServerSpawn("MyCustomNode", transform);
+ */
 
 /// <summary>
 /// Minimal, server-authoritative scene syncing for Node3D instances.
@@ -27,6 +45,12 @@ public partial class SceneSync : Node
     // Add Node3D nodes to this group to have their transforms synced by relative NodePath.
     [Export] public string PathSyncGroup = "net_sync";
 
+    private static readonly Dictionary<string, Func<Node3D>> _nodeFactories = new()
+    {
+        ["Box"] = () => { var mesh = new BoxMesh(); var inst = new MeshInstance3D(); inst.Mesh = mesh; return inst; },
+        ["Sphere"] = () => { var mesh = new SphereMesh(); var inst = new MeshInstance3D(); inst.Mesh = mesh; return inst; },
+    };
+
     private Node _syncRoot = null!;
 
     private int _nextEntityId = 1;
@@ -36,6 +60,8 @@ public partial class SceneSync : Node
 
     private readonly Dictionary<string, Node3D> _pathEntityByRelPath = new();
     private readonly Dictionary<string, Transform3D> _lastSentPathTransform = new();
+
+    private readonly Dictionary<int, string> _spawnKeyById = new();
 
     private double _sendAccumulator;
 
@@ -144,6 +170,7 @@ public partial class SceneSync : Node
         _entityById.Clear();
         _idByEntity.Clear();
         _lastSentTransform.Clear();
+        _spawnKeyById.Clear();
         _nextEntityId = 1;
     }
 
@@ -209,9 +236,8 @@ public partial class SceneSync : Node
             if (node is PlayerAvatar)
                 continue;
 
-            var scenePath = node.SceneFilePath;
             var parentPath = _syncRoot.GetPathTo(node.GetParent());
-            RpcId(peerId, nameof(ClientSpawnEntity), id, scenePath, parentPath.ToString(), node.GlobalTransform);
+            RpcId(peerId, nameof(ClientSpawnEntity), id, _spawnKeyById[id], parentPath.ToString(), node.GlobalTransform, new Godot.Collections.Dictionary());
         }
 
         // Snapshot: transforms for pre-existing nodes synced by relative path.
@@ -277,56 +303,46 @@ public partial class SceneSync : Node
     }
 
     /// <summary>
-    /// Server-only: spawns a PackedScene at the sync root and replicates it.
+    /// Server-only: spawns a node using a spawn key (PackedScene path or factory key) and replicates it.
+    /// For PackedScenes, use "res://path/to/scene.tscn". For built-ins or custom, use factory key.
+    /// Props is a Godot.Collections.Dictionary with simple properties.
     /// </summary>
-    public int ServerSpawn(string packedScenePath, Transform3D transform, Node? parent = null)
+    public int ServerSpawn(string spawnKey, Transform3D transform, Node? parent = null, Godot.Collections.Dictionary? props = null)
     {
         if (!Multiplayer.IsServer())
             throw new InvalidOperationException("ServerSpawn is server-only");
 
-        var scene = GD.Load<PackedScene>(packedScenePath);
-        if (scene == null)
-            throw new InvalidOperationException($"Failed to load PackedScene: {packedScenePath}");
+        Node3D node;
+        if (spawnKey.StartsWith("res://"))
+        {
+            var scene = GD.Load<PackedScene>(spawnKey);
+            if (scene == null)
+                throw new InvalidOperationException($"Failed to load PackedScene: {spawnKey}");
 
-        var node = scene.Instantiate<Node3D>();
+            node = scene.Instantiate<Node3D>();
+        }
+        else
+        {
+            if (!_nodeFactories.TryGetValue(spawnKey, out var factory))
+                throw new InvalidOperationException($"Unknown spawn key: {spawnKey}");
+
+            node = factory();
+        }
+
+        if (props == null)
+            props = new Godot.Collections.Dictionary();
+
         var actualParent = parent ?? _syncRoot;
         actualParent.AddChild(node);
         node.GlobalTransform = transform;
 
         var id = _nextEntityId++;
+        _spawnKeyById[id] = spawnKey;
         RegisterEntity(id, node);
 
         // Broadcast to clients (reliable by default).
         var parentPath = _syncRoot.GetPathTo(actualParent);
-        Rpc(nameof(ClientSpawnEntity), id, packedScenePath, parentPath.ToString(), transform);
-
-        return id;
-    }
-
-    /// <summary>
-    /// Server-only: spawn a built-in Node3D (limited whitelist) and replicate it to clients.
-    /// Props is a Godot.Collections.Dictionary with simple properties (e.g. for CSGBox3D: { "size": Vector3 }).
-    /// </summary>
-    public int ServerSpawnBuiltin(string nodeType, Godot.Collections.Dictionary props, Transform3D transform, Node? parent = null)
-    {
-        if (!Multiplayer.IsServer())
-            throw new InvalidOperationException("ServerSpawnBuiltin is server-only");
-
-        var node = CreateBuiltinNode(nodeType);
-        if (node == null)
-            throw new InvalidOperationException($"Unsupported builtin node type: {nodeType}");
-
-        ApplyPropsToNode(node, props);
-
-        var actualParent = parent ?? _syncRoot;
-        actualParent.AddChild(node);
-        node.GlobalTransform = transform;
-
-        var id = _nextEntityId++;
-        RegisterEntity(id, node);
-
-        var parentPath = _syncRoot.GetPathTo(actualParent);
-        Rpc(nameof(ClientSpawnBuiltin), id, nodeType, props, parentPath.ToString(), transform);
+        Rpc(nameof(ClientSpawnEntity), id, spawnKey, parentPath.ToString(), transform, props);
 
         return id;
     }
@@ -351,33 +367,6 @@ public partial class SceneSync : Node
 
         // Helpful for debugging in the remote scene tree.
         node.SetMeta("net_entity_id", entityId);
-    }
-
-    private Node3D? CreateBuiltinNode(string nodeType)
-    {
-        // Provide safe, engine-level builtins via MeshInstance3D when possible.
-        return nodeType switch
-        {
-            "Box" => CreateBoxInstance(),
-            "Sphere" => CreateSphereInstance(),
-            _ => null,
-        };
-    }
-
-    private MeshInstance3D CreateBoxInstance()
-    {
-        var mesh = new BoxMesh();
-        var inst = new MeshInstance3D();
-        inst.Mesh = mesh;
-        return inst;
-    }
-
-    private MeshInstance3D CreateSphereInstance()
-    {
-        var mesh = new SphereMesh();
-        var inst = new MeshInstance3D();
-        inst.Mesh = mesh;
-        return inst;
     }
 
     private void ApplyPropsToNode(Node3D node, Godot.Collections.Dictionary props)
@@ -414,47 +403,36 @@ public partial class SceneSync : Node
 
         _entityById.Remove(entityId);
         _lastSentTransform.Remove(entityId);
+        _spawnKeyById.Remove(entityId);
     }
 
     [Rpc(MultiplayerApi.RpcMode.Authority)]
-    private void ClientSpawnEntity(int entityId, string packedScenePath, string parentPath, Transform3D transform)
+    private void ClientSpawnEntity(int entityId, string spawnKey, string parentPath, Transform3D transform, Godot.Collections.Dictionary props)
     {
         if (_entityById.ContainsKey(entityId))
             return;
 
-        var scene = GD.Load<PackedScene>(packedScenePath);
-        if (scene == null)
+        Node3D node;
+        if (spawnKey.StartsWith("res://"))
         {
-            GD.PrintErr($"ClientSpawnEntity failed to load: {packedScenePath}");
-            return;
+            var scene = GD.Load<PackedScene>(spawnKey);
+            if (scene == null)
+            {
+                GD.PrintErr($"ClientSpawnEntity failed to load: {spawnKey}");
+                return;
+            }
+
+            node = scene.Instantiate<Node3D>();
         }
-
-        var node = scene.Instantiate<Node3D>();
-
-        Node parent = _syncRoot;
-        if (!string.IsNullOrWhiteSpace(parentPath))
+        else
         {
-            var maybe = _syncRoot.GetNodeOrNull<Node>(parentPath);
-            if (maybe != null)
-                parent = maybe;
-        }
+            if (!_nodeFactories.TryGetValue(spawnKey, out var factory))
+            {
+                GD.PrintErr($"ClientSpawnEntity unknown spawn key: {spawnKey}");
+                return;
+            }
 
-        parent.AddChild(node);
-        node.GlobalTransform = transform;
-        RegisterEntity(entityId, node);
-    }
-
-    [Rpc(MultiplayerApi.RpcMode.Authority)]
-    private void ClientSpawnBuiltin(int entityId, string nodeType, Godot.Collections.Dictionary props, string parentPath, Transform3D transform)
-    {
-        if (_entityById.ContainsKey(entityId))
-            return;
-
-        var node = CreateBuiltinNode(nodeType);
-        if (node == null)
-        {
-            GD.PrintErr($"ClientSpawnBuiltin: unsupported node type: {nodeType}");
-            return;
+            node = factory();
         }
 
         ApplyPropsToNode(node, props);
@@ -492,7 +470,7 @@ public partial class SceneSync : Node
             return;
 
         // Don't apply deltas to local VR player's rig, as it's client-authoritative.
-        if (node is XrPlayerRig rig && rig.IsLocalPlayer)
+        if (node is Trakction.XR.XrPlayerRig rig && rig.IsLocalPlayer)
             return;
 
         node.GlobalTransform = transform;
@@ -519,5 +497,13 @@ public partial class SceneSync : Node
             return;
 
         node.GlobalTransform = transform;
+    }
+
+    /// <summary>
+    /// Registers a custom node factory for spawning.
+    /// </summary>
+    public static void RegisterNodeFactory(string key, Func<Node3D> factory)
+    {
+        _nodeFactories[key] = factory;
     }
 }

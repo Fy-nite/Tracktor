@@ -1,4 +1,4 @@
-﻿extends Node
+extends Node
 
 # Spawns or toggles a single SpawnerPanel Node3D instance. Works for both VR and desktop players.
 # Add an InputMap action named "spawn_panel_toggle" and bind it to a key (e.g., P).
@@ -129,5 +129,3 @@ func spawn_box() -> void:
 		if player and player is Node3D:
 			var transform_source = _get_best_spawn_transform(player)
 			spawner.spawn_box_from_transform(transform_source)
-		else:
-			spawner.spawn_box_from_transform(Transform3D())

@@ -72,12 +72,12 @@ public partial class NetConnectPanel : PanelContainer
         var online = Multiplayer.MultiplayerPeer != null;
 
         // When connected/listening, get out of the way so you see the 3D view.
-        _hostRow.Visible = !online;
-        _portRow.Visible = !online;
-        _startServer.Visible = !online;
-        _connect.Visible = !online;
+        _hostRow.Visible = online;
+        _portRow.Visible = online;
+        _startServer.Visible = online;
+        _connect.Visible = online;
         _disconnect.Visible = online;
 
-        _disconnect.Disabled = !online;
+        _disconnect.Disabled = online;
     }
 }

@@ -11,8 +11,15 @@
 [node name="HomeScreen" type="Node"]
 script = ExtResource("8_homescreen")
 XrPlayerRigScene = ExtResource("3_wrh72")
+MainScene = ExtResource("5_maingame")
 
 [node name="UI" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="UI"]
+offset_left = 2.0
+offset_right = 1150.0
+offset_bottom = 650.0
+color = Color(0.19076231, 0.19076234, 0.19076231, 1)
 
 [node name="NetDebug" type="Label" parent="UI"]
 offset_left = 8.0
@@ -26,10 +33,10 @@ script = ExtResource("1_ksj1l")
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -279.0
-offset_top = 2.0
+offset_left = -446.0
+offset_top = 547.0
 offset_right = -1.0
-offset_bottom = 103.0
+offset_bottom = 648.0
 grow_horizontal = 0
 script = ExtResource("2_3272g")
 
@@ -90,7 +97,5 @@ script = ExtResource("3_4d5n3")
 
 [node name="SceneSync" type="Node" parent="NetRoot"]
 script = ExtResource("4_wrh72")
-SyncRootPath = NodePath("../../MainGame")
-
-[node name="MainGame" parent="." instance=ExtResource("5_maingame")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11046362, 0.060708046, 0.008811235)
+SyncRootPath = NodePath(".")
+TransformSendHz = 60.0

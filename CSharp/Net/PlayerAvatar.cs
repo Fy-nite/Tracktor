@@ -16,15 +16,15 @@ public partial class PlayerAvatar : CharacterBody3D
     [Export] public float GamepadLookYawSpeed = 3.2f; // rad/sec at full stick
 
     [Export] public bool CaptureMouseForLocalPlayer = true;
-    [Export] public float MouseLookSensitivity = 0.0022f;
+    [Export] public float MouseLookSensitivity = 0.0032f;
 
-    // If you later add a child Node3D named "LookPivot" (e.g. to hold a Camera3D), pitch will apply to it.
     [Export] public NodePath LookPivotPath = new();
     [Export] public float MaxPitchDegrees = 80.0f;
 
     private NetRoot? _net;
     private Node3D? _lookPivot;
     private Camera3D? _camera;
+    private CanvasLayer? _ui;
 
     private bool _mouseCaptured;
     private bool _userManuallyReleased;
@@ -39,7 +39,10 @@ public partial class PlayerAvatar : CharacterBody3D
     public override void _Ready()
     {
         _net = FindNetRoot(this);
-
+        
+        _ui = (CanvasLayer)GetTree().Root.FindChild("UI");
+        if (_ui != null)
+            _ui.Visible = true;
         _lookPivot = !LookPivotPath.IsEmpty ? GetNodeOrNull<Node3D>(LookPivotPath) : GetNodeOrNull<Node3D>("LookPivot");
         _camera = _lookPivot?.GetNodeOrNull<Camera3D>("Camera3D") ?? GetNodeOrNull<Camera3D>("LookPivot/Camera3D");
 
@@ -49,6 +52,17 @@ public partial class PlayerAvatar : CharacterBody3D
             mesh.Mesh = new BoxMesh { Size = new Vector3(0.5f, 1.0f, 0.5f) };
             mesh.Position = new Vector3(0, 0.5f, 0);
             AddChild(mesh);
+        }
+        if (GetNodeOrNull("NameTag") == null)
+        {
+            var nameTag = new MeshInstance3D() { Name = "NameTag" };
+            var textMesh = new TextMesh();
+            nameTag.Position = new Vector3(0, 2.2f, 0);
+            textMesh.Text = $"Player {PeerId}";
+            nameTag.Scale = new Vector3(0.15f, 0.15f, 0.15f);
+            nameTag.Mesh = textMesh;
+            nameTag.AddChild(nameTag);
+            AddChild(nameTag);
         }
 
         if (GetNodeOrNull<CollisionShape3D>("Collision") == null)
@@ -123,7 +137,56 @@ public partial class PlayerAvatar : CharacterBody3D
         
 
     }
+    public override void _Process(double delta)
+    {
+        if (!IsLocalPlayer)
+            return;
 
+        // Update nametag to face camera.
+        var tree = GetTree() as SceneTree;
+        var cam = _camera;
+        var nameTag = GetNodeOrNull<Node3D>("NameTag");
+        if (cam != null && nameTag != null)
+        {
+            var toCam = cam.GlobalPosition - nameTag.GlobalPosition;
+            toCam.Y = 0;
+            if (toCam.LengthSquared() > 1e-6f)
+            {
+                toCam = toCam.Normalized();
+                var targetRot = Mathf.Atan2(toCam.X, toCam.Z);
+                nameTag.GlobalRotation = new Vector3(0, targetRot, 0);
+            }
+        }
+        // Toggle mouse capture with escape.
+        // this is stupid. why doesn't it just update properly. 
+        // TODO: fix this fucking bullshit at somepoint...
+        if (Input.IsActionJustPressed("ui_cancel"))
+        {
+            if (!_mouseCaptured)
+            {
+                Input.MouseMode = Input.MouseModeEnum.Captured;
+                _mouseCaptured = false;
+                _userManuallyReleased = true;
+                if (_ui != null) _ui.Visible = true;
+            }
+            else
+            {
+                Input.MouseMode = Input.MouseModeEnum.Visible;
+                _mouseCaptured = true;
+                _userManuallyReleased = false;
+                if (_ui != null) _ui.Visible = false;
+            }
+            return;
+        }
+
+        // // Auto-capture only if not manually released.
+        // if (!_mouseCaptured && !_userManuallyReleased)
+        // {
+        //     Input.MouseMode = Input.MouseModeEnum.Captured;
+        //     _mouseCaptured = true;
+        //     if (_ui != null) _ui.Visible = false;
+        // }
+    }
     public override void _UnhandledInput(InputEvent @event)
     {
         if (!IsLocalPlayer)
@@ -236,12 +299,14 @@ public partial class PlayerAvatar : CharacterBody3D
                 Input.MouseMode = Input.MouseModeEnum.Visible;
                 _mouseCaptured = false;
                 _userManuallyReleased = true;
+                if (_ui != null) _ui.Visible = false;
             }
             else
             {
                 Input.MouseMode = Input.MouseModeEnum.Captured;
                 _mouseCaptured = true;
                 _userManuallyReleased = false;
+                if (_ui != null) _ui.Visible = true;
             }
             return;
         }
@@ -251,6 +316,7 @@ public partial class PlayerAvatar : CharacterBody3D
         {
             Input.MouseMode = Input.MouseModeEnum.Captured;
             _mouseCaptured = true;
+            if (_ui != null) _ui.Visible = false;
         }
     }
 

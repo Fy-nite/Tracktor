@@ -15,6 +15,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9513743, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.011376262, 0)
 
 [node name="RaytracedAudioListener" type="AudioListener3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9400485, 0)
 doppler_tracking = 2
 current = true
 script = ExtResource("2_ypw64")
@@ -24,3 +25,6 @@ metadata/_custom_type_script = "uid://bjpmu5sklv5h8"
 script = ExtResource("3_yx70u")
 PanelScene = ExtResource("4_ba2l3")
 CameraPath = NodePath("../LookPivot/Camera3D")
+
+[node name="NameTag" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.0348017, 0)

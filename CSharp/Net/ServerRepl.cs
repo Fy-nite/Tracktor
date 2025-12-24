@@ -2,6 +2,7 @@
 using Godot;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 
@@ -28,7 +29,13 @@ public sealed partial class ServerRepl : Node
     {
         { "box", "res://Scenes/Box.tscn" },
         { "sphere", "res://Scenes/Sphere.tscn" },
-        // Add more as needed, e.g., { "csgbox", "res://Scenes/CSGBox.tscn" }
+        
+    };
+// define aliases for common Godot built-in scenes or actions as a replacement for tscn paths
+    private readonly Dictionary<string, Func<Node>> _GodotAliasses = new()
+    {
+        {"box", () => new CsgBox3D()},
+        {"sphere", () => new CsgSphere3D()},
     };
 
     public override void _Ready()
@@ -110,7 +117,9 @@ public sealed partial class ServerRepl : Node
             case "?":
                 GD.Print("Commands:");
                 GD.Print("  help");
-                GD.Print("  spawn <alias|res://path.tscn> [x y z]");
+                GD.Print("  spawn-scene <alias|res://path.tscn> [x y z]");
+                GD.Print("  spawn-godot <alias> [x y z]");
+                GD.Print("  loaddll <filepath>");
                 GD.Print("  despawn <entityId>");
                 GD.Print("  list");
                 GD.Print("  peers");
@@ -162,8 +171,41 @@ public sealed partial class ServerRepl : Node
 
                 net.ServerDespawnEntity(entityId);
                 return;
+            case "spawn-godot":
+                if (net == null)
+                {
+                    GD.Print("NetRoot not found.");
+                    return;
+                }
 
-            case "spawn":
+                if (parts.Length < 2)
+                {
+                    GD.Print("Usage: spawn-godot <alias> [x y z]");
+                    return;
+                }
+
+                var godotAlias = parts[1].ToLowerInvariant();
+                if (!_GodotAliasses.TryGetValue(godotAlias, out var nodeFactory))
+                {
+                    GD.Print($"Unknown Godot alias: {godotAlias}");
+                    return;
+                }
+
+                var godotPos = Vector3.Zero;
+                if (parts.Length >= 5 &&
+                    TryParseFloat(parts[2], out var gx) &&
+                    TryParseFloat(parts[3], out var gy) &&
+                    TryParseFloat(parts[4], out var gz))
+                {
+                    godotPos = new Vector3(gx, gy, gz);
+                }
+
+                var godotNode = nodeFactory();
+                GetTree().Root.AddChild(godotNode);
+                GD.Print($"Spawned Godot node of type {godotNode.GetType().Name} at pos={godotPos}");
+                return;
+            
+            case "spawn-scene":
                 if (net == null)
                 {
                     GD.Print("NetRoot not found.");
@@ -177,7 +219,9 @@ public sealed partial class ServerRepl : Node
                 }
 
                 var sceneInput = parts[1];
-                var scenePath = _sceneAliases.TryGetValue(sceneInput.ToLowerInvariant(), out var aliasPath) ? aliasPath : sceneInput;
+                var scenePath = _sceneAliases.TryGetValue(sceneInput.ToLowerInvariant(), out var aliasPath)
+                    ? aliasPath
+                    : sceneInput;
                 var pos = Vector3.Zero;
                 if (parts.Length >= 5 &&
                     TryParseFloat(parts[2], out var x) &&

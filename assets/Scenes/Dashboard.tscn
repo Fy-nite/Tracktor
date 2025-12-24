@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://cv5oo5u4as6t"]
+
+[ext_resource type="Script" uid="uid://cnxxo3xg2ikwg" path="res://CSharp/DashboardGenerator.cs" id="1_kg1ub"]
+
+[node name="Dashboard" type="Node3D"]
+script = ExtResource("1_kg1ub")
+ThisNode = NodePath(".")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]

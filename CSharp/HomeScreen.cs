@@ -4,7 +4,12 @@ using Godot;
 public partial class HomeScreen : Node
 {
     [Export] public PackedScene XrPlayerRigScene { get; set; }
+    
     [Export] public string StartVrAction { get; set; } = "ui_accept";
+    /// <summary>
+    /// The main scene that gets initialized (e.g., the game world)
+    /// </summary>
+    [Export] public PackedScene MainScene { get; set; }
 
     private Node mainGame;
     private NetRoot? _net;
@@ -12,7 +17,13 @@ public partial class HomeScreen : Node
 
     public override void _Ready()
     {
-        mainGame = GetNode("VRRenderer/MainGame");
+        if (MainScene != null)
+        {
+            // Instance and add the main game scene
+            mainGame = MainScene.Instantiate();
+            AddChild(mainGame);
+        }
+        
         _net = GetNode<NetRoot>("NetRoot");
 
         // Connect VR button signal
@@ -24,34 +35,42 @@ public partial class HomeScreen : Node
         spawnBtn.Pressed += OnSpawnBoxPressed;
         // Only show spawn button when running as server
         spawnBtn.Visible = _net != null && _net.IsServerMode;
+        
+        var ui = GetNode<CanvasLayer>("UI");
+        ui.Visible = true;
     }
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        if (Input.IsKeyPressed(Key.Alt))
+        {
+            var newScene = ResourceLoader.Load<PackedScene>("res://Assets/Scenes/Dashboard.tscn");
+            if (newScene != null)
+            {
+                GetTree().ChangeSceneToPacked(newScene);
+            }
+        }
         // Toggle UI / physical panel with Escape (ui_cancel)
         if (@event.IsActionPressed("ui_cancel"))
         {
-            // Avoid toggling when typing into fields
-            // var focus = GetFocusOwner();
-            // if (!(focus is LineEdit))
-            // {
-            //     // Toggle canvas UI visibility
-            //     var ui = GetNode<CanvasLayer>("UI");
-            //     ui.Visible = !ui.Visible;
-            //
-            //     // Try to find the spawner toggle node in the main game and call its toggle method
-            //     var spawnerToggle = mainGame.FindChild("SpawnerToggle", true, false);
-            //     if (spawnerToggle != null)
-            //     {
-            //         // Call the GDScript method 'toggle_panel' if available
-            //         if (spawnerToggle.HasMethod("toggle_panel"))
-            //             spawnerToggle.Call("toggle_panel");
-            //         else if (spawnerToggle.HasMethod("open_panel") && ui.Visible == false)
-            //             spawnerToggle.Call("open_panel");
-            //         else if (spawnerToggle.HasMethod("close_panel") && ui.Visible == true)
-            //             spawnerToggle.Call("close_panel");
-            //     }
-            // }
+           
+            // Toggle canvas UI visibility
+            var ui = GetNode<CanvasLayer>("UI");
+            ui.Visible = !ui.Visible;
+            
+            // Try to find the spawner toggle node in the main game and call its toggle method
+            var spawnerToggle = mainGame.FindChild("SpawnerToggle", true, false);
+            if (spawnerToggle != null)
+            {
+                // Call the GDScript method 'toggle_panel' if available
+                if (spawnerToggle.HasMethod("toggle_panel"))
+                    spawnerToggle.Call("toggle_panel");
+                else if (spawnerToggle.HasMethod("open_panel") && ui.Visible == false)
+                    spawnerToggle.Call("open_panel");
+                else if (spawnerToggle.HasMethod("close_panel") && ui.Visible == true)
+                    spawnerToggle.Call("close_panel");
+            }
+       
         }
 
         if (_vrStarted)
