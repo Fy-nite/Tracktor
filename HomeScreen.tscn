@@ -97,5 +97,5 @@ script = ExtResource("3_4d5n3")
 
 [node name="SceneSync" type="Node" parent="NetRoot"]
 script = ExtResource("4_wrh72")
-SyncRootPath = NodePath(".")
+SyncRootPath = NodePath("../")
 TransformSendHz = 60.0

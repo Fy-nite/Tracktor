@@ -1,9 +1,9 @@
 ﻿using Godot;
 using Traktor.Core.Assets.Materials;
 
-namespace trakction.HomeWorld;
+namespace traktion.HomeWorld;
 using Trakction.Builders;
-using Trakction;
+using Traktion;
 
 public partial class HomeWorld : Node3D
 {
@@ -28,10 +28,10 @@ public partial class HomeWorld : Node3D
                     mi.Scale = new Vector3(5, 0.1f, 5);
                     
                 });
+                b.Configure(mi => mi.SetMeta("net_factory", "CsgBox3D"));
             });
         });
 
         return sb.Build();
     }
 }
-

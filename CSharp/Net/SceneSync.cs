@@ -49,8 +49,21 @@ public partial class SceneSync : Node
 
     private static readonly System.Collections.Generic.Dictionary<string, Func<Node3D>> _nodeFactories = new()
     {
-        ["Box"] = () => { var mesh = new BoxMesh(); var inst = new MeshInstance3D(); inst.Mesh = mesh; return inst; },
-        ["Sphere"] = () => { var mesh = new SphereMesh(); var inst = new MeshInstance3D(); inst.Mesh = mesh; return inst; },
+        ["Box"] = () =>
+        {
+            var mesh = new BoxMesh();
+            var inst = new MeshInstance3D();
+            inst.Mesh = mesh;
+            return inst;
+        },
+        ["Sphere"] = () =>
+        {
+            var mesh = new SphereMesh();
+            var inst = new MeshInstance3D();
+            inst.Mesh = mesh;
+            return inst;
+        },
+        ["CsgBox3D"] = () => new CsgBox3D(),
     };
 
     private Node _syncRoot = null!;
@@ -81,8 +94,14 @@ public partial class SceneSync : Node
 
     private static string VariantToString(Variant v)
     {
-        try { return v.AsString(); }
-        catch { return v.ToString(); }
+        try
+        {
+            return v.AsString();
+        }
+        catch
+        {
+            return v.ToString();
+        }
     }
 
     private static bool TryGetVector3(Godot.Collections.Dictionary dict, string key, out Vector3 value)
@@ -201,23 +220,22 @@ public partial class SceneSync : Node
         {
             try
             {
-                // Prefer mirroring children under sync root rather than the sync root itself.
-                // If you want to mirror a single generated root (like HomeWorld.GenerateWorld()),
-                // put it under a dedicated SyncRootPath container.
+                // Mirror only mirrorable children under _syncRoot.
                 var container = new Node3D { Name = "MirroredRoot" };
-                foreach (var child in _syncRoot.GetChildren())
+                foreach (var childObj in _syncRoot.GetChildren())
                 {
-                    if (child is not Node ch)
+                    if (childObj is not Node child)
                         continue;
-                    if (ch is not Node3D)
+                    if (!IsMirrorable(child))
                         continue;
-                    var typeName = ch.GetType().Name;
-                    if (!_mirroredTypeAllowList.Contains(typeName))
+
+                    // Duplicate so we don't mutate the live scene while serializing.
+                    var dup = child.Duplicate(flags: (int)Node.DuplicateFlags.UseInstantiation) as Node;
+                    if (dup == null)
                         continue;
-                    container.AddChild(ch.Duplicate() as Node);
+                    container.AddChild(dup);
                 }
 
-                // Serialize from the temporary container so we don't leak SceneSync/NetRoot, etc.
                 var snapshot = SerializeMirroredSubtree(container);
                 container.QueueFree();
 
@@ -242,7 +260,8 @@ public partial class SceneSync : Node
                 continue;
 
             var parentPath = _syncRoot.GetPathTo(node.GetParent());
-            RpcId(peerId, nameof(ClientSpawnEntity), id, _spawnKeyById[id], parentPath.ToString(), node.GlobalTransform, new Godot.Collections.Dictionary());
+            RpcId(peerId, nameof(ClientSpawnEntity), id, _spawnKeyById[id], parentPath.ToString(), node.GlobalTransform,
+                new Godot.Collections.Dictionary());
         }
 
         // Snapshot: transforms for pre-existing nodes synced by relative path.
@@ -312,7 +331,8 @@ public partial class SceneSync : Node
     /// For PackedScenes, use "res://path/to/scene.tscn". For built-ins or custom, use factory key.
     /// Props is a Godot.Collections.Dictionary with simple properties.
     /// </summary>
-    public int ServerSpawn(string spawnKey, Transform3D transform, Node? parent = null, Godot.Collections.Dictionary? props = null)
+    public int ServerSpawn(string spawnKey, Transform3D transform, Node? parent = null,
+        Godot.Collections.Dictionary? props = null)
     {
         if (!Multiplayer.IsServer())
             throw new InvalidOperationException("ServerSpawn is server-only");
@@ -446,7 +466,8 @@ public partial class SceneSync : Node
     }
 
     [Rpc(MultiplayerApi.RpcMode.Authority)]
-    private void ClientSpawnEntity(int entityId, string spawnKey, string parentPath, Transform3D transform, Godot.Collections.Dictionary props)
+    private void ClientSpawnEntity(int entityId, string spawnKey, string parentPath, Transform3D transform,
+        Godot.Collections.Dictionary props)
     {
         if (_entityById.ContainsKey(entityId))
             return;
@@ -541,55 +562,93 @@ public partial class SceneSync : Node
     // --- Static hierarchy mirroring (one-shot snapshot on join) ---
     [Export] public bool MirrorHierarchyOnJoin = true;
 
-    // Allow-list of node types we will instantiate when mirroring hierarchy.
-    // Keep this tight for safety.
-    private static readonly HashSet<string> _mirroredTypeAllowList = new(StringComparer.Ordinal)
+    [Export] public string MirrorFactoryMetaKey = "net_factory";
+
+    // Stable IDs for mirrored nodes (separate from _entityById which is for spawned entities).
+    private long _nextMirroredId = 1;
+    private readonly System.Collections.Generic.Dictionary<Node3D, long> _mirroredIdByNode = new();
+    private readonly System.Collections.Generic.Dictionary<long, Node3D> _mirroredNodeById = new();
+
+    private long GetOrAssignMirroredId(Node3D node)
     {
-        nameof(Node3D),
-        nameof(Marker3D),
+        if (_mirroredIdByNode.TryGetValue(node, out var id) && IsInstanceValid(node))
+            return id;
 
-        // Common gameplay nodes
-        nameof(StaticBody3D),
-        nameof(RigidBody3D),
-        nameof(CharacterBody3D),
-        nameof(Area3D),
+        id = _nextMirroredId++;
+        _mirroredIdByNode[node] = id;
+        return id;
+    }
 
-        // Rendering
-        nameof(MeshInstance3D),
-        nameof(CpuParticles3D),
-        nameof(GpuParticles3D),
+    private void ClearClientMirroredIndex()
+    {
+        _mirroredNodeById.Clear();
+    }
 
-        // Lighting
-        nameof(OmniLight3D),
-        nameof(SpotLight3D),
-        nameof(DirectionalLight3D),
+    private void IndexClientMirroredTree(Node root)
+    {
+        // Walk and index any nodes with meta 'net_mirror_id' (we set it during instantiation)
+        if (root is Node3D n3d && root.HasMeta("net_mirror_id"))
+        {
+            try
+            {
+                var id = (long)root.GetMeta("net_mirror_id");
+                _mirroredNodeById[id] = n3d;
+            }
+            catch { }
+        }
 
-        // Collisions
-        nameof(CollisionShape3D),
-        nameof(CollisionPolygon3D),
+        foreach (var childObj in root.GetChildren())
+        {
+            if (childObj is Node child)
+                IndexClientMirroredTree(child);
+        }
+    }
 
-        // CSG (common for prototyping/world building)
-        nameof(CsgBox3D),
-        nameof(CsgSphere3D),
-        nameof(CsgCylinder3D),
-        nameof(CsgTorus3D),
-    };
+    private static bool HasScenePath(Node node)
+        => node is Node3D && !string.IsNullOrWhiteSpace(node.SceneFilePath) &&
+           node.SceneFilePath.StartsWith("res://", StringComparison.Ordinal);
+
+    private bool IsMirrorable(Node node)
+        => node is Node3D && (HasScenePath(node) || TryGetFactoryKey(node, out _));
 
     private Godot.Collections.Dictionary SerializeMirroredSubtree(Node node)
     {
         // Dictionary layout:
         // {
-        //   "t": "Node3D" | "CsgBox3D",
-        //   "n": "Name",
-        //   "p": Vector3 (position),
-        //   "r": Vector3 (rotation),
-        //   "s": Vector3 (scale),
+        //   "id": int64,
+        //   "name": "NodeName",
+        //   "scene": "res://path/to/thing.tscn" | "",
+        //   "factory": "Box" | ""  (requires meta net_factory)
+        //   "p": Vector3 (position), "r": Vector3 (rotation), "s": Vector3 (scale), "v": bool
+        //   "props": Dictionary (optional)
         //   "c": Array<Dictionary> children
         // }
 
-        var dict = new Godot.Collections.Dictionary();
-        dict["t"] = node.GetType().Name;
-        dict["n"] = node.Name;
+        long id = 0;
+        if (node is Node3D n3dId)
+            id = GetOrAssignMirroredId(n3dId);
+
+        var dict = new Godot.Collections.Dictionary
+        {
+            ["id"] = id,
+            ["name"] = node.Name,
+        };
+
+        if (HasScenePath(node))
+        {
+            dict["scene"] = node.SceneFilePath;
+            dict["factory"] = "";
+        }
+        else if (TryGetFactoryKey(node, out var factoryKey))
+        {
+            dict["scene"] = "";
+            dict["factory"] = factoryKey;
+        }
+        else
+        {
+            dict["scene"] = "";
+            dict["factory"] = "";
+        }
 
         if (node is Node3D n3d)
         {
@@ -599,90 +658,25 @@ public partial class SceneSync : Node
             dict["v"] = n3d.Visible;
         }
 
-        // Minimal per-type properties (safe + common)
-        if (node is MeshInstance3D mi)
-        {
-            // Resource references are safe to send as-is (they'll arrive as Variants).
-            dict["mesh"] = mi.Mesh;
-            dict["mat0"] = mi.GetSurfaceOverrideMaterial(0);
-        }
-
-        if (node is VisualInstance3D vi)
-        {
-            dict["layers"] = vi.Layers;
-        }
-
-        if (node is Light3D light)
-        {
-            dict["lc"] = light.LightColor;
-            dict["le"] = light.LightEnergy;
-            dict["sh"] = light.ShadowEnabled;
-        }
-
-        if (node is CollisionShape3D cs)
-        {
-            dict["shape"] = cs.Shape;
-            dict["disabled"] = cs.Disabled;
-        }
-
-        if (node is CollisionPolygon3D cp)
-        {
-            dict["depth"] = cp.Depth;
-            dict["polygon"] = cp.Polygon;
-            dict["disabled"] = cp.Disabled;
-        }
-
-        // CSG primitives
-        if (node is CsgPrimitive3D csg)
-        {
-            dict["csg_op"] = (int)csg.Operation;
-            dict["csg_snap"] = csg.Snap;
-            // dict["csg_smooth"] = csg.SmoothFaces;
-            dict["csg_mat"] = csg.MaterialOverride;
-        }
-
-        if (node is CsgBox3D csgBox)
-            dict["size"] = csgBox.Size;
-        if (node is CsgSphere3D csgSphere)
-            dict["radius"] = csgSphere.Radius;
-        if (node is CsgCylinder3D csgCyl)
-        {
-            dict["radius"] = csgCyl.Radius;
-            dict["height"] = csgCyl.Height;
-        }
-        // if (node is CsgCapsule3D csgCap)
-        // {
-        //     dict["radius"] = csgCap.Radius;
-        //     dict["height"] = csgCap.Height;
-        // }
-        if (node is CsgTorus3D csgTor)
-        {
-            dict["inner_radius"] = csgTor.InnerRadius;
-            dict["outer_radius"] = csgTor.OuterRadius;
-        }
+        dict["props"] = new Godot.Collections.Dictionary();
 
         var children = new Godot.Collections.Array<Godot.Collections.Dictionary>();
-        foreach (var child in node.GetChildren())
+        foreach (var childObj in node.GetChildren())
         {
-            if (child is not Node ch)
+            if (childObj is not Node child)
                 continue;
 
-            // Only mirror spatial-ish nodes.
-            if (ch is not Node3D)
+            if (!IsMirrorable(child))
                 continue;
 
-            var typeName = ch.GetType().Name;
-            if (!_mirroredTypeAllowList.Contains(typeName))
-                continue;
-
-            children.Add(SerializeMirroredSubtree(ch));
+            children.Add(SerializeMirroredSubtree(child));
         }
 
         dict["c"] = children;
         return dict;
     }
 
-    private static bool TryGetBool(Godot.Collections.Dictionary dict, string key, out bool value)
+    private static bool TryGetInt64(Godot.Collections.Dictionary dict, string key, out long value)
     {
         value = default;
         if (!dict.ContainsKey(key))
@@ -690,240 +684,103 @@ public partial class SceneSync : Node
 
         try
         {
-            value = ((Variant)dict[key]).AsBool();
+            value = ((Variant)dict[key]).AsInt64();
             return true;
-        }
-        catch { return false; }
-    }
-
-    private static bool TryGetInt(Godot.Collections.Dictionary dict, string key, out int value)
-    {
-        value = default;
-        if (!dict.ContainsKey(key))
-            return false;
-
-        try
-        {
-            value = (int)((Variant)dict[key]).AsInt64();
-            return true;
-        }
-        catch { return false; }
-    }
-
-    private static bool TryGetFloat(Godot.Collections.Dictionary dict, string key, out float value)
-    {
-        value = default;
-        if (!dict.ContainsKey(key))
-            return false;
-
-        try
-        {
-            value = ((Variant)dict[key]).AsSingle();
-            return true;
-        }
-        catch { return false; }
-    }
-
-    private static bool TryGetColor(Godot.Collections.Dictionary dict, string key, out Color value)
-    {
-        value = default;
-        if (!dict.ContainsKey(key))
-            return false;
-
-        try
-        {
-            value = ((Variant)dict[key]).AsColor();
-            return true;
-        }
-        catch { return false; }
-    }
-
-    private static bool TryGetUInt(Godot.Collections.Dictionary dict, string key, out uint value)
-    {
-        value = default;
-        if (!dict.ContainsKey(key))
-            return false;
-
-        try
-        {
-            value = (uint)((Variant)dict[key]).AsUInt64();
-            return true;
-        }
-        catch { return false; }
-    }
-
-    private static bool TryGetResource<T>(Godot.Collections.Dictionary dict, string key, out T? value) where T : Resource
-    {
-        value = null;
-        if (!dict.ContainsKey(key))
-            return false;
-
-        try
-        {
-            value = ((Variant)dict[key]).AsGodotObject() as T;
-            return value != null;
         }
         catch
         {
-            return false;
+            try
+            {
+                value = Convert.ToInt64(dict[key]);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 
-    private Node InstantiateMirroredNode(Godot.Collections.Dictionary snapshot)
+    private Node3D? InstantiateMirroredNode(Godot.Collections.Dictionary snapshot)
     {
-        var typeName = snapshot.ContainsKey("t") ? VariantToString((Variant)snapshot["t"]) : "";
-        var name = snapshot.ContainsKey("n") ? VariantToString((Variant)snapshot["n"]) : "";
+        long id = 0;
+        TryGetInt64(snapshot, "id", out id);
 
-        if (string.IsNullOrWhiteSpace(typeName) || !_mirroredTypeAllowList.Contains(typeName))
-            throw new InvalidOperationException($"MirrorHierarchy: type '{typeName}' not allowed");
+        string name = snapshot.ContainsKey("name") ? VariantToString((Variant)snapshot["name"]) : "";
+        string scenePath = snapshot.ContainsKey("scene") ? VariantToString((Variant)snapshot["scene"]) : "";
+        string factoryKey = snapshot.ContainsKey("factory") ? VariantToString((Variant)snapshot["factory"]) : "";
 
-        Node node = typeName switch
+        Node3D node;
+        if (!string.IsNullOrWhiteSpace(scenePath))
         {
-            nameof(Node3D) => new Node3D(),
-            nameof(Marker3D) => new Marker3D(),
+            if (!scenePath.StartsWith("res://", StringComparison.Ordinal))
+            {
+                GD.PrintErr($"MirrorHierarchy: invalid scene path '{scenePath}'");
+                return null;
+            }
 
-            nameof(StaticBody3D) => new StaticBody3D(),
-            nameof(RigidBody3D) => new RigidBody3D(),
-            nameof(CharacterBody3D) => new CharacterBody3D(),
-            nameof(Area3D) => new Area3D(),
+            var scene = GD.Load<PackedScene>(scenePath);
+            if (scene == null)
+            {
+                GD.PrintErr($"MirrorHierarchy: failed to load scene '{scenePath}'");
+                return null;
+            }
 
-            nameof(MeshInstance3D) => new MeshInstance3D(),
-            nameof(CpuParticles3D) => new CpuParticles3D(),
-            nameof(GpuParticles3D) => new GpuParticles3D(),
+            node = scene.Instantiate<Node3D>();
+        }
+        else if (!string.IsNullOrWhiteSpace(factoryKey))
+        {
+            if (!_nodeFactories.TryGetValue(factoryKey, out var factory))
+            {
+                GD.PrintErr($"MirrorHierarchy: unknown factory key '{factoryKey}' (did you RegisterNodeFactory?)");
+                return null;
+            }
 
-            nameof(OmniLight3D) => new OmniLight3D(),
-            nameof(SpotLight3D) => new SpotLight3D(),
-            nameof(DirectionalLight3D) => new DirectionalLight3D(),
+            node = factory();
 
-            nameof(CollisionShape3D) => new CollisionShape3D(),
-            nameof(CollisionPolygon3D) => new CollisionPolygon3D(),
-
-            nameof(CsgBox3D) => new CsgBox3D(),
-            nameof(CsgSphere3D) => new CsgSphere3D(),
-            nameof(CsgCylinder3D) => new CsgCylinder3D(),
-            // nameof(CsgCapsule3D) => new CsgCapsule3D(),
-            nameof(CsgTorus3D) => new CsgTorus3D(),
-
-            _ => throw new InvalidOperationException($"MirrorHierarchy: unsupported type '{typeName}'"),
-        };
+            if (!string.IsNullOrWhiteSpace(MirrorFactoryMetaKey))
+                node.SetMeta(MirrorFactoryMetaKey, factoryKey);
+        }
+        else
+        {
+            GD.PrintErr("MirrorHierarchy: snapshot missing both 'scene' and 'factory'");
+            return null;
+        }
 
         if (!string.IsNullOrWhiteSpace(name))
             node.Name = name;
 
-        if (node is Node3D n3d)
+        if (TryGetVector3(snapshot, "p", out var p))
+            node.Position = p;
+        if (TryGetVector3(snapshot, "r", out var r))
+            node.Rotation = r;
+        if (TryGetVector3(snapshot, "s", out var s))
+            node.Scale = s;
+        // if (TryGetBool(snapshot, "v", out var vis))
+        //     node.Visible = vis;
+
+        // Store ID on the node so we can index later.
+        if (id != 0)
         {
-            if (TryGetVector3(snapshot, "p", out var p))
-                n3d.Position = p;
-            if (TryGetVector3(snapshot, "r", out var r))
-                n3d.Rotation = r;
-            if (TryGetVector3(snapshot, "s", out var s))
-                n3d.Scale = s;
-            if (TryGetBool(snapshot, "v", out var vis))
-                n3d.Visible = vis;
+            node.SetMeta("net_mirror_id", id);
+            _mirroredNodeById[id] = node;
         }
 
-        if (node is VisualInstance3D vi)
+        if (TryGetArray(snapshot, "c", out var arr))
         {
-            if (TryGetUInt(snapshot, "layers", out var layers))
-                vi.Layers = layers;
-        }
-
-        if (node is MeshInstance3D mi)
-        {
-            if (TryGetResource<Mesh>(snapshot, "mesh", out var mesh))
-                mi.Mesh = mesh;
-            if (TryGetResource<Material>(snapshot, "mat0", out var mat0))
-                mi.SetSurfaceOverrideMaterial(0, mat0);
-        }
-
-        if (node is Light3D light)
-        {
-            if (TryGetColor(snapshot, "lc", out var c))
-                light.LightColor = c;
-            if (TryGetFloat(snapshot, "le", out var e))
-                light.LightEnergy = e;
-            // if (TryGetFloat(snapshot, "lr", out var range))
-                // light.LightRange = range;
-            if (TryGetBool(snapshot, "sh", out var sh))
-                light.ShadowEnabled = sh;
-        }
-
-        if (node is CollisionShape3D cs)
-        {
-            if (TryGetResource<Shape3D>(snapshot, "shape", out var shape))
-                cs.Shape = shape;
-            if (TryGetBool(snapshot, "disabled", out var disabled))
-                cs.Disabled = disabled;
-        }
-
-        if (node is CollisionPolygon3D cp)
-        {
-            if (TryGetFloat(snapshot, "depth", out var depth))
-                cp.Depth = depth;
-            if (snapshot.ContainsKey("polygon"))
+            foreach (var entry in arr)
             {
-                try { cp.Polygon = ((Variant)snapshot["polygon"]).AsVector2Array(); }
-                catch { }
+                Godot.Collections.Dictionary? childSnap = null;
+                try { childSnap = entry.AsGodotDictionary(); } catch { }
+                if (childSnap == null)
+                    continue;
+
+                var child = InstantiateMirroredNode(childSnap);
+                if (child == null)
+                    continue;
+
+                node.AddChild(child);
             }
-            if (TryGetBool(snapshot, "disabled", out var disabled))
-                cp.Disabled = disabled;
-        }
-
-        if (node is CsgPrimitive3D csg)
-        {
-            if (TryGetInt(snapshot, "csg_op", out var op))
-                csg.Operation = (CsgShape3D.OperationEnum)op;
-            if (TryGetFloat(snapshot, "csg_snap", out var snap))
-                csg.Snap = snap;
-            // if (TryGetBool(snapshot, "csg_smooth", out var smooth))
-                // csg.SmoothFaces = smooth;
-            if (TryGetResource<Material>(snapshot, "csg_mat", out var mat))
-                csg.MaterialOverride = mat;
-        }
-
-        if (node is CsgBox3D csgBox)
-        {
-            if (TryGetVector3(snapshot, "size", out var size))
-                csgBox.Size = size;
-        }
-        if (node is CsgSphere3D csgSphere)
-        {
-            if (TryGetFloat(snapshot, "radius", out var radius))
-                csgSphere.Radius = radius;
-        }
-        if (node is CsgCylinder3D csgCyl)
-        {
-            if (TryGetFloat(snapshot, "radius", out var radius))
-                csgCyl.Radius = radius;
-            if (TryGetFloat(snapshot, "height", out var height))
-                csgCyl.Height = height;
-        }
-        // if (node is CsgCapsule3D csgCap)
-        // {
-        //     if (TryGetFloat(snapshot, "radius", out var radius))
-        //         csgCap.Radius = radius;
-        //     if (TryGetFloat(snapshot, "height", out var height))
-        //         csgCap.Height = height;
-        // }
-        if (node is CsgTorus3D csgTor)
-        {
-            if (TryGetFloat(snapshot, "inner_radius", out var inner))
-                csgTor.InnerRadius = inner;
-            if (TryGetFloat(snapshot, "outer_radius", out var outer))
-                csgTor.OuterRadius = outer;
-        }
-
-        foreach (var childSnap in snapshot.Values)
-        {
-            Node child;
-            try { child = InstantiateMirroredNode(childSnap.AsGodotDictionary()); }
-            catch (Exception e)
-            {
-                GD.PrintErr($"InstantiateMirroredNode child error: {e.Message}");
-                continue;
-            }
-
-            node.AddChild(child);
         }
 
         return node;
@@ -932,38 +789,129 @@ public partial class SceneSync : Node
     [Rpc(MultiplayerApi.RpcMode.Authority)]
     private void ClientApplyMirroredHierarchy(Godot.Collections.Dictionary snapshot)
     {
-        // Client-only: rebuild the mirrored hierarchy under _syncRoot.
-        // We only do this once; if you need incremental changes later, add patch messages.
         if (Multiplayer.IsServer())
             return;
 
-        // Clear previous children (but keep SceneSync and any other non-mirrored essentials if SyncRoot is self).
-        // If SyncRootPath points to a dedicated container node, this is safe.
         foreach (var child in _syncRoot.GetChildren())
         {
-            if (child is Node n)
+            if (child is Node n && !(child is SceneSync))
                 n.QueueFree();
         }
+
+        ClearClientMirroredIndex();
 
         try
         {
             var rootNode = InstantiateMirroredNode(snapshot);
-            _syncRoot.AddChild(rootNode);
+            if (rootNode != null)
+            {
+                _syncRoot.AddChild(rootNode);
+                IndexClientMirroredTree(rootNode);
+            }
         }
         catch (Exception e)
         {
             GD.PrintErr($"ClientApplyMirroredHierarchy error: {e.Message}");
         }
 
-        // Reindex any path-synced nodes that now exist.
         ReindexPathSyncedNodes();
     }
 
     /// <summary>
-    /// Registers a custom node factory for spawning.
+    /// Server-only: mirror-add a node and its mirrorable subtree to all clients.
+    /// The node must be mirrorable (scene instanced or has net_factory meta).
     /// </summary>
-    public static void RegisterNodeFactory(string key, Func<Node3D> factory)
+    public void ServerMirrorAdd(Node3D node, Node? parentOverride = null)
     {
-        _nodeFactories[key] = factory;
+        if (!Multiplayer.IsServer())
+            throw new InvalidOperationException("ServerMirrorAdd is server-only");
+
+        if (!IsMirrorable(node))
+            throw new InvalidOperationException($"ServerMirrorAdd: node '{node.Name}' is not mirrorable (needs SceneFilePath or meta '{MirrorFactoryMetaKey}')");
+
+        var parent = parentOverride ?? node.GetParent();
+        var parentId = 0L;
+        if (parent is Node3D p3d)
+            parentId = GetOrAssignMirroredId(p3d);
+
+        var snap = SerializeMirroredSubtree(node);
+        var id = GetOrAssignMirroredId(node);
+        Rpc(nameof(ClientMirrorAdd), id, parentId, snap);
+    }
+
+    /// <summary>
+    /// Server-only: mirror-remove a previously mirrored node by id.
+    /// </summary>
+    public void ServerMirrorRemove(long mirrorId)
+    {
+        if (!Multiplayer.IsServer())
+            throw new InvalidOperationException("ServerMirrorRemove is server-only");
+
+        Rpc(nameof(ClientMirrorRemove), mirrorId);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority)]
+    private void ClientMirrorAdd(long mirrorId, long parentMirrorId, Godot.Collections.Dictionary snapshot)
+    {
+        if (Multiplayer.IsServer())
+            return;
+
+        // If we already have this node, ignore.
+        if (mirrorId != 0 && _mirroredNodeById.ContainsKey(mirrorId))
+            return;
+
+        Node parent = _syncRoot;
+        if (parentMirrorId != 0 && _mirroredNodeById.TryGetValue(parentMirrorId, out var p))
+            parent = p;
+
+        var node = InstantiateMirroredNode(snapshot);
+        if (node == null)
+            return;
+
+        parent.AddChild(node);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority)]
+    private void ClientMirrorRemove(long mirrorId)
+    {
+        if (Multiplayer.IsServer())
+            return;
+
+        if (mirrorId == 0)
+            return;
+
+        if (_mirroredNodeById.TryGetValue(mirrorId, out var node) && IsInstanceValid(node))
+        {
+            node.QueueFree();
+        }
+
+        _mirroredNodeById.Remove(mirrorId);
+    }
+
+    private bool TryGetFactoryKey(Node node, out string key)
+    {
+        key = string.Empty;
+        if (string.IsNullOrWhiteSpace(MirrorFactoryMetaKey))
+            return false;
+
+        if (!node.HasMeta(MirrorFactoryMetaKey))
+            return false;
+
+        try
+        {
+            var v = node.GetMeta(MirrorFactoryMetaKey);
+            if (v.VariantType == Variant.Type.String)
+            {
+                key = v.AsString();
+                return !string.IsNullOrWhiteSpace(key);
+            }
+
+            key = v.ToString();
+            return !string.IsNullOrWhiteSpace(key);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
