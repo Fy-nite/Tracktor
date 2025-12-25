@@ -1,4 +1,7 @@
 using Godot;
+using OCRuntime;
+using System;
+using System.Reflection;
 
 
 public partial class HomeScreen : Node
@@ -6,25 +9,34 @@ public partial class HomeScreen : Node
 	[Export] public PackedScene XrPlayerRigScene { get; set; }
 	
 	[Export] public string StartVrAction { get; set; } = "ui_accept";
-	/// <summary>
-	/// The main scene that gets initialized (e.g., the game world)
-	/// </summary>
-	[Export] public PackedScene MainScene { get; set; }
+	[Export] public CodeEdit CodeEditor { get; set; }
+    /// <summary>
+    /// The main scene that gets initialized (e.g., the game world)
+    /// </summary>
+    [Export] public PackedScene MainScene { get; set; }
+	public static string DemoCode; 
+	public static IRRuntime Runtime { get; set; }
 
-	private Node mainGame;
+    private Node mainGame;
 	private NetRoot? _net;
 	private bool _vrStarted;
 
 	public override void _Ready()
 	{
-		if (MainScene != null)
+		DemoCode = CodeEditor.Text;
+        
+        if (MainScene != null)
 		{
 			// Instance and add the main game scene
 			mainGame = MainScene.Instantiate();
 			FindChild("SceneSync").AddChild(mainGame);
 		}
-		
-		_net = GetNode<NetRoot>("NetRoot");
+		Runtime.RegisterNativeMethod("GD.Print(string)", (arg) =>
+		{
+            GD.Print(arg[0]);
+			return null;
+		});
+        _net = GetNode<NetRoot>("NetRoot");
 
 		// Connect VR button signal
 		var vrButton = GetNode<Button>("UI/NetConnect/VBox/Buttons/VrButton");
@@ -39,19 +51,42 @@ public partial class HomeScreen : Node
 		var ui = GetNode<CanvasLayer>("UI");
 		ui.Visible = true;
 	}
-
-	public override void _UnhandledInput(InputEvent @event)
+	
+	
+    public override void _UnhandledInput(InputEvent @event)
 	{
-		if (Input.IsKeyPressed(Key.Alt))
-		{
-			var newScene = ResourceLoader.Load<PackedScene>("res://Assets/Scenes/Dashboard.tscn");
-			if (newScene != null)
-			{
-				GetTree().ChangeSceneToPacked(newScene);
-			}
-		}
-		// Toggle UI / physical panel with Escape (ui_cancel)
-		if (@event.IsActionPressed("ui_cancel"))
+        if (Input.IsKeyPressed(Key.F1))
+        {
+            GD.Print(CodeEditor.Text.Trim());
+            if (Runtime == null)
+            {
+                Runtime = new IRRuntime(CodeEditor.Text.Trim(), IRRuntime.InputFormat.TextIr);
+				new Traktor.Core.IRBindings.GodotBindings().Register(Runtime);
+				Runtime.RegisterNativeMethod("ThrowException(string)", (args) =>
+				{
+					throw new Exception(args[0]?.ToString() ?? "Unknown error");
+				});
+				Runtime.OnException += (ex) =>
+				{
+					GD.PrintErr($"Runtime Exception: {ex.Message}");
+					// Optionally show in-game UI, e.g., display error message
+					var errorLabel = GetNode<Label>("UI/ErrorLabel"); // Assuming you have an error label
+					if (errorLabel != null)
+					{
+						errorLabel.Text = $"Error: {ex.Message}";
+						errorLabel.Visible = true;
+					}
+				};
+            }
+            else
+            {
+                Runtime.LoadProgram(CodeEditor.Text.Trim(), IRRuntime.InputFormat.TextIr);
+            }
+            Runtime.Run();
+        }
+
+        // Toggle UI / physical panel with Escape (ui_cancel)
+        if (@event.IsActionPressed("ui_cancel"))
 		{
 		   
 			// Toggle canvas UI visibility

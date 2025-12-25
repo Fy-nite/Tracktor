@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ObjectRuntime\OCRuntime\OCRuntime.csproj" />
     <ProjectReference Include="..\Traktor-Data\Traktor-Data.csproj" />
     <ProjectReference Include="..\Traktor-Protocol\Traktor-Protocol.csproj" />
     <ProjectReference Include="..\WorldController\world.csproj" />

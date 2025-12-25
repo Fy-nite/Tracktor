@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11310.294 d18.3
+VisualStudioVersion = 18.3.11310.294
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trakction", "trakction.csproj", "{F4A59ED0-F92C-C0D8-362F-402B92C39DEC}"
 EndProject
@@ -19,11 +19,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "world", "CSharp\WorldController\world.csproj", "{BA2CA077-A21D-8A36-5AD6-0AF634836100}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{55E821F5-8220-42E5-BDEC-C0BCEF5E5B43}"
-	ProjectSection(SolutionItems) = preProject
-		CSharp\Libs\objectruntime\OCRuntime\OCRuntime.csproj = CSharp\Libs\objectruntime\OCRuntime\OCRuntime.csproj
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectIR.Core", "CSharp\Libs\objectruntime\Runtimes\ObjectIR.Core\ObjectIR.Core.csproj", "{7CA7132B-5115-3AA7-4FB8-74F61563CB2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OCRuntime", "..\..\ObjectRuntime\OCRuntime\OCRuntime.csproj", "{3864D708-C25B-5C89-5B87-152425E73A15}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +54,10 @@ Global
 		{7CA7132B-5115-3AA7-4FB8-74F61563CB2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CA7132B-5115-3AA7-4FB8-74F61563CB2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CA7132B-5115-3AA7-4FB8-74F61563CB2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3864D708-C25B-5C89-5B87-152425E73A15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3864D708-C25B-5C89-5B87-152425E73A15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3864D708-C25B-5C89-5B87-152425E73A15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3864D708-C25B-5C89-5B87-152425E73A15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,6 +71,7 @@ Global
 		{BA2CA077-A21D-8A36-5AD6-0AF634836100} = {856F85FA-7DEC-EC67-E794-E181D5B4FB84}
 		{55E821F5-8220-42E5-BDEC-C0BCEF5E5B43} = {B41BF331-FCCB-2ADF-CDB6-767964B34647}
 		{7CA7132B-5115-3AA7-4FB8-74F61563CB2D} = {55E821F5-8220-42E5-BDEC-C0BCEF5E5B43}
+		{3864D708-C25B-5C89-5B87-152425E73A15} = {55E821F5-8220-42E5-BDEC-C0BCEF5E5B43}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E639E9FF-4F8E-4C67-8297-9DB94838DDE0}

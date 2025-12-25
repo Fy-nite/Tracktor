@@ -1,16 +1,18 @@
-[gd_scene load_steps=8 format=3 uid="uid://bjbth8k4r3gn2"]
+[gd_scene load_steps=9 format=3 uid="uid://bjbth8k4r3gn2"]
 
-[ext_resource type="Script" uid="uid://bohtaxmyjxk0j" path="res://CSharp/Net/NetDebugLabel.cs" id="1_ksj1l"]
-[ext_resource type="Script" uid="uid://d3uf2ku0bl441" path="res://CSharp/Net/NetConnectPanel.cs" id="2_3272g"]
-[ext_resource type="Script" uid="uid://xp08f3vh748a" path="res://CSharp/Net/NetRoot.cs" id="3_4d5n3"]
+[ext_resource type="Script" uid="uid://bvttos0kiefax" path="res://CSharp/Net/NetDebugLabel.cs" id="1_ksj1l"]
+[ext_resource type="Script" uid="uid://o1t11yd8dec0" path="res://CSharp/Net/NetConnectPanel.cs" id="2_3272g"]
+[ext_resource type="Script" uid="uid://dd4net5bhn11e" path="res://CSharp/Net/NetRoot.cs" id="3_4d5n3"]
 [ext_resource type="PackedScene" uid="uid://cpj7vtj6gr3tv" path="res://Gdscript/player.tscn" id="3_wrh72"]
-[ext_resource type="Script" uid="uid://bp0vpmn3sh2y7" path="res://CSharp/Net/SceneSync.cs" id="4_wrh72"]
+[ext_resource type="CodeHighlighter" uid="uid://d0eidyradawn6" path="res://assets/ObjectIRcodehighlighter.tres" id="4_02tn6"]
+[ext_resource type="Script" uid="uid://b0gx56bn2n0u5" path="res://CSharp/Net/SceneSync.cs" id="4_wrh72"]
 [ext_resource type="PackedScene" uid="uid://chcni4ntjdjpv" path="res://assets/Scenes/MainGame.tscn" id="5_maingame"]
-[ext_resource type="Script" uid="uid://bswn7axotlg4l" path="res://CSharp/HomeScreen.cs" id="8_homescreen"]
+[ext_resource type="Script" uid="uid://4hh1ncgg20pu" path="res://CSharp/HomeScreen.cs" id="8_homescreen"]
 
-[node name="HomeScreen" type="Node"]
+[node name="HomeScreen" type="Node" node_paths=PackedStringArray("CodeEditor")]
 script = ExtResource("8_homescreen")
 XrPlayerRigScene = ExtResource("3_wrh72")
+CodeEditor = NodePath("UI/ColorRect/CodeEdit")
 MainScene = ExtResource("5_maingame")
 
 [node name="UI" type="CanvasLayer" parent="."]
@@ -20,6 +22,32 @@ offset_left = 2.0
 offset_right = 1150.0
 offset_bottom = 650.0
 color = Color(0.19076231, 0.19076234, 0.19076231, 1)
+
+[node name="CodeEdit" type="CodeEdit" parent="UI/ColorRect"]
+layout_mode = 0
+offset_left = -1.0
+offset_top = 202.0
+offset_right = 693.0
+offset_bottom = 650.0
+text = "module HelloWorld {
+	class Program {
+		static method Main() -> void {
+			ldstr \"hello world\"
+			call GD.Print(string)
+	}
+}"
+caret_blink = true
+syntax_highlighter = ExtResource("4_02tn6")
+highlight_all_occurrences = true
+highlight_current_line = true
+draw_control_chars = true
+draw_tabs = true
+draw_spaces = true
+line_folding = true
+gutters_draw_line_numbers = true
+gutters_draw_fold_gutter = true
+auto_brace_completion_enabled = true
+auto_brace_completion_highlight_matching = true
 
 [node name="NetDebug" type="Label" parent="UI"]
 offset_left = 8.0
@@ -97,5 +125,5 @@ script = ExtResource("3_4d5n3")
 
 [node name="SceneSync" type="Node" parent="NetRoot"]
 script = ExtResource("4_wrh72")
-SyncRootPath = NodePath("../")
+SyncRootPath = NodePath("..")
 TransformSendHz = 60.0
