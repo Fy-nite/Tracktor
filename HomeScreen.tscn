@@ -31,9 +31,22 @@ offset_right = 693.0
 offset_bottom = 650.0
 text = "module HelloWorld {
 	class Program {
+		static method ThrowExample() -> void{
+			ldstr \"no scene named Cat.tscn\"
+			call GodotExceptions.InvalidSceneException(string)
+		}
+	
 		static method Main() -> void {
-			ldstr \"hello world\"
+			local Item: object
+			ldstr \"hello world me\"
 			call GD.Print(string)
+			try {
+				call Program.ThrowExample() -> void
+			}
+			catch {
+				ldstr \"something broke\"
+				call GD.Print(string string) -> void
+			}
 	}
 }"
 caret_blink = true
@@ -49,11 +62,17 @@ gutters_draw_fold_gutter = true
 auto_brace_completion_enabled = true
 auto_brace_completion_highlight_matching = true
 
+[node name="ErrorList" type="Label" parent="UI/ColorRect"]
+layout_mode = 0
+offset_top = 166.0
+offset_right = 688.0
+offset_bottom = 205.0
+
 [node name="NetDebug" type="Label" parent="UI"]
-offset_left = 8.0
-offset_top = 8.0
-offset_right = 340.0
-offset_bottom = 60.0
+offset_left = 2.0
+offset_top = -2.0
+offset_right = 334.0
+offset_bottom = 50.0
 text = "Net: ..."
 script = ExtResource("1_ksj1l")
 

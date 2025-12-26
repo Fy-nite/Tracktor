@@ -18,6 +18,8 @@ namespace Traktor.Core.IRBindings
         /// <param name="Runtime">The runtime environment in which to register native methods. Cannot be null.</param>
         public void Register(IRRuntime Runtime)
         {
+            new GodotExceptions().Register(Runtime);
+
             Runtime.EnableReflectionNativeMethods = true;
             Runtime.RegisterNativeMethod("GD.Print(string)", (arg) =>
             {

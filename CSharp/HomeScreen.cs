@@ -31,11 +31,7 @@ public partial class HomeScreen : Node
 			mainGame = MainScene.Instantiate();
 			FindChild("SceneSync").AddChild(mainGame);
 		}
-		Runtime.RegisterNativeMethod("GD.Print(string)", (arg) =>
-		{
-            GD.Print(arg[0]);
-			return null;
-		});
+
         _net = GetNode<NetRoot>("NetRoot");
 
 		// Connect VR button signal
@@ -70,13 +66,29 @@ public partial class HomeScreen : Node
 				{
 					GD.PrintErr($"Runtime Exception: {ex.Message}");
 					// Optionally show in-game UI, e.g., display error message
-					var errorLabel = GetNode<Label>("UI/ErrorLabel"); // Assuming you have an error label
+					var errorLabel = GetNode<Label>("UI/ColorRect/ErrorList");
 					if (errorLabel != null)
 					{
-						errorLabel.Text = $"Error: {ex.Message}";
+						errorLabel.Text = $"Error: {ex.Message}\n";
 						errorLabel.Visible = true;
 					}
 				};
+				Runtime.OnStep += (CallInfo, instruction ) =>
+				{
+					// Optionally log or display step information
+					GD.Print($"Runtime Step: ({instruction.opCode}, {instruction.operand}");
+					GD.Print($" at {CallInfo.Method} (CallStack Count: {CallInfo.EvalStack.Count})");
+					foreach (var item in CallInfo.EvalStack)
+					{
+						GD.Print($"  Stack Item: {item}");
+					}
+					GD.Print("----");
+					GD.Print($" Current Method Arguments:");
+					foreach (var item in CallInfo.Args)
+					{
+						GD.Print($"  Arg: {item}");
+					}
+                };
             }
             else
             {
