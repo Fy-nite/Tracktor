@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://03e2qq0ssi1o"]
+
+[node name="EditorUi" type="Control"]
+layout_mode = 3
+anchor_right = 1.667
+anchor_bottom = 2.973
+offset_right = -0.3840332
+offset_bottom = -846.504
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TabContainer" type="TabContainer" parent="."]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1920.0
+current_tab = 0
+
+[node name="Editor" type="Control" parent="TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="Debug" type="Control" parent="TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Comments" type="Control" parent="TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="Editor3" type="Control" parent="TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
