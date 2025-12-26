@@ -395,6 +395,14 @@ public partial class NetRoot : Node
         if (node is not PlayerAvatar avatar)
             return;
 
+        // Ensure the player node is a child of the SceneSync sync root (client-side)
+        if (node.GetParent() != _sceneSync)
+        {
+            GD.Print($"NetRoot (Client): Moving player node '{node.Name}' under SceneSync node.");
+            node.GetParent()?.RemoveChild(node);
+            _sceneSync.AddChild(node);
+        }
+
         avatar.PeerId = peerId;
         avatar.IsLocalPlayer = (Multiplayer.MultiplayerPeer != null && peerId == Multiplayer.GetUniqueId());
 		avatar.Name = $"Player_{peerId}";
