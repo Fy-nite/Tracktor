@@ -2,6 +2,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot.Collections;
 
 // dopn't import thism it doesn't exist.
@@ -542,7 +543,8 @@ public partial class SceneSync : Node
         var node = _syncRoot.GetNodeOrNull<Node3D>(relPath);
         if (node == null)
         {
-            GD.PrintErr($"SceneSync: snapshot missing node at '{relPath}' under sync root.");
+            var children = string.Join(", ", _syncRoot.GetChildren().OfType<Node>().Select(n => n.Name));
+            GD.PrintErr($"SceneSync: snapshot missing node at '{relPath}' under sync root. Children: [{children}]");
             return;
         }
 
@@ -646,6 +648,7 @@ public partial class SceneSync : Node
         }
         else
         {
+            GD.PrintErr($"MirrorHierarchy: snapshot missing both 'scene' and 'factory' for node '{node.Name}' of type '{node.GetType().Name}'");
             dict["scene"] = "";
             dict["factory"] = "";
         }
@@ -743,7 +746,7 @@ public partial class SceneSync : Node
         }
         else
         {
-            GD.PrintErr("MirrorHierarchy: snapshot missing both 'scene' and 'factory'");
+            // GD.PrintErr($"MirrorHierarchy: snapshot missing both 'scene' and 'factory' for node '{node.Name}' of type '{node.GetType().Name}'");
             return null;
         }
 

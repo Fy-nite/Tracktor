@@ -365,11 +365,21 @@ public partial class NetRoot : Node
 		var entityId = _sceneSync.ServerSpawn("res://assets/Scenes/NetPlayer.tscn", new Transform3D(Basis.Identity, spawnPos));
         _playerEntityByPeer[peerId] = entityId;
 
-        if (_sceneSync.TryGetEntityNode(entityId, out var node) && node is PlayerAvatar avatar)
+        // Ensure the player node is a child of the SceneSync sync root
+        if (_sceneSync.TryGetEntityNode(entityId, out var node))
         {
-            avatar.PeerId = peerId;
-            avatar.IsLocalPlayer = (Multiplayer.MultiplayerPeer != null && peerId == Multiplayer.GetUniqueId());
-			avatar.Name = $"Player_{peerId}";
+            if (node.GetParent() != _sceneSync)
+            {
+                GD.Print($"NetRoot: Moving player node '{node.Name}' under SceneSync node.");
+                node.GetParent()?.RemoveChild(node);
+                _sceneSync.AddChild(node);
+            }
+            if (node is PlayerAvatar avatar)
+            {
+                avatar.PeerId = peerId;
+                avatar.IsLocalPlayer = (Multiplayer.MultiplayerPeer != null && peerId == Multiplayer.GetUniqueId());
+                avatar.Name = $"Player_{peerId}";
+            }
         }
     }
 

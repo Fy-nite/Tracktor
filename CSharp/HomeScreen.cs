@@ -58,10 +58,7 @@ public partial class HomeScreen : Node
             {
                 Runtime = new IRRuntime(CodeEditor.Text.Trim(), IRRuntime.InputFormat.TextIr);
 				new Traktor.Core.IRBindings.GodotBindings().Register(Runtime);
-				Runtime.RegisterNativeMethod("ThrowException(string)", (args) =>
-				{
-					throw new Exception(args[0]?.ToString() ?? "Unknown error");
-				});
+				
 				Runtime.OnException += (ex) =>
 				{
 					GD.PrintErr($"Runtime Exception: {ex.Message}");

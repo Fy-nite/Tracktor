@@ -1,31 +1,43 @@
 ﻿using OCRuntime;
+using OCRuntime.Runtime;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Traktor.Core.IRBindings
 {
     public class GodotExceptions
     {
-        public GodotExceptions() { }
+        private class ExceptionSignal : Exception
+        {
+            public object? ExceptionObject { get; }
+
+            public ExceptionSignal(object? exceptionObject)
+            {
+                ExceptionObject = exceptionObject;
+            }
+        }
+
         public IRRuntime Register(IRRuntime runtime)
         {
-            runtime.RegisterNativeMethod("GodotExceptions.InvalidCameraException(string)", (args) =>
+            runtime.RegisterNativeMethod("GodotExceptions.InvalidCameraException(string)", (instance, args) =>
             {
                 string message = args.Length > 0 && args[0] is string str ? str : "Invalid camera exception occurred.";
-                throw new InvalidCameraException(message);
+                var ex = new ManagedObject("GodotExceptions.InvalidCameraException");
+                ex.SetField("Message", message);
+                return ex;
             });
-            runtime.RegisterNativeMethod("GodotExceptions.WorldSyncException(string)", (args) =>
+            runtime.RegisterNativeMethod("GodotExceptions.WorldSyncException(string)", (instance, args) =>
             {
                 string message = args.Length > 0 && args[0] is string str ? str : "World sync exception occurred.";
-                throw new WorldSyncException(message);
+                var ex = new ManagedObject("GodotExceptions.WorldSyncException");
+                ex.SetField("Message", message);
+                return ex;
             });
-            runtime.RegisterNativeMethod("GodotExceptions.InvalidSceneException(string)", (args) =>
+            runtime.RegisterNativeMethod("GodotExceptions.InvalidSceneException(string)", (instance, args) =>
             {
                 string message = args.Length > 0 && args[0] is string str ? str : "Invalid scene exception occurred.";
-                throw new InvalidSceneException(message);
+                var ex = new ManagedObject("GodotExceptions.InvalidSceneException");
+                ex.SetField("Message", message);
+                return ex;
             });
             return runtime;
         }
