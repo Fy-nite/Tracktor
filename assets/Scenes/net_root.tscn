@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://cd2se4m11nwsf"]
+
+[ext_resource type="Script" uid="uid://dd4net5bhn11e" path="res://CSharp/Net/NetRoot.cs" id="1_dyvy1"]
+[ext_resource type="Script" uid="uid://b0gx56bn2n0u5" path="res://CSharp/Net/SceneSync.cs" id="2_hkuht"]
+
+[node name="NetRoot" type="Node"]
+script = ExtResource("1_dyvy1")
+
+[node name="SceneSync" type="Node" parent="."]
+script = ExtResource("2_hkuht")
+SyncRootPath = NodePath("..")
+TransformSendHz = 60.0

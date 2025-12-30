@@ -10,6 +10,7 @@ namespace Trakction.Interaction;
 public partial class InteractorRay3D : Node3D
 {
     [Export] public string InteractAction { get; set; } = "ui_accept";
+    [Export] public string VRButtonName { get; set; } = "trigger_click";
     [Export] public float MaxDistance { get; set; } = 3.0f;
 
     /// <summary>
@@ -34,6 +35,20 @@ public partial class InteractorRay3D : Node3D
         _ray.CollideWithAreas = true;
         _ray.CollideWithBodies = true;
         _ray.TargetPosition = new Vector3(0, 0, -MaxDistance);
+
+        // Auto-wire VR controller if parent is one
+        if (GetParent() is XRController3D controller)
+        {
+            controller.ButtonPressed += OnVRButtonPressed;
+        }
+    }
+
+    private void OnVRButtonPressed(string name)
+    {
+        if (name == VRButtonName)
+        {
+            TryInteract();
+        }
     }
 
     public override void _UnhandledInput(InputEvent @event)

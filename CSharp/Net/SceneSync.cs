@@ -5,11 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot.Collections;
 
-// dopn't import thism it doesn't exist.
-// and we already have a different scene for XR players.
-// using Traktion.XR;
-
-
 
 /*
  *
@@ -30,7 +25,7 @@ int id = sceneSync.ServerSpawn("MyCustomNode", transform);
 ///
 /// - Server spawns/despawns entities and sends reliable RPCs.
 /// - Server streams transform deltas (unreliable) for registered entities.
-/// - Clients never authoritatively move synced entities.
+/// - Clients never authoritively move synced entities.
 ///
 /// Attach this under a node that exists on both server + client (e.g. under NetRoot).
 /// Set SyncRootPath to the node that will parent all synced entities.
@@ -47,8 +42,8 @@ public partial class SceneSync : Node
     // For nodes that already exist in the scene on both server and client.
     // Add Node3D nodes to this group to have their transforms synced by relative NodePath.
     [Export] public string PathSyncGroup = "net_sync";
-
-    private static readonly System.Collections.Generic.Dictionary<string, Func<Node3D>> _nodeFactories = new()
+    private SceneSync _sceneSync => this;
+    public readonly System.Collections.Generic.Dictionary<string, Func<Node3D>> _nodeFactories = new()
     {
         ["Box"] = () =>
         {
@@ -256,10 +251,6 @@ public partial class SceneSync : Node
             if (!IsInstanceValid(node))
                 continue;
 
-            // Players are updated via NetRoot position RPCs (client-authoritative). Avoid double-sync.
-            if (node is PlayerAvatar)
-                continue;
-
             var parentPath = _syncRoot.GetPathTo(node.GetParent());
             RpcId(peerId, nameof(ClientSpawnEntity), id, _spawnKeyById[id], parentPath.ToString(), node.GlobalTransform,
                 new Godot.Collections.Dictionary());
@@ -385,6 +376,21 @@ public partial class SceneSync : Node
         Rpc(nameof(ClientDespawnEntity), entityId);
     }
 
+    public void SendExistingEntitiesToPeer(long peerId)
+    {
+        foreach (var kv in _entityById)
+        {
+            var id = kv.Key;
+            var node = kv.Value;
+            if (!_spawnKeyById.TryGetValue(id, out var spawnKey))
+                continue;
+            var parentPath = _syncRoot.GetPathTo(node.GetParent()).ToString();
+            var transform = node.GlobalTransform;
+            var props = new Godot.Collections.Dictionary(); // Props not stored, send empty
+            RpcId(peerId, nameof(ClientSpawnEntity), id, spawnKey, parentPath, transform, props);
+        }
+    }
+
     private void RegisterEntity(int entityId, Node3D node)
     {
         _entityById[entityId] = node;
@@ -484,10 +490,15 @@ public partial class SceneSync : Node
             }
 
             node = scene.Instantiate<Node3D>();
+            if (node == null)
+            {
+                GD.PrintErr($"ClientSpawnEntity failed to instantiate: {spawnKey}");
+                return;
+            }
         }
         else
         {
-            if (!_nodeFactories.TryGetValue(spawnKey, out var factory))
+            if (!_sceneSync._nodeFactories.TryGetValue(spawnKey, out var factory))
             {
                 GD.PrintErr($"ClientSpawnEntity unknown spawn key: {spawnKey}");
                 return;
@@ -498,10 +509,10 @@ public partial class SceneSync : Node
 
         ApplyPropsToNode(node, props);
 
-        Node parent = _syncRoot;
+        Node parent = _sceneSync;
         if (!string.IsNullOrWhiteSpace(parentPath))
         {
-            var maybe = _syncRoot.GetNodeOrNull<Node>(parentPath);
+            var maybe = _sceneSync.GetNodeOrNull<Node>(parentPath);
             if (maybe != null)
                 parent = maybe;
         }
@@ -509,6 +520,8 @@ public partial class SceneSync : Node
         parent.AddChild(node);
         node.GlobalTransform = transform;
         RegisterEntity(entityId, node);
+
+        GD.Print($"ClientSpawnEntity: added entity {entityId} ({node.Name}) under {parent.Name} at {node.GlobalPosition}");
     }
 
     [Rpc(MultiplayerApi.RpcMode.Authority)]
@@ -636,6 +649,8 @@ public partial class SceneSync : Node
             ["name"] = node.Name,
         };
 
+        var allowPlain = node == _syncRoot || node.Name == "MirroredRoot";
+
         if (HasScenePath(node))
         {
             dict["scene"] = node.SceneFilePath;
@@ -648,7 +663,8 @@ public partial class SceneSync : Node
         }
         else
         {
-            GD.PrintErr($"MirrorHierarchy: snapshot missing both 'scene' and 'factory' for node '{node.Name}' of type '{node.GetType().Name}'");
+            if (!allowPlain)
+                GD.PrintErr($"MirrorHierarchy: snapshot missing both 'scene' and 'factory' for node '{node.Name}' of type '{node.GetType().Name}'");
             dict["scene"] = "";
             dict["factory"] = "";
         }
@@ -746,8 +762,8 @@ public partial class SceneSync : Node
         }
         else
         {
-            // GD.PrintErr($"MirrorHierarchy: snapshot missing both 'scene' and 'factory' for node '{node.Name}' of type '{node.GetType().Name}'");
-            return null;
+            // Allow a plain container (e.g., the dummy mirror root) so children still get instantiated.
+            node = new Node3D();
         }
 
         if (!string.IsNullOrWhiteSpace(name))

@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://byov7wt6ny132"]
+
+[ext_resource type="Script" uid="uid://btpnvdtxeq5l5" path="res://CSharp/PhysicalUI/PhysicalButton3D.cs" id="1_7ac1m"]
+[ext_resource type="Script" uid="uid://d4kd2uovqntx5" path="res://CSharp/PhysicalUI/PhysicalTextInput3D.cs" id="2_jhdbv"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Node3D" type="Node3D" parent="."]
+
+[node name="UI" type="Node3D" parent="Node3D"]
+script = ExtResource("1_7ac1m")
+Text = "Meow"
+
+[node name="UI2" type="Node3D" parent="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18648818, 0)
+script = ExtResource("2_jhdbv")
+Text = "Meow"

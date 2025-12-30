@@ -169,7 +169,7 @@ public sealed partial class ServerRepl : Node
                     return;
                 }
 
-                net.ServerDespawnEntity(entityId);
+                // net.ServerDespawnEntity(entityId);
                 return;
             case "spawn-godot":
                 if (net == null)
@@ -231,9 +231,8 @@ public sealed partial class ServerRepl : Node
                     pos = new Vector3(x, y, z);
                 }
 
-                var spawnedId = net.ServerSpawnEntity(scenePath, pos);
-                if (spawnedId != 0)
-                    GD.Print($"Spawned entityId={spawnedId} scene={scenePath} pos={pos}");
+                net.ServerSpawnEntity(scenePath, pos);
+                GD.Print($"Spawned scene '{scenePath}' at {pos}");
                 return;
 
             default:

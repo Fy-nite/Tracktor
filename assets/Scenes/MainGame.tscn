@@ -1,9 +1,10 @@
-[gd_scene load_steps=12 format=3 uid="uid://chcni4ntjdjpv"]
+[gd_scene load_steps=13 format=3 uid="uid://chcni4ntjdjpv"]
 
 [ext_resource type="Script" uid="uid://8kuxfg0sgt74" path="res://assets/Scenes/meow.cs" id="1_3uwud"]
 [ext_resource type="AudioStream" uid="uid://b0f8s2bd10pc7" path="res://assets/kenney ui audio/click1.ogg" id="1_fd8mk"]
 [ext_resource type="Script" uid="uid://dkb8ltjc6067n" path="res://addons/raytraced_audio/raytraced_audio_player_3d.gd" id="1_iji55"]
 [ext_resource type="Script" uid="uid://suxuy4ahnov5" path="res://CSharp/HomeWorld/HomeWorld.cs" id="1_pgo4w"]
+[ext_resource type="Texture2D" uid="uid://cxi42q04ix824" path="res://assets/Valve_1m x 1m.png" id="2_2ij7o"]
 [ext_resource type="AudioStream" uid="uid://bwp5hc76kl344" path="res://assets/kenney ui audio/click2.ogg" id="2_3uwud"]
 [ext_resource type="AudioStream" uid="uid://07qgg2x635jx" path="res://assets/kenney ui audio/click3.ogg" id="3_pgo4w"]
 [ext_resource type="AudioStream" uid="uid://gkxt72x1yjm5" path="res://assets/kenney ui audio/click4.ogg" id="4_oniu7"]
@@ -11,6 +12,9 @@
 [ext_resource type="Script" uid="uid://svlrim4x7k8b" path="res://Gdscript/SpawnerPanelToggle.gd" id="6_spawntoggle"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_oniu7"]
+albedo_texture = ExtResource("2_2ij7o")
+uv1_triplanar = true
+point_size = 128.0
 
 [sub_resource type="AudioStreamPlaylist" id="AudioStreamPlaylist_dgnyt"]
 shuffle = true
@@ -25,7 +29,7 @@ stream_4 = ExtResource("5_6jp01")
 script = ExtResource("1_pgo4w")
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8646469, -1.2268639, 4.2240753)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0074720383, -4.7683716e-07, 0.03199005)
 use_collision = true
 size = Vector3(34.57274, 0.11463574, 40.719513)
 material = SubResource("StandardMaterial3D_oniu7")

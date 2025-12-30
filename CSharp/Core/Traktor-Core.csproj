@@ -17,5 +17,11 @@
     <Folder Include="Assets\Shaders\" />
     <Folder Include="Assets\UI\" />
   </ItemGroup>
+  <!-- include the Resources folder \-->
+  <ItemGroup>
+    <None Update="GameAssets\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>

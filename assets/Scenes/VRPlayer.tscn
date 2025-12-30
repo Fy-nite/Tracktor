@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://dw3xiesi16kby"]
+
+[ext_resource type="Script" uid="uid://ces1j6plojyra" path="res://addons/godot-xr-tools/xr/start_xr.gd" id="1_gnldy"]
+
+[node name="VrPlayer" type="Node3D"]
+
+[node name="XRToolsStartXR" type="Node" parent="."]
+script = ExtResource("1_gnldy")
+metadata/_custom_type_script = "uid://ces1j6plojyra"

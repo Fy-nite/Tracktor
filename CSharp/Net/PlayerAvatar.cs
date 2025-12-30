@@ -133,7 +133,7 @@ public partial class PlayerAvatar : CharacterBody3D
 		if (!IsFinite(pos) || pos.Length() > MaxSendPositionMagnitude)
 			return;
 
-		_net?.SendPlayerPosition(pos, GlobalRotation);
+		
 		
 
 	}

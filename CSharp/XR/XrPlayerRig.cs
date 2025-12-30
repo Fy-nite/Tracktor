@@ -4,9 +4,9 @@ using System;
 namespace Trakction.XR
 {
     /// <summary>
-    /// Simple wrapper Node3D that loads/instantiates a player scene (e.g. your GDScript `player.tscn`) as a child.
+    /// Simple wrapper Node3D that loads/instantiates the VR player as a child.
     /// Exposes IsLocalPlayer and PeerId so C# code can set them before/after instantiation.
-    /// Set the `PlayerScene` export to `res://Gdscript/player.tscn` in the inspector.
+
     /// </summary>
     public partial class XrPlayerRig : Node3D
     {
@@ -15,10 +15,53 @@ namespace Trakction.XR
         // These are simple fields the HomeScreen can set. You can use them inside the instantiated player
         // if you expose/propagate them from the instantiated node (for GDScript scenes you'd need to call
         // methods or set properties on the child after instantiation).
-        public bool IsLocalPlayer { get; set; }
+        private bool _isLocalPlayer;
+        public bool IsLocalPlayer 
+        { 
+            get => _isLocalPlayer; 
+            set 
+            {
+                _isLocalPlayer = value;
+                OnIsLocalPlayerChanged();
+            }
+        }
         public long PeerId { get; set; }
 
         private Node3D? _playerInstance;
+
+        private void OnIsLocalPlayerChanged()
+        {
+             PropagatePlayerFlags();
+             if (_playerInstance == null) return;
+
+             if (_isLocalPlayer)
+             {
+                 // Add interaction setup if not present
+                 if (!_playerInstance.HasNode("PlayerInteractionSetup"))
+                 {
+                     var setup = new Trakction.Interaction.PlayerInteractionSetup();
+                     setup.Name = "PlayerInteractionSetup";
+                     _playerInstance.AddChild(setup);
+                 }
+                 
+                 // Ensure camera is current
+                 var cam = _playerInstance.FindChild("XRCamera3D", true, false) as Camera3D;
+                 if (cam != null) cam.Current = true;
+             }
+             else
+             {
+                 // Remote Player Setup
+                 // Disable camera
+                 var cam = _playerInstance.FindChild("XRCamera3D", true, false) as Camera3D;
+                 if (cam != null) cam.Current = false;
+                 
+                 // Disable processing (physics/input) to prevent local movement logic from running on remote instances
+                 _playerInstance.SetProcess(false);
+                 _playerInstance.SetPhysicsProcess(false);
+                 _playerInstance.SetProcessInput(false);
+                 _playerInstance.SetProcessUnhandledInput(false);
+             }
+        }
 
         public override void _Ready()
         {
@@ -31,6 +74,16 @@ namespace Trakction.XR
                 {
                     _playerInstance = n3d;
                     AddChild(n3d);
+                    
+                    // Setup Synchronizer for the child (the actual player body)
+                    var sync = new MultiplayerSynchronizer();
+                    sync.Name = "MultiplayerSynchronizer";
+                    n3d.AddChild(sync);
+                    
+                    var config = new SceneReplicationConfig();
+                    config.AddProperty(":position");
+                    config.AddProperty(":rotation");
+                    sync.ReplicationConfig = config;
 
                     // Try to propagate the IsLocalPlayer/PeerId values to the instantiated node.
                     // For GDScript scenes, you can call methods or set exported properties using Call or Set.
@@ -43,6 +96,10 @@ namespace Trakction.XR
                     AddChild(inst);
                 }
             }
+            
+            // Auto-detect authority
+            PeerId = GetMultiplayerAuthority();
+            IsLocalPlayer = PeerId == Multiplayer.GetUniqueId();
         }
 
         public void Initialize(bool isLocal, int peerId)
@@ -88,4 +145,3 @@ namespace Trakction.XR
         }
     }
 }
-

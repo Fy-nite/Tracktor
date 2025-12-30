@@ -1,0 +1,227 @@
+[gd_scene load_steps=4 format=3 uid="uid://cwgbfu3gc1l28"]
+
+[ext_resource type="Script" uid="uid://bvttos0kiefax" path="res://CSharp/Net/NetDebugLabel.cs" id="1_v5lvk"]
+[ext_resource type="Script" uid="uid://o1t11yd8dec0" path="res://CSharp/Net/NetConnectPanel.cs" id="2_mjlb7"]
+
+[sub_resource type="CodeHighlighter" id="CodeHighlighter_g0r5n"]
+number_color = Color(0.6968104, 0.54497135, 1, 1)
+symbol_color = Color(0.8107179, 0.15993121, 0.6095554, 1)
+function_color = Color(0.6911242, 0, 0.18640336, 1)
+member_variable_color = Color(0, 0.5226887, 0.51645654, 1)
+keyword_colors = {
+"abstract": Color(0, 0.5859154, 0.6708865, 1),
+"class": Color(0, 0.5859154, 0.6708865, 1),
+"constructor": Color(0, 0.5859154, 0.6708865, 1),
+"else": Color(0, 0.5859154, 0.6708865, 1),
+"enum": Color(0, 0.5859154, 0.6708865, 1),
+"field": Color(0, 0.5859154, 0.6708865, 1),
+"implements": Color(0, 0.5859154, 0.6708865, 1),
+"interface": Color(0, 0.5859154, 0.6708865, 1),
+"internal": Color(0, 0.5859154, 0.6708865, 1),
+"local": Color(0, 0.5859154, 0.6708865, 1),
+"method": Color(0, 0.5859154, 0.6708865, 1),
+"module": Color(0, 0.5859154, 0.6708865, 1),
+"override": Color(0, 0.5859154, 0.6708865, 1),
+"private": Color(0, 0.5859154, 0.6708865, 1),
+"protected": Color(0, 0.5859154, 0.6708865, 1),
+"public": Color(0, 0.5859154, 0.6708865, 1),
+"sealed": Color(0, 0.5859154, 0.6708865, 1),
+"static": Color(0, 0.5859154, 0.6708865, 1),
+"struct": Color(0, 0.5859154, 0.6708865, 1),
+"version": Color(0, 0.5859154, 0.6708865, 1),
+"virtual": Color(0, 0.5859154, 0.6708865, 1)
+}
+member_keyword_colors = {
+"add": Color(0.79766744, 0.42584613, 0, 1),
+"beq": Color(0.79766744, 0.42584613, 0, 1),
+"beq.s": Color(0.79766744, 0.42584613, 0, 1),
+"bge": Color(0.79766744, 0.42584613, 0, 1),
+"bge.s": Color(0.79766744, 0.42584613, 0, 1),
+"bgt": Color(0.79766744, 0.42584613, 0, 1),
+"bgt.s": Color(0.79766744, 0.42584613, 0, 1),
+"ble": Color(0.79766744, 0.42584613, 0, 1),
+"ble.s": Color(0.79766744, 0.42584613, 0, 1),
+"blt": Color(0.79766744, 0.42584613, 0, 1),
+"blt.s": Color(0.79766744, 0.42584613, 0, 1),
+"bne": Color(0.79766744, 0.42584613, 0, 1),
+"bne.s": Color(0.79766744, 0.42584613, 0, 1),
+"br": Color(0.79766744, 0.42584613, 0, 1),
+"br.s": Color(0.79766744, 0.42584613, 0, 1),
+"break": Color(0.79766744, 0.42584613, 0, 1),
+"brfalse": Color(0.79766744, 0.42584613, 0, 1),
+"brfalse.s": Color(0.79766744, 0.42584613, 0, 1),
+"brtrue": Color(0.79766744, 0.42584613, 0, 1),
+"brtrue.s": Color(0.79766744, 0.42584613, 0, 1),
+"call": Color(0.79766744, 0.42584613, 0, 1),
+"callvirt": Color(0.79766744, 0.42584613, 0, 1),
+"ceq": Color(0.79766744, 0.42584613, 0, 1),
+"cge": Color(0.79766744, 0.42584613, 0, 1),
+"cgt": Color(0.79766744, 0.42584613, 0, 1),
+"cle": Color(0.79766744, 0.42584613, 0, 1),
+"clt": Color(0.79766744, 0.42584613, 0, 1),
+"cne": Color(0.79766744, 0.42584613, 0, 1),
+"continue": Color(0.79766744, 0.42584613, 0, 1),
+"div": Color(0.79766744, 0.42584613, 0, 1),
+"dup": Color(0.79766744, 0.42584613, 0, 1),
+"if": Color(0.79766744, 0.42584613, 0, 1),
+"ldarg": Color(0.79766744, 0.42584613, 0, 1),
+"ldc": Color(0.79766744, 0.42584613, 0, 1),
+"ldc.i4": Color(0.79766744, 0.42584613, 0, 1),
+"ldc.i8": Color(0.79766744, 0.42584613, 0, 1),
+"ldc.r4": Color(0.79766744, 0.42584613, 0, 1),
+"ldc.r8": Color(0.79766744, 0.42584613, 0, 1),
+"ldelem": Color(0.79766744, 0.42584613, 0, 1),
+"ldfld": Color(0.79766744, 0.42584613, 0, 1),
+"ldloc": Color(0.79766744, 0.42584613, 0, 1),
+"ldnull": Color(0.79766744, 0.42584613, 0, 1),
+"ldsfld": Color(0.79766744, 0.42584613, 0, 1),
+"ldstr": Color(0.79766744, 0.42584613, 0, 1),
+"mul": Color(0.79766744, 0.42584613, 0, 1),
+"neg": Color(0.79766744, 0.42584613, 0, 1),
+"newarr": Color(0.79766744, 0.42584613, 0, 1),
+"newobj": Color(0.79766744, 0.42584613, 0, 1),
+"nop": Color(0.79766744, 0.42584613, 0, 1),
+"not": Color(0.79766744, 0.42584613, 0, 1),
+"pop": Color(0.79766744, 0.42584613, 0, 1),
+"rem": Color(0.79766744, 0.42584613, 0, 1),
+"ret": Color(0.79766744, 0.42584613, 0, 1),
+"starg": Color(0.79766744, 0.42584613, 0, 1),
+"stelem": Color(0.79766744, 0.42584613, 0, 1),
+"stfld": Color(0.79766744, 0.42584613, 0, 1),
+"stloc": Color(0.79766744, 0.42584613, 0, 1),
+"stsfld": Color(0.79766744, 0.42584613, 0, 1),
+"sub": Color(0.79766744, 0.42584613, 0, 1),
+"while": Color(0.79766744, 0.42584613, 0, 1)
+}
+color_regions = {
+"\"": Color(0.5283561, 0.6220984, 0.4382356, 1)
+}
+
+[node name="UI" type="CanvasLayer"]
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = 2.0
+offset_right = 1150.0
+offset_bottom = 650.0
+color = Color(0.19076231, 0.19076234, 0.19076231, 1)
+
+[node name="CodeEdit" type="CodeEdit" parent="ColorRect"]
+layout_mode = 0
+offset_left = -1.0
+offset_top = 202.0
+offset_right = 693.0
+offset_bottom = 650.0
+text = "module HelloWorld {
+	class Program {
+		static method ThrowExample() -> void{
+			ldstr \"no scene named Cat.tscn\"
+			call GodotExceptions.InvalidSceneException(string)
+		}
+	
+		static method Main() -> void {
+			local Item: object
+			ldstr \"hello world me\"
+			call GD.Print(string)
+			try {
+				call Program.ThrowExample() -> void
+			}
+			catch {
+				ldstr \"something broke\"
+				call GD.Print(string string) -> void
+			}
+	}
+}"
+caret_blink = true
+syntax_highlighter = SubResource("CodeHighlighter_g0r5n")
+highlight_all_occurrences = true
+highlight_current_line = true
+draw_control_chars = true
+draw_tabs = true
+draw_spaces = true
+line_folding = true
+gutters_draw_line_numbers = true
+gutters_draw_fold_gutter = true
+delimiter_strings = Array[String](["\" \"", "' '"])
+auto_brace_completion_enabled = true
+auto_brace_completion_highlight_matching = true
+
+[node name="ErrorList" type="Label" parent="ColorRect"]
+layout_mode = 0
+offset_top = 166.0
+offset_right = 688.0
+offset_bottom = 205.0
+
+[node name="NetDebug" type="Label" parent="."]
+offset_left = 2.0
+offset_top = -2.0
+offset_right = 334.0
+offset_bottom = 50.0
+text = "Net: ..."
+script = ExtResource("1_v5lvk")
+
+[node name="NetConnect" type="PanelContainer" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -446.0
+offset_top = 547.0
+offset_right = -1.0
+offset_bottom = 648.0
+grow_horizontal = 0
+script = ExtResource("2_mjlb7")
+
+[node name="VBox" type="VBoxContainer" parent="NetConnect"]
+layout_mode = 2
+
+[node name="HostRow" type="HBoxContainer" parent="NetConnect/VBox"]
+layout_mode = 2
+
+[node name="HostLabel" type="Label" parent="NetConnect/VBox/HostRow"]
+layout_mode = 2
+text = "Host"
+
+[node name="Host" type="LineEdit" parent="NetConnect/VBox/HostRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "127.0.0.1"
+
+[node name="PortRow" type="HBoxContainer" parent="NetConnect/VBox"]
+layout_mode = 2
+
+[node name="PortLabel" type="Label" parent="NetConnect/VBox/PortRow"]
+layout_mode = 2
+text = "Port"
+
+[node name="Port" type="SpinBox" parent="NetConnect/VBox/PortRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 65535.0
+value = 7777.0
+
+[node name="Buttons" type="HBoxContainer" parent="NetConnect/VBox"]
+layout_mode = 2
+
+[node name="StartServer" type="Button" parent="NetConnect/VBox/Buttons"]
+layout_mode = 2
+text = "Start Server"
+
+[node name="Connect" type="Button" parent="NetConnect/VBox/Buttons"]
+layout_mode = 2
+text = "Connect"
+
+[node name="Disconnect" type="Button" parent="NetConnect/VBox/Buttons"]
+layout_mode = 2
+text = "Disconnect"
+
+[node name="VrButton" type="Button" parent="NetConnect/VBox/Buttons"]
+layout_mode = 2
+text = "Start VR"
+
+[node name="SpawnBox" type="Button" parent="NetConnect/VBox/Buttons"]
+layout_mode = 2
+text = "Spawn Box"
+
+[node name="SinglePlayer" type="Button" parent="NetConnect/VBox/Buttons"]
+layout_mode = 2
+text = "Single Player"

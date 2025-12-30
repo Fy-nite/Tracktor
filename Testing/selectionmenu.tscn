@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://c6ecwxdjarpq3"]
+
+[node name="Selectionmenu" type="Node3D"]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+size = Vector3(50, 0.04, 50)
+
+[node name="SpotLight3D" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.5422069, 0.840245, 0, -0.840245, 0.5422069, 0, 5.3070364, 0)
+light_energy = 6.366
+spot_range = 88.25305
+spot_angle = 34.833237
+
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5.0153275)

@@ -34,4 +34,10 @@
     <None Include="CSharp\DashboardGenerator.cs.uid" />
     <None Include="CSharp\PhysicalUI\Dashboard.cs.uid" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="assets\Scenes\VRPlayer.tscn" />
+    <Content Include="CSharp\Multiplayerspawner.md" />
+    <Content Include="CSharp\MultiplayerSyncronizer.md" />
+  </ItemGroup>
 </Project>

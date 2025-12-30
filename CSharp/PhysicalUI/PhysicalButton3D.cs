@@ -5,6 +5,7 @@ using Trakction.Interaction;
 
 namespace Trakction.PhysicalUI;
 
+[Tool]
 public partial class PhysicalButton3D : PhysicalControl3D, IInteractable
 {
     [Signal] public delegate void PressedEventHandler();
@@ -23,6 +24,16 @@ public partial class PhysicalButton3D : PhysicalControl3D, IInteractable
     {
         EnsureDefaultVisuals();
         EnsureHitArea();
+    }
+
+    public override void _EnterTree()
+    {
+        // Ensure visuals are present while editing the scene in the editor.
+        if (Engine.IsEditorHint())
+        {
+            EnsureDefaultVisuals();
+            EnsureHitArea();
+        }
     }
 
     public bool CanInteract(in InteractionContext context) => Enabled;
@@ -71,10 +82,19 @@ public partial class PhysicalButton3D : PhysicalControl3D, IInteractable
         if (label == null)
         {
             label = new Label3D { Name = "Label" };
-            label.Position = new Vector3(0, 0.10f, 0);
+            label.Position = new Vector3(0f, 0f, 0.1f); 
+            label.PixelSize = 0.0005f;
+            label.OutlineSize = 5;
+            // make the size large enough so that it looks clean.
+            label.FontSize = 64;
+            
             AddChild(label);
         }
 
         label.Text = Text;
+        
+        // label.Scale = new Vector3(4f, 4f, 4f); // Scale up so it's readable?
+        // calculate the size of the label based on the text length
+        label.Scale = new Vector3(1f * Text.Length, 1f * Text.Length, 1f * Text.Length);
     }
 }

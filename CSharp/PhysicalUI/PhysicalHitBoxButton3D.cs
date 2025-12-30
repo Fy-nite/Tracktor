@@ -3,13 +3,10 @@ using Godot;
 using System;
 using Trakction.Interaction;
 
-namespace Trakction.PhysicalUI;
 
-/// <summary>
-/// A minimal interactable "button" that can be attached directly to a CSGBox3D.
-/// It creates an Area3D + BoxShape3D hit area so InteractorRay3D can raycast it.
-/// Visuals are provided by the CSG itself.
-/// </summary>
+namespace Traktion.PhysicalUI;
+
+[Tool]
 public partial class PhysicalHitBoxButton3D : CsgBox3D, IInteractable
 {
     [Signal] public delegate void PressedEventHandler();
@@ -33,6 +30,12 @@ public partial class PhysicalHitBoxButton3D : CsgBox3D, IInteractable
     public override void _Ready()
     {
         EnsureHitArea();
+    }
+
+    public override void _EnterTree()
+    {
+        if (Engine.IsEditorHint())
+            EnsureHitArea();
     }
 
     public void RefreshHitArea()
