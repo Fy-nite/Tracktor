@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace V12.UI
 {
-    public class Inspector : GodotObject
+    public partial class Inspector : GodotObject
     {
         public Control UIRoot { get; private set; }
         private Tree _tree;

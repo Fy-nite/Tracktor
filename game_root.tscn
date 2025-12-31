@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://4l8cvbldfvuw"]
+
+[ext_resource type="Script" uid="uid://c6rc3t6i2t4dd" path="res://CSharp/EngineInit.cs" id="1_xj5yv"]
+
+[node name="GameRoot" type="Node3D"]
+script = ExtResource("1_xj5yv")

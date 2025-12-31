@@ -96,36 +96,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\GAMER\\.nuget\\packages\\": {},
-    "C:\\Users\\GAMER\\AppData\\Roaming\\Godot\\mono\\GodotNuGetFallbackFolder": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/Users/charlie/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\tracktor\\V12\\V12.csproj",
+      "projectUniqueName": "/Users/charlie/Documents/GitHub/trakction/V12/V12.csproj",
       "projectName": "V12",
-      "projectPath": "D:\\tracktor\\V12\\V12.csproj",
-      "packagesPath": "C:\\Users\\GAMER\\.nuget\\packages\\",
-      "outputPath": "D:\\tracktor\\V12\\obj\\",
+      "projectPath": "/Users/charlie/Documents/GitHub/trakction/V12/V12.csproj",
+      "packagesPath": "/Users/charlie/.nuget/packages/",
+      "outputPath": "/Users/charlie/Documents/GitHub/trakction/V12/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Users\\GAMER\\AppData\\Roaming\\Godot\\mono\\GodotNuGetFallbackFolder",
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\GAMER\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Users\\GAMER\\AppData\\Roaming\\NuGet\\config\\Godot.Offline.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/charlie/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
-        "C:\\Users\\GAMER\\AppData\\Roaming\\Cosmos User Kit\\packages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -179,7 +167,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.101/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",
