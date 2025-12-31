@@ -1,0 +1,37 @@
+﻿using Godot;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using V12.Types;
+
+namespace V12.Components
+{
+    internal class MeshCollider : Component
+    {
+        public override string Category => "Colliders";
+
+        public List<DoubleVector3> Vertices { get; set; } = new();
+        public List<int> Indices { get; set; } = new();
+
+        public MeshCollider(string name, string description) : base(name, description)
+        {
+
+        }
+
+        public void AttachMeshData(List<DoubleVector3> vertices, List<int> indices)
+        {
+            Vertices = vertices;
+            Indices = indices;
+        }
+
+        public override Control GenerateUI()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Node3D RunComponentLogic()
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

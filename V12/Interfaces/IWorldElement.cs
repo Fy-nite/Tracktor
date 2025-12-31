@@ -1,0 +1,38 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Runtime.Intrinsics;
+using System.Text;
+using V12.Types;
+
+namespace V12.Interfaces
+{
+    public interface IWorldElement
+    {
+        IWorldElement ParentElement { get; set; }
+        List<IWorldElement> ChildElements { get; set; }
+        event Action<IWorldElement> OnElementAdded;
+        event Action<IWorldElement> OnElementRemoved;
+        event Action<IWorldElement> OnRootChanged;
+        event Action<IWorldElement> OnElementChanged;
+        event Action<IComponent> OnComponentAdded;
+        event Action<IComponent> OnComponentRemoved;
+        string Name { get; set; }
+        string Description { get; set; }
+        string Type { get; set; }
+        int Level { get; set; }
+        DoubleVector3 Position { get; set; }
+        DoubleVector3 Rotation { get; set; }
+        DoubleVector3 Scale { get; set; }
+        List<IComponent> Components { get; set; }
+
+        void AddChildElement(IWorldElement childElement);
+        IWorldElement GetChildElementByName(string name);
+        void RemoveChildElement(IWorldElement childElement);
+        void RemoveChildElementByName(string name);
+        List<IWorldElement> GetAllDescendants();
+        void AddComponent(IComponent component);
+        void RemoveComponent(IComponent component);
+    }
+}
