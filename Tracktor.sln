@@ -1,12 +1,17 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11312.210
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tracktor", "Tracktor.csproj", "{4853C75B-1D75-4FC4-9D12-F1A69B3EE472}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "V12", "V12\V12.csproj", "{C04C6E4C-4518-1061-45A7-B2144718CF84}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-	Debug|Any CPU = Debug|Any CPU
-	ExportDebug|Any CPU = ExportDebug|Any CPU
-	ExportRelease|Any CPU = ExportRelease|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		ExportDebug|Any CPU = ExportDebug|Any CPU
+		ExportRelease|Any CPU = ExportRelease|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{4853C75B-1D75-4FC4-9D12-F1A69B3EE472}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -15,5 +20,17 @@ Global
 		{4853C75B-1D75-4FC4-9D12-F1A69B3EE472}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
 		{4853C75B-1D75-4FC4-9D12-F1A69B3EE472}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
 		{4853C75B-1D75-4FC4-9D12-F1A69B3EE472}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+		{C04C6E4C-4518-1061-45A7-B2144718CF84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C04C6E4C-4518-1061-45A7-B2144718CF84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C04C6E4C-4518-1061-45A7-B2144718CF84}.ExportDebug|Any CPU.ActiveCfg = Release|Any CPU
+		{C04C6E4C-4518-1061-45A7-B2144718CF84}.ExportDebug|Any CPU.Build.0 = Release|Any CPU
+		{C04C6E4C-4518-1061-45A7-B2144718CF84}.ExportRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{C04C6E4C-4518-1061-45A7-B2144718CF84}.ExportRelease|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0F4CC9F8-4AF6-48FC-B4A5-16F391505E77}
 	EndGlobalSection
 EndGlobal

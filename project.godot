@@ -11,7 +11,8 @@ config_version=5
 [application]
 
 config/name="Tracktor"
-config/features=PackedStringArray("4.5", "GL Compatibility")
+run/main_scene="uid://4l8cvbldfvuw"
+config/features=PackedStringArray("4.5", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [dotnet]

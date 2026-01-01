@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "eMsEkA26Iqo=",
+  "dgSpecHash": "amGVHZyPYQE=",
   "success": true,
-  "projectFilePath": "/Users/charlie/Documents/GitHub/trakction/V12/V12.csproj",
+  "projectFilePath": "D:\\Projects\\Tracktor\\V12\\V12.csproj",
   "expectedPackageFiles": [
-    "/Users/charlie/.nuget/packages/godotsharp/4.5.1/godotsharp.4.5.1.nupkg.sha512",
-    "/Users/charlie/.nuget/packages/godotsharp.sourcegenerators/2.6.0/godotsharp.sourcegenerators.2.6.0.nupkg.sha512",
-    "/Users/charlie/.nuget/packages/godotsharpeditor/4.5.1/godotsharpeditor.4.5.1.nupkg.sha512"
+    "C:\\Users\\GAMER\\.nuget\\packages\\godotsharp\\4.5.1\\godotsharp.4.5.1.nupkg.sha512",
+    "C:\\Users\\GAMER\\.nuget\\packages\\godotsharp.sourcegenerators\\2.6.0\\godotsharp.sourcegenerators.2.6.0.nupkg.sha512",
+    "C:\\Users\\GAMER\\.nuget\\packages\\godotsharpeditor\\4.5.1\\godotsharpeditor.4.5.1.nupkg.sha512"
   ],
   "logs": []
 }
