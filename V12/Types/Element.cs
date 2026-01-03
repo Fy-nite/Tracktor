@@ -70,7 +70,25 @@ namespace V12.Types
         {
             ChildElements.Add(childElement);
             childElement.ParentElement = this;
+            // Ensure the entire subtree has correct ParentElement references
+            SetParentsRecursively(childElement);
+            GD.Print($"[Element] AddChildElement: Added '{childElement.Name}' to parent '{this.Name}'");
             OnElementAdded?.Invoke(childElement);
+        }
+
+        private void SetParentsRecursively(IWorldElement node)
+        {
+            // Ensure components on this node have correct parent reference
+            foreach (var comp in node.Components)
+            {
+                comp.ParentElement = node;
+            }
+
+            foreach (var child in node.ChildElements)
+            {
+                child.ParentElement = node;
+                SetParentsRecursively(child);
+            }
         }
 
         public IWorldElement GetChildElementByName(string name)
@@ -111,6 +129,7 @@ namespace V12.Types
         {
             Components.Add(component);
             component.ParentElement = this;
+            GD.Print($"[Element] AddComponent: Added component '{component.Name}' to element '{this.Name}'");
             OnComponentAdded?.Invoke(component);
         }
 

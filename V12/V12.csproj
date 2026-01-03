@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Components\BoxMesh.cs.uid" />
+    <None Remove="Components\Component.cs.uid" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="GodotSharp" Version="4.5.1" />
     <PackageReference Include="GodotSharp.SourceGenerators" Version="2.6.0" />
     <PackageReference Include="GodotSharpEditor" Version="4.5.1" />

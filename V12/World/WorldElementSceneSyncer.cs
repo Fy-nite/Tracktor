@@ -11,10 +11,13 @@ public class WorldElementSceneSyncer
     private Dictionary<IWorldElement, Node> _elementToNode = new();
     private Dictionary<IComponent, Node> _componentToNode = new();
 
+    public bool DebugMode { get; set; } = true;
+
     public WorldElementSceneSyncer(IWorldElement rootElement, Node3D sceneRoot)
     {
         _rootElement = rootElement;
         _sceneRoot = sceneRoot;
+        DebugPrint($"[Init] Syncing tree for root element: {rootElement?.Name ?? "<null>"}");
         SyncTree(_rootElement, _sceneRoot);
 
         // Subscribe to events for dynamic updates
@@ -22,9 +25,16 @@ public class WorldElementSceneSyncer
         _rootElement.OnElementRemoved += OnElementRemoved;
     }
 
+    private void DebugPrint(string msg)
+    {
+        if (DebugMode)
+            GD.Print($"[WorldElementSceneSyncer] {msg}");
+    }
+
     private void SyncTree(IWorldElement element, Node parentNode)
     {
         Node node = CreateNodeForElement(element);
+        DebugPrint($"Syncing Element: {element.Name} as Node: {node.Name} (Parent: {parentNode.Name})");
         parentNode.AddChild(node);
         _elementToNode[element] = node;
 
@@ -32,8 +42,10 @@ public class WorldElementSceneSyncer
         element.OnComponentAdded += OnComponentAdded;
         element.OnComponentRemoved += OnComponentRemoved;
 
+        DebugPrint($"Element '{element.Name}' has {element.Components.Count} components.");
         foreach (var comp in element.Components)
         {
+            DebugPrint($" - Component: type={comp?.GetType().FullName ?? "<null>"} name='{comp?.Name ?? ""}'");
             AddComponentNode(comp, node);
         }
 
@@ -47,6 +59,7 @@ public class WorldElementSceneSyncer
     {
         Node3D node = new Node3D();
         node.Name = element.Name ?? "WorldElement";
+        DebugPrint($"Created Node for Element: {element.Name} at Position: {node.Position}");
         return node;
     }
 
@@ -54,6 +67,8 @@ public class WorldElementSceneSyncer
     {
         if (element.ParentElement != null && _elementToNode.TryGetValue(element.ParentElement, out var parentNode))
         {
+            DebugPrint($"Element Added: {element.Name} (Parent: {element.ParentElement.Name})");
+            // Create node for this element and recursively sync its subtree
             Node node = CreateNodeForElement(element);
             parentNode.AddChild(node);
             _elementToNode[element] = node;
@@ -61,10 +76,23 @@ public class WorldElementSceneSyncer
             element.OnComponentAdded += OnComponentAdded;
             element.OnComponentRemoved += OnComponentRemoved;
 
+            // Attach components for this element
             foreach (var comp in element.Components)
             {
+                // Ensure component ParentElement is set
+                comp.ParentElement = element;
                 AddComponentNode(comp, node);
             }
+
+            // Recursively sync any existing child elements
+            foreach (var child in element.ChildElements)
+            {
+                SyncTree(child, node);
+            }
+        }
+        else
+        {
+            DebugPrint($"[Warning] Tried to add element {element.Name} but parent node not found.");
         }
     }
 
@@ -72,6 +100,7 @@ public class WorldElementSceneSyncer
     {
         if (_elementToNode.TryGetValue(element, out var node))
         {
+            DebugPrint($"Element Removed: {element.Name}");
             element.OnElementChanged -= OnElementChanged;
             element.OnComponentAdded -= OnComponentAdded;
             element.OnComponentRemoved -= OnComponentRemoved;
@@ -79,145 +108,43 @@ public class WorldElementSceneSyncer
             node.QueueFree();
             _elementToNode.Remove(element);
         }
+        else
+        {
+            DebugPrint($"[Warning] Tried to remove element {element.Name} but node not found.");
+        }
     }
 
     private void OnElementChanged(IWorldElement element)
     {
         if (_elementToNode.TryGetValue(element, out var node) && node is Node3D node3D)
         {
+            DebugPrint($"Element Changed: {element.Name} | Pos: {element.Position} Rot: {element.Rotation} Scale: {element.Scale}");
             node3D.Position = new Vector3((float)element.Position.x, (float)element.Position.y, (float)element.Position.z);
             node3D.Rotation = new Vector3((float)element.Rotation.x, (float)element.Rotation.y, (float)element.Rotation.z);
             node3D.Scale = new Vector3((float)element.Scale.x, (float)element.Scale.y, (float)element.Scale.z);
             node3D.Name = element.Name ?? "WorldElement";
+        }
+        else
+        {
+            DebugPrint($"[Warning] Element changed but node not found for {element.Name}");
         }
     }
 
     private void AddComponentNode(IComponent comp, Node parent)
     {
         // attach component logic directly to parent node
-
-        //switch (comp)
-        //{
-        //    case V12.Components.BoxMesh boxMesh:
-        //        {
-        //            GD.Print($"box mesh added {boxMesh}");
-        //            var csgBox = new CsgBox3D
-        //            {
-        //                Name = boxMesh.Name,
-        //                Size = boxMesh.Scale, // Godot expects full size, not half-extents
-        //                Operation = CsgShape3D.OperationEnum.Union
-        //            };
-        //            parent.AddChild(csgBox);
-        //            _componentToNode[comp] = csgBox;
-        //            break;
-        //        }
-        //    case IMesh meshComp:
-        //    {
-        //        var generated = meshComp.GenerateGodotMesh();
-        //        if (generated == null)
-        //        {
-        //            GD.PushWarning($"IMesh component '{comp.Name}' generated a null mesh (type: {meshComp.GetType().Name}).");
-        //            break;
-        //        }
-
-        //        var meshInstance = new MeshInstance3D
-        //        {
-        //            Name = comp.Name,
-        //            Mesh = generated
-        //        };
-        //        parent.AddChild(meshInstance);
-        //        _componentToNode[comp] = meshInstance;
-        //        break;
-        //    }
-
-        //    case VROriginComponent:
-        //    {
-        //        Node origin;
-        //        try
-        //        {
-        //            origin = new XROrigin3D { Name = comp.Name };
-        //        }
-        //        catch
-        //        {
-        //            origin = new Node3D { Name = comp.Name };
-        //        }
-
-        //        parent.AddChild(origin);
-        //        _componentToNode[comp] = origin;
-        //        break;
-        //    }
-        //    case VRCameraComponent camComp:
-        //    {
-        //        Node camera;
-        //        try
-        //        {
-        //            var xrCam = new XRCamera3D { Name = comp.Name };
-        //            xrCam.Position = new Vector3(0, camComp.HeightOffset, 0);
-        //            camera = xrCam;
-        //        }
-        //        catch
-        //        {
-        //            var cam = new Camera3D { Name = comp.Name };
-        //            cam.Position = new Vector3(0, camComp.HeightOffset, 0);
-        //            camera = cam;
-        //        }
-
-        //        parent.AddChild(camera);
-        //        _componentToNode[comp] = camera;
-        //        break;
-        //    }
-        //    case VRControllerComponent ctrl:
-        //    {
-        //            //Node controller;
-        //            //try
-        //            //{
-        //            //    controller = new XRController3D
-        //            //    {
-        //            //        Name = comp.Name,
-        //            //        Tracker = ctrl.Hand == true ? new StringName ("left_hand") : new StringName("right_hand")
-        //            //    };
-        //            //}
-        //            //catch
-        //            //{
-        //            //    controller = new Node3D { Name = comp.Name };
-        //            //}
-        //            Node controller = ctrl.RunComponentLogic();
-        //        parent.AddChild(controller);
-        //        _componentToNode[comp] = controller;
-        //        break;
-        //    }
-        //    case VRRigComponent vrRig:
-        //    {
-        //        // Convenience: if someone still adds VRRigComponent, build a default rig subtree.
-        //        // Prefer writing rigs using VROriginComponent/VRCameraComponent/VRControllerComponent.
-        //        var rigRoot = new Node3D { Name = comp.Name };
-        //        parent.AddChild(rigRoot);
-
-        //        // Build under rigRoot
-        //        var originEl = new VROriginComponent();
-        //        AddComponentNode(originEl, rigRoot);
-
-        //        var camEl = new VRCameraComponent { HeightOffset = vrRig.PlayerHeight };
-        //        AddComponentNode(camEl, rigRoot);
-
-        //        //AddComponentNode(new VRControllerComponent { Hand = VRHand.Left }, rigRoot);
-        //        //AddComponentNode(new VRControllerComponent { Hand = VRHand.Right }, rigRoot);
-        //            vrRig.RunComponentLogic(); // this should get the root node assigned properly
-        //            _componentToNode[comp] = rigRoot;
-        //        break;
-        //    }
-        //    case Component comps:
-        //        {
-        //            var genericNode = new Node3D { Name = comp.Name };
-        //            parent.AddChild(genericNode);
-        //            _componentToNode[comps] = genericNode;
-        //            break;
-        //        }
-        //}
-
+        DebugPrint($"Running RunComponentLogic for component type: {comp?.GetType().FullName ?? "<null>"} name: '{comp?.Name ?? ""}'");
         var compNode = comp.RunComponentLogic();
-        if (compNode.GetParent() != null)
+        DebugPrint($"RunComponentLogic returned node type: {compNode?.GetType().FullName ?? "<null>"} name: {compNode?.Name ?? "<null>"}");
+        DebugPrint($"Adding Component: {comp.Name} as Node: {compNode?.Name ?? "<null>"} to Parent: {parent.Name}");
+        if (compNode == null)
         {
+            DebugPrint($"[Info] Component {comp.Name} did not return a node. Creating default Node3D.");
+            compNode = new Node3D { Name = comp.Name };
+        }
+        else if (compNode.GetParent() != null)
+        {
+            DebugPrint($"[Warning] Component node {compNode.Name} already has a parent. Removing from previous parent.");
             compNode.GetParent().RemoveChild(compNode);
         }
         parent.AddChild(compNode);
@@ -228,7 +155,12 @@ public class WorldElementSceneSyncer
     {
         if (_elementToNode.TryGetValue(comp.ParentElement, out var parent))
         {
+            DebugPrint($"Component Added: {comp.Name} to Parent Element: {comp.ParentElement?.Name}");
             AddComponentNode(comp, parent);
+        }
+        else
+        {
+            DebugPrint($"[Warning] Tried to add component {comp.Name} but parent element node not found.");
         }
     }
 
@@ -236,8 +168,13 @@ public class WorldElementSceneSyncer
     {
         if (_componentToNode.TryGetValue(comp, out var node))
         {
+            DebugPrint($"Component Removed: {comp.Name}");
             node.QueueFree();
             _componentToNode.Remove(comp);
+        }
+        else
+        {
+            DebugPrint($"[Warning] Tried to remove component {comp.Name} but node not found.");
         }
     }
 }

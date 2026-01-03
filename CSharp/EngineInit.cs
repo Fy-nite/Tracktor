@@ -5,66 +5,48 @@ using V12.UI;
 using V12.Components.VR;
 using V12.Types;
 using V12.Components;
+using System.Reflection;
+using Tracktor.CSharp;
+
 public partial class EngineInit : Node3D
 {
-	V12Engine engine;
-	int currentWorldIndex = 0;
+	public V12Engine engine;
+	public int currentWorldIndex = 0;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
+        AddToGroup("engine_init");
+        engine = new V12Engine();
 
-		engine = new V12Engine();
+		var world = new V12World("LocalWorld");
+		new WorldInit().InitializeLocalHome(world);
+        var userWorld = new V12World("UserSpace");
+		
+		// Add worlds through the engine (activation decides parenting/visibility)
+		engine.AddWorld(world);
+		engine.AddWorld(userWorld);
+        // are we on android without VR support?
+		// let's hope we get eventual Android Support.
+		if (OS.GetName() == "Android")
+		{
+			var AndroidPlayer = new V12.Components.Android.AndroidPlayer().GenerateAndroidPlayer();
+			AddChild(AndroidPlayer); // Add AndroidPlayer to the scene, and make sure the player can be used all worlds
+        }
+		else
+		{
+        var VRPlayer = new V12.Components.VR.VRPlayer().GenerateVRPlayer();
+		AddChild(VRPlayer); // Add VRPlayer to the scene, and make sure the player can be used all worlds
+		}
+        // Activate the main world so it's visible, and also activate the local UserSpace so it remains visible
+        engine.ActivateWorld(0, this);
+		userWorld.Activate(this);
 
-		var mainWorldRoot = new Node3D();
-		AddChild(mainWorldRoot);
-		var world = new V12World("MainWorld");
-		engine.Worlds.Add(world);
-		mainWorldRoot.AddChild(world.Viewport);
-		world.GenerateWorld();
-
-		// Spawn a VR player in MainWorld
-		var vrPlayer = new Element { Name = "VRPlayer" };
-		vrPlayer.AddComponent(new VROriginComponent());
-		vrPlayer.AddComponent(new VRCameraComponent { HeightOffset = 1.7f });
-		var leftHand = new VRControllerComponent { Hand = false };
-		var rightHand = new VRControllerComponent { Hand = true };
-		leftHand.Name = "LeftHandController";
-		rightHand.Name = "RightHandController";
-		//leftHand.AddSubComponent(new V12.Components.BoxMesh(new Vector3(0.5f,0.5f,0.5f)));
-		//rightHand.AddSubComponent(new V12.Components.BoxMesh(new Vector3(0.5f, 0.5f, 0.5f)));
-        // add the hands to the vrPlayer
-		var leftHandElement = new Element { Name = "LeftHand" };
-		leftHandElement.AddComponent(leftHand);
-		leftHandElement.AddComponent(new V12.Components.BoxMesh(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(0.5f, 0.5f, 0.5f), new Vector3(0.5f, 0.5f, 0.5f)));
-
-        var rightHandElement = new Element { Name = "RightHand" };
-		rightHandElement.AddComponent(rightHand);
-		rightHandElement.AddComponent(new V12.Components.BoxMesh(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(0.5f, 0.5f, 0.5f), new Vector3(0.5f, 0.5f, 0.5f)));
-
-		vrPlayer.AddChildElement(leftHandElement);
-		vrPlayer.AddChildElement(rightHandElement);
-
-
-
-        world.RootElement.AddChildElement(vrPlayer);
-
-		var world2Root = new Node3D();
-		AddChild(world2Root);
-		var world2 = new V12World("World2");
-		engine.Worlds.Add(world2);
-		world2Root.AddChild(world2.Viewport);
-		world2.GenerateWorld();
-
-		var userWorldRoot = new Node3D();
-		AddChild(userWorldRoot);
-		var userWorld = new V12World("UserSpace");
-		engine.Worlds.Add(userWorld);
 		userWorld.IsLocalOnly = true;
 		userWorld.CanBeLeft = true;
 		userWorld.CanBeClosed = false;
-		userWorld.RootElement.AddChildElement(V12.UI.Dashboard.Generate()); // Only here!
-		userWorldRoot.AddChild(userWorld.Viewport);
+		userWorld.RootElement.AddChildElement(V12.World.Userspace.Generate());
+
 		foreach (var w in engine.Worlds)
 		{
 			GD.Print("World added: " + w.Name);
@@ -81,9 +63,9 @@ public partial class EngineInit : Node3D
 				GD.Print("   - Child Element: " + item2.Name);
             }
         }
-        var inspector = new V12.UI.Inspector(world.RootElement);
+        var inspector = new V12.UI.Inspector(userWorld.RootElement);
         AddChild(inspector.UIRoot); // Add to the scene as a UI overlay
-
+		
         engine.Run();
     }
 
@@ -107,27 +89,23 @@ public partial class EngineInit : Node3D
 		}
 	}
 
-	private void SwitchWorld()
+	public void SwitchWorld()
 	{
 		if (engine.Worlds.Count <= 1) return;
 
+		// compute next index and try to activate it using the engine helper
+		int nextIndex = (currentWorldIndex + 1) % engine.Worlds.Count;
+
+		// Ensure current world can be left
 		var currentWorld = engine.Worlds[currentWorldIndex];
-		if (!currentWorld.CanBeLeft) return; // Cannot switch away from this world
+		if (!currentWorld.CanBeLeft) return;
 
-		// Remove current viewport if not UserSpace
-		if (currentWorld.Name != "UserSpace")
-		{
-			RemoveChild(currentWorld.Viewport);
-		}
+		engine.ActivateWorld(nextIndex, this);
+		currentWorldIndex = nextIndex;
 
-		// Cycle to next world
-		currentWorldIndex = (currentWorldIndex + 1) % engine.Worlds.Count;
-		var nextWorld = engine.Worlds[currentWorldIndex];
-		AddChild(nextWorld.Viewport);
-
-		// Bring UserSpace to front
+		// Bring UserSpace to front if present
 		var userWorld = engine.Worlds.Find(w => w.Name == "UserSpace");
-		if (userWorld != null)
+		if (userWorld != null && userWorld.Viewport.GetParent() == this)
 		{
 			MoveChild(userWorld.Viewport, GetChildCount() - 1);
 		}

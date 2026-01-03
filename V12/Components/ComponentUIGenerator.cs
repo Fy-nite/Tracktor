@@ -40,6 +40,7 @@ namespace V12.Components
                 { typeof(float), new Color(0.8f, 1.0f, 0.8f) },
                 { typeof(double), new Color(0.8f, 1.0f, 0.8f) },
                 { typeof(Godot.Vector3), new Color(1.0f, 0.5f, 0.7f) },
+                { typeof(List<string>), new Color(0.6f, 0.6f, 1.0f) },
             };
 
             foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
@@ -84,7 +85,17 @@ namespace V12.Components
                     hbox.AddChild(new Label { Text = "Y" }); hbox.AddChild(ySpin);
                     hbox.AddChild(new Label { Text = "Z" }); hbox.AddChild(zSpin);
                 }
-                // Add more types as needed
+                else if (prop.PropertyType == typeof(List<string>))
+                {
+                    var list = (List<string>)prop.GetValue(component) ?? new List<string>();
+                    var textEdit = new TextEdit { Text = string.Join("\n", list), SizeFlagsVertical = Control.SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(0, 60) };
+                    textEdit.TextChanged += () =>
+                    {
+                        var lines = textEdit.Text.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                        prop.SetValue(component, new List<string>(lines));
+                    };
+                    hbox.AddChild(textEdit);
+                }
 
                 // Wrap the row in a panel container so it participates properly in VBox layout
                 var rowPanel = new PanelContainer();

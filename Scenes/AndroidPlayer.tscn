@@ -1,0 +1,38 @@
+[gd_scene load_steps=4 format=3 uid="uid://b8p8itinb5vmi"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_drf4s"]
+noise_type = 5
+seed = 3070
+frequency = 0.0186
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_3kcns"]
+noise = SubResource("FastNoiseLite_drf4s")
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_14qsx"]
+radius = 66.0
+
+[node name="AndroidPlayer" type="Node3D"]
+
+[node name="TouchScreenButton" type="TouchScreenButton" parent="."]
+position = Vector2(1, 505.99997)
+scale = Vector2(0.13634123, 0.13634123)
+texture_normal = SubResource("NoiseTexture2D_3kcns")
+shape = SubResource("CircleShape2D_14qsx")
+
+[node name="TouchScreenButton2" type="TouchScreenButton" parent="."]
+position = Vector2(72.000015, 577)
+scale = Vector2(0.13634121, 0.13634121)
+texture_normal = SubResource("NoiseTexture2D_3kcns")
+shape = SubResource("CircleShape2D_14qsx")
+
+[node name="TouchScreenButton4" type="TouchScreenButton" parent="."]
+position = Vector2(71, 438)
+scale = Vector2(0.13634121, 0.13634121)
+texture_normal = SubResource("NoiseTexture2D_3kcns")
+shape = SubResource("CircleShape2D_14qsx")
+
+[node name="TouchScreenButton3" type="TouchScreenButton" parent="."]
+position = Vector2(140, 507)
+scale = Vector2(0.13634123, 0.13634123)
+texture_normal = SubResource("NoiseTexture2D_3kcns")
+shape = SubResource("CircleShape2D_14qsx")

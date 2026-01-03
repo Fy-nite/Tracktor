@@ -1,2 +1,2 @@
-﻿51369
-/Applications/Godot_mono.app/Contents/MacOS/Godot
+﻿50468
+C:/Users/GAMER/Godot/Editors/.editor_config/trakction/Godot_v4.5.1-stable_mono_win64.exe

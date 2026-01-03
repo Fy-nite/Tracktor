@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Tracktor": {
+      "commandName": "Project"
+    },
+    "Profile 1": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\GAMER\\Godot\\Editors\\.editor_config\\trakction\\Godot_v4.5.1-stable_mono_win64.exe",
+      "commandLineArgs": "--e game_root.tscn",
+      "workingDirectory": "D:\\projects\\tracktor",
+      "nativeDebugging": true
+    }
+  }
+}

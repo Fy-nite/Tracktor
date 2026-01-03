@@ -18,6 +18,7 @@ namespace V12
         public bool IsLocalOnly { get; set; } = false; // For worlds like UserSpace that aren't synced
         public bool CanBeLeft { get; set; } = true; // Whether the world can be switched away from
         public bool CanBeClosed { get; set; } = true; // Whether the world can be deleted/disposed
+        public bool IsActive { get; private set; } = false;
 
         public V12World(string name)
         {
@@ -28,10 +29,62 @@ namespace V12
             Syncer = new WorldElementSceneSyncer(RootElement, Viewport);
         }
 
+        public void Activate(Node parent = null)
+        {
+            if (IsActive) return;
+            if (parent != null && Viewport.GetParent() != parent)
+            {
+                parent.AddChild(Viewport);
+            }
+            // Make node visible and enable processing so the world becomes active
+            InternalSetVisible(true);
+            InternalSetProcessing(true);
+            IsActive = true;
+        }
+
+        public void Deactivate()
+        {
+            if (!IsActive) return;
+            // Don't remove local-only worlds when deactivating; they should remain visible
+            if (IsLocalOnly) return;
+            // Hide and stop processing but keep node in the scene tree
+            InternalSetVisible(false);
+            InternalSetProcessing(false);
+            IsActive = false;
+        }
+
+        // Internal helpers to toggle visibility and processing on the root viewport node.
+        public void InternalSetVisible(bool visible)
+        {
+            try
+            {
+                Viewport.Visible = visible;
+            }
+            catch
+            {
+                // If Viewport doesn't expose Visible directly, fall back to calling Show/Hide on Controls
+                if (visible)
+                {
+                    (Viewport as Node)?.CallDeferred("show");
+                }
+                else
+                {
+                    (Viewport as Node)?.CallDeferred("hide");
+                }
+            }
+        }
+
+        public void InternalSetProcessing(bool processing)
+        {
+            Viewport.SetProcess(processing);
+            Viewport.SetPhysicsProcess(processing);
+            Viewport.SetProcessUnhandledInput(processing);
+            Viewport.SetProcessUnhandledKeyInput(processing);
+        }
+
         public void GenerateWorld()
         {
-            var Dash = Dashboard.Generate();
-            RootElement.AddChildElement(Dash);
+
         }
 
         public void Update(double delta)

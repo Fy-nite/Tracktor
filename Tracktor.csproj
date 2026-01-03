@@ -5,7 +5,14 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="V12\**" />
+    <EmbeddedResource Remove="V12\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="V12/V12.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Scenes\" />
   </ItemGroup>
   <!-- lets hope we dont loose this Project again.... -->
 </Project>

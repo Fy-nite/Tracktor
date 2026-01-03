@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://37j2o41hnl4s"]
+
+[node name="ErrorScene" type="Node3D"]
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(18.800001, 0, 0, 0, 18.800001, 0, 0, 0, 18.800001, -0.22500587, 1.6038513, -3.0755725)
+pixel_size = 0.0005
+text = "it seems that 
+you've somehow
+ managed
+ to break the game.
+
+you need to RUN!
+GET OUT OF HERE!"
+
+[node name="Label3D2" type="Label3D" parent="."]
+transform = Transform3D(13.29361, 0, -13.29361, 0, 18.800003, 0, 13.29361, 0, 13.29361, 2.7749941, 1.6038513, -2.0755725)
+pixel_size = 0.0005
+text = "LEAVE!"
+
+[node name="Label3D3" type="Label3D" parent="."]
+transform = Transform3D(0, 0, -18.800003, 0, 18.800003, 0, 18.800003, 0, 0, 3.7749941, 1.6038513, -0.07557255)
+pixel_size = 0.0005
+text = "LEAVE!"
+
+[node name="Label3D4" type="Label3D" parent="."]
+transform = Transform3D(-13.293608, 0, -13.293608, 0, 18.800001, 0, 13.293608, 0, -13.293608, 2.7749941, 1.6038513, 1.9244275)
+pixel_size = 0.0005
+text = "LEAVE!"
+
+[node name="Label3D6" type="Label3D" parent="."]
+transform = Transform3D(-13.293611, 0, 13.293609, 0, 18.800003, 0, -13.293609, 0, -13.293611, -2.558339, 1.6038513, 1.9244275)
+pixel_size = 0.0005
+text = "LEAVE!"
+
+[node name="Label3D7" type="Label3D" parent="."]
+transform = Transform3D(-1.6435484e-06, 0, 18.800003, 0, 18.800003, 0, -18.800003, 0, -1.6435484e-06, -3.5583394, 1.6038513, -0.07557249)
+pixel_size = 0.0005
+text = "LEAVE!"
+
+[node name="Label3D8" type="Label3D" parent="."]
+transform = Transform3D(13.293607, 0, 13.293609, 0, 18.8, 0, -13.293609, 0, 13.293607, -2.5583396, 1.6038513, -2.0755725)
+pixel_size = 0.0005
+text = "LEAVE!"
+
+[node name="Label3D5" type="Label3D" parent="."]
+transform = Transform3D(-18.8, 0, 0, 0, 18.8, 0, 0, 0, -18.8, -0.22500587, 1.6038513, 2.9244275)
+pixel_size = 0.0005
+text = "LEAVE!"
