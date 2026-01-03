@@ -29,6 +29,7 @@ namespace V12.Components
         public DirectionalLight()
         {
         }
+        public override void OnAttach() {}
         public override Control GenerateUI()
         {
             return ComponentUIGenerator.GenerateAutoUI(this);

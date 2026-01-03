@@ -1,5 +1,6 @@
 ﻿using Godot;
 using System.Text;
+using V12.Elements;
 using V12.Interfaces;
 
 namespace V12.Types
@@ -13,6 +14,7 @@ namespace V12.Types
         public event Action<IWorldElement> OnRootChanged;
         public event Action<IComponent> OnComponentAdded;
         public event Action<IComponent> OnComponentRemoved;
+        public EventManager eventManager { get; set; } = new();
         public string Name { get; set; }
         public string Description { get; set; }
         public string Type { get; set; }
@@ -48,11 +50,24 @@ namespace V12.Types
                 OnElementChanged?.Invoke(this);
             }
         }
+        public void OnChanged() {OnElementChanged?.Invoke(this);}
         public List<IComponent> Components { get; set; } = new();
 
         public event Action<IWorldElement> OnElementChanged;
 
-        public Element() { }
+        public Element()
+        {
+        }
+
+        public Element Initialize()
+        {
+            foreach (var comp in Components)
+            {
+                comp.ParentElement = this;
+                comp.OnAttach();
+            }
+            return this;
+        }
 
         public override string ToString()
         {
@@ -128,6 +143,7 @@ namespace V12.Types
             component.ParentElement = this;
             GD.Print($"[Element] AddComponent: Added component '{component.Name}' to element '{this.Name}'");
             OnComponentAdded?.Invoke(component);
+            component.OnAttach();
         }
 
         public void RemoveComponent(IComponent component)

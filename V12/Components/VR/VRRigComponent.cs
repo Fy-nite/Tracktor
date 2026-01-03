@@ -11,6 +11,7 @@ namespace V12.Components.VR
         public VRRigComponent() : base("VR Rig", "Creates an XR rig (origin + camera + controllers)")
         {
         }
+        public override void OnAttach() {}
 
         public override Control GenerateUI()
         {

@@ -14,6 +14,7 @@ namespace V12.Components
         {
 
         }
+        public override void OnAttach() {}
 
         public void AttachMeshData(List<DoubleVector3> vertices, List<int> indices)
         {

@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "QHolEjIKpEU=",
+  "dgSpecHash": "Va+YyW7YpL4=",
   "success": true,
-  "projectFilePath": "D:\\Projects\\Tracktor\\V12\\V12.csproj",
+  "projectFilePath": "/home/carson/2TB_NVME/Projects/Finite/Tracktor/V12/V12.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\GAMER\\.nuget\\packages\\godotsharp\\4.5.1\\godotsharp.4.5.1.nupkg.sha512",
-    "C:\\Users\\GAMER\\.nuget\\packages\\godotsharp.sourcegenerators\\2.6.0\\godotsharp.sourcegenerators.2.6.0.nupkg.sha512",
-    "C:\\Users\\GAMER\\.nuget\\packages\\godotsharpeditor\\4.5.1\\godotsharpeditor.4.5.1.nupkg.sha512"
+    "/home/carson/.nuget/packages/godotsharp/4.5.1/godotsharp.4.5.1.nupkg.sha512",
+    "/home/carson/.nuget/packages/godotsharp.sourcegenerators/2.6.0/godotsharp.sourcegenerators.2.6.0.nupkg.sha512",
+    "/home/carson/.nuget/packages/godotsharpeditor/4.5.1/godotsharpeditor.4.5.1.nupkg.sha512",
+    "/home/carson/.nuget/packages/microsoft.aspnetcore.app.ref/10.0.0/microsoft.aspnetcore.app.ref.10.0.0.nupkg.sha512"
   ],
   "logs": []
 }

@@ -22,6 +22,7 @@ namespace V12.Components
             Scale = new DoubleVector3(1, 1, 1, 1);
             // slot will be assigned when the syncer attaches the component node
         }
+        public override void OnAttach() {}
         public override Node3D RunComponentLogic()
         {
             // create and return a Node3D that will be attached to the element's node

@@ -18,6 +18,7 @@ namespace V12.Components.VR
         public VRControllerComponent() : base("VR Controller", "Creates an XR tracked controller")
         {
         }
+        public override void OnAttach() {}
 
         public override Control GenerateUI() => ComponentUIGenerator.GenerateAutoUI(this);
 

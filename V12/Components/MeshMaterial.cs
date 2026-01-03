@@ -13,6 +13,7 @@ namespace V12.Components
         public MeshMaterial() : base("Mesh Material", "Defines a material for meshes")
         {
         }
+        public override void OnAttach() {}
         public MeshMaterial(Color albedoColor, string texturePath)
             : this()
         {

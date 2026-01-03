@@ -22,6 +22,8 @@ namespace V12.Components
 
         }
 
+        public abstract void OnAttach();
+
         public abstract Control GenerateUI();
         public abstract Node3D RunComponentLogic();
         

@@ -9,6 +9,7 @@ namespace V12.Components.VR
         public VROriginComponent() : base("VR Origin", "Provides an XR origin/root for the VR rig")
         {
         }
+        public override void OnAttach() {}
 
         public override Control GenerateUI() => ComponentUIGenerator.GenerateAutoUI(this);
 

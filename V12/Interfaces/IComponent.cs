@@ -82,5 +82,7 @@ namespace V12.Interfaces
         {
             // default no-op
         }
+
+        public void OnAttach() {}
     }
 }

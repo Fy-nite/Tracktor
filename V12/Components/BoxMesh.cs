@@ -48,6 +48,6 @@ namespace V12.Components
             return box;
         }
 
-
+        public override void OnAttach() {}
     }
 }

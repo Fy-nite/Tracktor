@@ -15,6 +15,7 @@ namespace V12.Components.VR
         public VRLocomotionComponent() : base("VR Locomotion", "Provides basic locomotion settings")
         {
         }
+        public override void OnAttach() {}
 
         public override Control GenerateUI()
         {
