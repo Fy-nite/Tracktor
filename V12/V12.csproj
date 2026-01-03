@@ -7,22 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Components\BoxMesh.cs.uid" />
-    <None Remove="Components\Component.cs.uid" />
-    <None Remove="Components\ComponentUIGenerator.cs.uid" />
-    <None Remove="Components\Directionallight.cs.uid" />
-    <None Remove="Components\MeshCollider.cs.uid" />
-    <None Remove="Components\MeshMaterial.cs.uid" />
-    <None Remove="Components\TransformComponent.cs.uid" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="GodotSharp" Version="4.5.1" />
     <PackageReference Include="GodotSharp.SourceGenerators" Version="2.6.0" />
     <PackageReference Include="GodotSharpEditor" Version="4.5.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Elements\" />
     <Folder Include="Types\Models\" />
   </ItemGroup>
 

@@ -1,7 +1,0 @@
-res://Scenes/VRPlayer.tscn
-res://openxr_action_map.tres
-res://CSharp/WorldInit.cs
-res://CSharp/VrPlayer.cs
-res://CSharp/EngineInit.cs
-res://Scenes/player.gd
-res://addons/panku_console/res/panku_console_theme.tres
