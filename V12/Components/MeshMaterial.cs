@@ -1,7 +1,4 @@
 ﻿using Godot;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using V12.Interfaces;
 
 namespace V12.Components
@@ -10,8 +7,8 @@ namespace V12.Components
     {
         public override string Category => "Materials";
 
-        public Color AlbedoColor {  get; set; }
-        public string TexturePath { get;set; }
+        public Color AlbedoColor { get; set; }
+        public string TexturePath { get; set; }
         public Material material { get; set; }
         public MeshMaterial() : base("Mesh Material", "Defines a material for meshes")
         {

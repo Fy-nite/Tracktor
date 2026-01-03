@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Godot;
+﻿using Godot;
 namespace V12.Components.Android
 {
     public class AndroidPlayer

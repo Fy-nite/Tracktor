@@ -14,5 +14,8 @@
   <ItemGroup>
     <Folder Include="Scenes\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitignore" />
+  </ItemGroup>
   <!-- lets hope we dont loose this Project again.... -->
 </Project>

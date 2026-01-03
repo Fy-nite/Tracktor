@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Godot;
 using System.Text;
 
 namespace V12.Types
@@ -29,6 +28,11 @@ namespace V12.Types
         public override int GetHashCode()
         {
             return x.GetHashCode();
+        }
+
+        internal Vector3 ToVector3()
+        {
+            throw new NotImplementedException();
         }
     }
 }

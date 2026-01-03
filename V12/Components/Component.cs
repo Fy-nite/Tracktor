@@ -1,5 +1,4 @@
 using Godot;
-using System.Collections.Generic;
 using V12.Interfaces;
 
 namespace V12.Components
@@ -20,11 +19,12 @@ namespace V12.Components
 
         public Component()
         {
-           
+
         }
 
         public abstract Control GenerateUI();
         public abstract Node3D RunComponentLogic();
+        
 
         public void AddSubComponent(IComponent subComponent)
         {

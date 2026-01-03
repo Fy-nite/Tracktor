@@ -1,8 +1,5 @@
 ﻿using Godot;
-using System.Collections.Generic;
 using V12.Interfaces;
-using V12.Components.VR;
-using V12.Components;
 
 public class WorldElementSceneSyncer
 {
@@ -149,6 +146,16 @@ public class WorldElementSceneSyncer
         }
         parent.AddChild(compNode);
         _componentToNode[comp] = compNode;
+
+        // Notify component its scene node has been assigned so it can cache references
+        try
+        {
+            comp.OnSceneNodeAssigned(compNode);
+        }
+        catch (Exception ex)
+        {
+            DebugPrint($"[Error] Exception in OnSceneNodeAssigned for {comp.Name}: {ex.Message}");
+        }
     }
 
     private void OnComponentAdded(IComponent comp)
@@ -171,10 +178,53 @@ public class WorldElementSceneSyncer
             DebugPrint($"Component Removed: {comp.Name}");
             node.QueueFree();
             _componentToNode.Remove(comp);
+
+            try
+            {
+                comp.OnSceneNodeRemoved();
+            }
+            catch (Exception ex)
+            {
+                DebugPrint($"[Error] Exception in OnSceneNodeRemoved for {comp.Name}: {ex.Message}");
+            }
         }
         else
         {
             DebugPrint($"[Warning] Tried to remove component {comp.Name} but node not found.");
         }
+    }
+
+    // Public method to run per-frame ticks on components. Caller (e.g. main engine)
+    // should call this each frame with delta time to allow components to update.
+    public void Process(float delta)
+    {
+        foreach (var kv in _componentToNode)
+        {
+            var comp = kv.Key;
+            try
+            {
+                comp.OnTick(delta);
+            }
+            catch (Exception ex)
+            {
+                DebugPrint($"[Error] Exception in OnTick for {comp.Name}: {ex.Message}");
+            }
+        }
+    }
+
+    // Public lookup helpers so external code (components, tools, etc.) can find
+    // the Godot Node associated with a world element or component.
+    public Node? GetNodeForElement(IWorldElement element)
+    {
+        if (element == null) return null;
+        _elementToNode.TryGetValue(element, out var node);
+        return node;
+    }
+
+    public Node? GetNodeForComponent(IComponent component)
+    {
+        if (component == null) return null;
+        _componentToNode.TryGetValue(component, out var node);
+        return node;
     }
 }

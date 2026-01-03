@@ -1,6 +1,5 @@
 ﻿using Godot;
 using V12.Interfaces;
-using System.Collections.Generic;
 
 namespace V12.UI
 {
@@ -49,7 +48,7 @@ namespace V12.UI
             GenerateUI(root);
         }
 
-      
+
 
         public void GenerateUI(IWorldElement rootElement)
         {
@@ -59,7 +58,7 @@ namespace V12.UI
             root.SetText(0, rootElement.Name ?? "Root");
             _itemToElement[root] = rootElement;
             AddElementToTree(rootElement, root, _tree);
-           
+
         }
 
         private void AddElementToTree(IWorldElement element, TreeItem parentItem, Tree tree)

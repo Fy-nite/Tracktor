@@ -10,6 +10,7 @@ size = Vector3(0.05, 0.05, 0.05)
 [node name="CharacterBody3D" type="SubViewport"]
 use_xr = true
 handle_input_locally = false
+oversampling = false
 size = Vector2i(0, 0)
 
 [node name="CharacterBody3D" type="CharacterBody3D" parent="."]

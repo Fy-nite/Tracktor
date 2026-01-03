@@ -9,6 +9,11 @@
   <ItemGroup>
     <None Remove="Components\BoxMesh.cs.uid" />
     <None Remove="Components\Component.cs.uid" />
+    <None Remove="Components\ComponentUIGenerator.cs.uid" />
+    <None Remove="Components\Directionallight.cs.uid" />
+    <None Remove="Components\MeshCollider.cs.uid" />
+    <None Remove="Components\MeshMaterial.cs.uid" />
+    <None Remove="Components\TransformComponent.cs.uid" />
   </ItemGroup>
 
   <ItemGroup>

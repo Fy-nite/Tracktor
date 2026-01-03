@@ -1,5 +1,4 @@
 using Godot;
-using V12.Components;
 
 namespace V12.Components.VR
 {
@@ -22,7 +21,8 @@ namespace V12.Components.VR
 
         public override Control GenerateUI() => ComponentUIGenerator.GenerateAutoUI(this);
 
-        public override Node3D RunComponentLogic() {
+        public override Node3D RunComponentLogic()
+        {
             var cHand = new XRController3D();
             cHand.Tracker = new StringName(Hand ? "left_hand" : "right_hand");
             return cHand;

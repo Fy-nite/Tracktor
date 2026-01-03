@@ -1,11 +1,8 @@
 ﻿using Godot;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace V12.Components
 {
-    public class DirectionalLight: Component
+    public class DirectionalLight : Component
     {
         [InspectorExpose]
         public float Energy { get; set; } = 1.0f;
@@ -22,7 +19,7 @@ namespace V12.Components
         [InspectorExpose]
         public Vector3 Rotation { get; set; }
         [InspectorExpose]
-        public Vector3 Scale { get; set; } = new Vector3(1,1,1);
+        public Vector3 Scale { get; set; } = new Vector3(1, 1, 1);
         [InspectorExpose]
         public string Name { get; set; } = "DirectionalLight";
         [InspectorExpose]

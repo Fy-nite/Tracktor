@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
 namespace V12.Interfaces
 {
@@ -8,7 +6,7 @@ namespace V12.Interfaces
     {
         public string RefName { get; set; }
         public string RefType { get; set; }
-        public long   RefId   { get; set; }
+        public long RefId { get; set; }
         public IRefElement() { }
         public IRefElement(string refName, string refType)
         {

@@ -1,8 +1,4 @@
 ﻿using Godot;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using V12.Interfaces;
 
 namespace V12.Components
 {
@@ -40,7 +36,7 @@ namespace V12.Components
 
         public override Node3D RunComponentLogic()
         {
-            var box =  new CsgBox3D
+            var box = new CsgBox3D
             {
                 Position = Position,
                 Name = Name,
@@ -52,6 +48,6 @@ namespace V12.Components
             return box;
         }
 
-        
+
     }
 }

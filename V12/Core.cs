@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Collections.Generic;
-using System.Linq;
-using Godot;
+﻿using Godot;
 namespace V12
 {
     public class V12Engine
@@ -85,9 +81,10 @@ namespace V12
         {
             GD.Print("Engine started");
             foreach (var world in Worlds)
-            {   
-                if (world != null) {
-                    
+            {
+                if (world != null)
+                {
+
                 }
                 GD.Print("World loaded: " + world.Name);
             }

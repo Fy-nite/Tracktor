@@ -1,9 +1,5 @@
 ﻿using Godot;
-using V12.Interfaces;
-using V12.World;
-using V12.World.Templates;
 using V12.Types;
-using V12.UI;
 
 namespace V12
 {
@@ -40,6 +36,8 @@ namespace V12
             InternalSetVisible(true);
             InternalSetProcessing(true);
             IsActive = true;
+            // Register as current world
+            WorldManager.SetCurrent(this);
         }
 
         public void Deactivate()
@@ -51,6 +49,11 @@ namespace V12
             InternalSetVisible(false);
             InternalSetProcessing(false);
             IsActive = false;
+            // If this world was the current, clear it
+            if (WorldManager.CurrentWorld == this)
+            {
+                WorldManager.ClearCurrent();
+            }
         }
 
         // Internal helpers to toggle visibility and processing on the root viewport node.

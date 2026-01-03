@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Godot;
 using System.Collections.Generic;
-using System.Text;
-using Godot;
 using V12;
 using V12.Interfaces;
 using V12.Types;
 namespace Tracktor.CSharp
 {
-    public partial class WorldInit: Node3D
+    public partial class WorldInit : Node3D
     {
         public Node3D InitializeLocalHome(V12World world)
         {

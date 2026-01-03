@@ -1,8 +1,4 @@
 ﻿using Godot;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using V12.Components;
 using V12.Interfaces;
 using V12.Types;
 using BoxMesh = V12.Components.BoxMesh;
@@ -39,9 +35,9 @@ namespace V12.World
                         Position = new Vector3(0, 0, 0),
                         Rotation = new Vector3(0, 0, 0),
                         Scale = new Vector3(100, 1, 100),
-                        
+
                     }
-                    
+
                 }
             };
 
