@@ -8,13 +8,11 @@ namespace V12.Components
         public Color SkyColor { get; set; } = new Color(0.2f, 0.5f, 0.9f);
         [InspectorExpose]
         public float Size { get; set; } = 1000f;
-        [InspectorExpose]
-        public string Name { get; set; } = "WorldSkybox";
 
         public override string Category => "Environment";
         public override string Description => "A simple skybox using an inverted sphere mesh and basic material.";
 
-        public WorldSkybox() {}
+        public WorldSkybox() {Name="WorldSkybox";}
 
         public override Control GenerateUI()
         {

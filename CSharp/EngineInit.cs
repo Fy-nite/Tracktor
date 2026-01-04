@@ -1,10 +1,12 @@
 using Godot;
 using Tracktor.CSharp;
 using V12;
+using V12.Components.VR;
 
 public partial class EngineInit : Node3D
 {
 	public V12Engine engine;
+	VRInteractionController vrInteractionController;
 	public int currentWorldIndex = 0;
 
 	// Called when the node enters the scene tree for the first time.
@@ -31,6 +33,8 @@ public partial class EngineInit : Node3D
         {
             var VRPlayer = new V12.Components.VR.VRPlayer().GenerateVRPlayer();
             AddChild(VRPlayer); // Add VRPlayer to the scene, and make sure the player can be used all worlds
+            vrInteractionController = new(VRPlayer);
+
         }
 		// Activate the main world so it's visible, and also activate the local UserSpace so it remains visible
 		engine.ActivateWorld(0, this);

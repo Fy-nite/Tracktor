@@ -22,12 +22,11 @@ namespace V12.Components
         [InspectorExpose]
         public Vector3 Scale { get; set; } = new Vector3(1, 1, 1);
         [InspectorExpose]
-        public string Name { get; set; } = "DirectionalLight";
-        [InspectorExpose]
         public override string Description => "A directional light that simulates sunlight.";
         public override string Category => "Lights";
         public DirectionalLight()
         {
+            Name = "DirectionalLight";
             // Defer creation so initializer values (Position, Rotation, etc.) are applied
         }
         public override Control GenerateUI()

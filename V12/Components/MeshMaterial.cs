@@ -7,30 +7,24 @@ namespace V12.Components
     {
         public override string Category => "Materials";
 
-        public Color AlbedoColor { get; set; }
-        public string TexturePath { get; set; }
-        public Material material { get; set; }
+        public Color AlbedoColor { get; set; } = Colors.White;
+        public string TexturePath { get; set; } = "";
+        public Material? material { get; set; }
         public override string Description => "Defines a material for meshes";
-        public MeshMaterial()
-        {
-        }
         public override void OnAttach() {}
         public MeshMaterial(Color albedoColor, string texturePath)
-            : this()
         {
-            ((IMaterial)this).AlbedoColor = albedoColor;
-            ((IMaterial)this).TexturePath = texturePath;
+            AlbedoColor = albedoColor;
+            TexturePath = texturePath;
         }
         public MeshMaterial(Color albedoColor, Material material)
-            : this()
         {
-            ((IMaterial)this).AlbedoColor = albedoColor;
-            ((IMaterial)this).material = material;
+            AlbedoColor = albedoColor;
+            this.material = material;
         }
         public MeshMaterial(Material material)
-            : this()
         {
-            ((IMaterial)this).material = material;
+            this.material = material;
         }
 
         public override Control GenerateUI()

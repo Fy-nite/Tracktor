@@ -20,6 +20,7 @@ namespace V12.Components
 		public string MeshType => "Box";
 		public BoxMesh()
 		{
+			Name = "Box";
 			// defer creation of sceneElement until RunComponentLogic so object initializer values are applied
 		}
 		public BoxMesh(Vector3 position, Vector3 rotation, Vector3 scale)

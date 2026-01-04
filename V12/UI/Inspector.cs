@@ -75,8 +75,9 @@ namespace V12.UI
         {
             foreach (var child in element.ChildElements)
             {
-                GD.Print($"added child: {child.Name}");
+                GD.Print($"[Inspector] added child: {child.Name}");
                 var item = tree.CreateItem(parentItem);
+                item.SetCustomColor(0, Colors.White);
                 item.SetText(0, child.Name ?? "Element");
                 _itemToElement[item] = child; // Store mapping
                 AddElementToTree(child, item, tree);

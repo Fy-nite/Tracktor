@@ -19,7 +19,7 @@ namespace V12.Types
         public string Description { get; set; }
         public string Type { get; set; }
         public int Level { get; set; }
-        public Node3D sceneElement { get; set; }
+        public Node3D? sceneElement { get; set; }
 
         private DoubleVector3 _position;
         public DoubleVector3 Position

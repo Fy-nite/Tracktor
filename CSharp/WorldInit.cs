@@ -50,6 +50,7 @@ namespace Tracktor.CSharp
                             new V12.Components.Inspector
                             {
                                 Position = new Vector3(2, 2, 0),
+                                Rotation = new Vector3(0, 180, 0)
                             }
                         }
                     },

@@ -54,7 +54,6 @@ public class EventManager
     }
     public void deregisterEvent(string eventName, Action<IEvent> eventCallback)
     {
-        Tuple<Type, Action<IEvent>> t;
         if (!callbacks.ContainsKey(eventName) || !callbacks[eventName].Any(c => c.callback == eventCallback))
         {
             throw new Exception("Tried to deregister callback which is not registered");

@@ -16,7 +16,7 @@ namespace V12.Components
         [InspectorExpose]
         public Vector3 Scale { get; set; } = new Vector3(1,1,1);
 
-        public IWorldElement Root { get; set; }
+        public IWorldElement? Root { get; set; }
 
         public override string Category => "Mesh";
         public override string Description => "A simple box mesh";
@@ -24,6 +24,7 @@ namespace V12.Components
         public string MeshType => "Box";
         public Inspector()
         {
+            Root = WorldManager.CurrentWorld?.RootElement ?? attachedElement;
             // defer creation of sceneElement until RunComponentLogic so object initializer values are applied
         }
         public Inspector(Vector3 position, Vector3 rotation, Vector3 scale, IWorldElement Root)
@@ -42,7 +43,13 @@ namespace V12.Components
         {
             if (sceneElement == null)
             {
-                var inspectorUI = new UI.Inspector(this.attachedElement);
+                GD.Print($"{WorldManager.CurrentWorld?.Name ?? "<null>"}");
+                if (Root == null)
+                    if (WorldManager.CurrentWorld?.RootElement == null)
+                        return;
+                    else
+                        Root = WorldManager.CurrentWorld?.sceneGenerator.rootElement;
+                var inspectorUI = new UI.Inspector(Root);
                 var SubViewport = new Godot.SubViewport();
                 // put the UI root inside the viewport
                 SubViewport.AddChild(inspectorUI);
@@ -51,7 +58,7 @@ namespace V12.Components
 
                 var InspectorMesh = new MeshInstance3D();
                 var quadSize = inspectorUI.UIRoot.Size / 200f; // scale down for 3D world
-                InspectorMesh.Mesh = new Godot.QuadMesh
+                InspectorMesh.Mesh = new QuadMesh
                 {
                     Size = quadSize
                 };
@@ -82,7 +89,8 @@ namespace V12.Components
 
                 // simple dark material for the backing
                 var backMaterial = new StandardMaterial3D();
-                backMaterial.AlbedoColor = new Color(0.08f, 0.08f, 0.08f);
+                //backMaterial.AlbedoColor = new Color(0.08f, 0.08f, 0.08f);
+                backMaterial.AlbedoColor = new Color(1f, 1f, 1f);
                 backMaterial.CullMode = BaseMaterial3D.CullModeEnum.Disabled; // show both sides
                 backMesh.SetSurfaceOverrideMaterial(0, backMaterial);
 
@@ -98,7 +106,7 @@ namespace V12.Components
                 InspectorMesh.AddChild(backMesh);
 
                 // add the 3D title above the quad (local position so it follows the mesh)
-                var titleText = this.attachedElement?.Name ?? "Inspector";
+                var titleText = attachedElement?.Name ?? "Inspector";
                 var title = new Label3D
                 {       
                     Name = "InspectorTitle3D",

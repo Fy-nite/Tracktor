@@ -23,7 +23,6 @@ namespace V12
             Viewport = new Node3D();
             RootElement = new Element { Name = "Root" };
             sceneGenerator = new SceneGenerator(RootElement, Viewport);
-            sceneGenerator.RegenerateTree();
         }
 
         public void Activate(Node? parent = null)
@@ -33,12 +32,13 @@ namespace V12
             {
                 parent.AddChild(Viewport);
             }
+            // Register as current world
+            WorldManager.SetCurrent(this);
+            sceneGenerator.RegenerateTree();
             // Make node visible and enable processing so the world becomes active
             InternalSetVisible(true);
             InternalSetProcessing(true);
             IsActive = true;
-            // Register as current world
-            WorldManager.SetCurrent(this);
         }
 
         public void Deactivate()

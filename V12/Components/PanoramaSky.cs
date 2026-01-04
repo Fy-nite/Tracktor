@@ -12,14 +12,10 @@ namespace V12.Components
 
         [InspectorExpose]
         public float Size { get; set; } = 1000f;
-
-        [InspectorExpose]
-        public string Name { get; set; } = "PanoramaSky";
-
         public override string Category => "Environment";
         public override string Description => "A panorama sky using an inverted sphere and a texture.";
 
-        public PanoramaSky() { }
+        public PanoramaSky() { Name = "PanoramaSky"; }
 
         public override Control GenerateUI()
         {

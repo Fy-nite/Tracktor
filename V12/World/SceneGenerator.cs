@@ -1,12 +1,13 @@
 using System.Diagnostics;
 using Godot;
+using V12.Components;
 using V12.Interfaces;
 using V12.Types;
 
 public class SceneGenerator
 {
-	private Node3D sceneRoot;
-	private IWorldElement rootElement;
+	public Node3D sceneRoot { get; private set; }
+	public IWorldElement rootElement { get; private set; }
 	const bool DEBUGMODE = true;
 	public SceneGenerator(IWorldElement rootElement, Node3D sceneRoot)
 	{
@@ -20,7 +21,7 @@ public class SceneGenerator
 			GD.Print($"[SceneGenerator] {msg}");
 	}
 	public void RegenerateTree() {RegenerateTree(rootElement, sceneRoot);}
-	public void RegenerateTree(IWorldElement rootElement) {RegenerateTree(rootElement, rootElement.sceneElement);}
+	public void RegenerateTree(IWorldElement rootElement) {RegenerateTree(rootElement, rootElement.sceneElement ?? sceneRoot);}
 	public void RegenerateTree(Node3D sceneRoot) {RegenerateTree(rootElement, sceneRoot);}
 	public void RegenerateTree(IWorldElement rootElement, Node3D sceneRoot)
 	{
@@ -28,7 +29,7 @@ public class SceneGenerator
 		{
 			child.QueueFree();
 		}
-		// rootElement.sceneElement == sceneRoot
+		rootElement.sceneElement = sceneRoot;
 		List<IWorldElement> elements = FlattenTree(rootElement);
 		foreach (var elem in elements)
 		{
@@ -56,12 +57,7 @@ public class SceneGenerator
 		Node3D parent = sceneRoot;
 		if (element.ParentElement != null)
 			parent = element.ParentElement.sceneElement;
-		elemNode.Name = element.Name;
-		elemNode.Position = element.Position.ToVector3();
-		elemNode.Rotation = element.Rotation.ToVector3();
-		elemNode.Scale = element.Scale.ToVector3();
 		parent.AddChild(elemNode);
-
 		element.sceneElement = elemNode;
 		
 		foreach (var component in element.Components)
@@ -69,18 +65,27 @@ public class SceneGenerator
 			component.attachedElement = element;
 			component.OnAwake();
 			component.OnAttach();
+			DebugPrint($"[GenerateElement] Attached Component {component.Name}");
+			if (component is NodeComponent nc)
+				DebugPrint($"    Node {nc.sceneElement?.Name}");
 		}
+		elemNode.Name = element.Name == null || element.Name.Length == 0 ? "Empty Name" : element.Name;
+		elemNode.Position = element.Position.ToVector3();
+		elemNode.Rotation = element.Rotation.ToVector3();
+		elemNode.Scale = element.Scale.ToVector3();
 
-		element.OnElementAdded += (e) => {GenerateElement(e); RegenerateTree(e);};
-		element.OnElementChanged += (e) => {RegenerateElement(e); RegenerateTree(e);};
-		element.OnRootChanged += (e) => {RegenerateElement(e); RegenerateTree(e);};
+		element.OnElementAdded += (e) => {Node3D root=new();e.ParentElement.sceneElement.AddChild(root);RegenerateTree(e, root);};
+		element.OnElementChanged += (e) => {RegenerateTree(e);};
+		element.OnRootChanged += (e) => {RegenerateTree(e);};
 		element.OnElementRemoved += (e) => {element.sceneElement.QueueFree();};
 		element.OnComponentAdded += (e) => {if (e.attachedElement != null) RegenerateElement(e.attachedElement);};
 		element.OnComponentRemoved += (e) => {if (e.attachedElement != null) RegenerateElement(e.attachedElement);};
 	}
 	private void RegenerateElement(IWorldElement element)
 	{
-		element.sceneElement.QueueFree();
+		var oldElem = element.sceneElement;
+		//element.sceneElement = null;
 		GenerateElement(element);
+		oldElem?.QueueFree();
 	}
 }

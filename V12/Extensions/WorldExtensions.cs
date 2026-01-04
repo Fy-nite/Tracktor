@@ -9,7 +9,6 @@ namespace V12.Extensions
         // Walk up parent element chain to find the root element
         public static IWorldElement GetRootElement(this IWorldElement element)
         {
-            if (element == null) return null;
             var current = element;
             while (current.ParentElement != null)
             {
