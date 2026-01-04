@@ -23,6 +23,7 @@ public class WorldElementSceneSyncer
         _rootElement.OnElementRemoved += OnElementRemoved;
     }
 
+
     private void DebugPrint(string msg)
     {
         if (DebugMode)
@@ -35,6 +36,12 @@ public class WorldElementSceneSyncer
         DebugPrint($"Syncing Element: {element.Name} as Node: {node.Name} (Parent: {parentNode.Name})");
         parentNode.AddChild(node);
         _elementToNode[element] = node;
+        // Keep element's sceneElement reference in sync so components can attach
+        try
+        {
+            element.sceneElement = node as Node3D;
+        }
+        catch { }
 
         element.OnElementChanged += OnElementChanged;
         element.OnComponentAdded += OnComponentAdded;
@@ -61,7 +68,7 @@ public class WorldElementSceneSyncer
         return node;
     }
 
-    private void OnElementAdded(Element element)
+    private void OnElementAdded(IWorldElement element)
     {
         if (element.ParentElement != null && _elementToNode.TryGetValue(element.ParentElement, out var parentNode))
         {
@@ -70,6 +77,11 @@ public class WorldElementSceneSyncer
             Node node = CreateNodeForElement(element);
             parentNode.AddChild(node);
             _elementToNode[element] = node;
+            try
+            {
+                element.sceneElement = node as Node3D;
+            }
+            catch { }
             element.OnElementChanged += OnElementChanged;
             element.OnComponentAdded += OnComponentAdded;
             element.OnComponentRemoved += OnComponentRemoved;
@@ -105,6 +117,11 @@ public class WorldElementSceneSyncer
 
             node.QueueFree();
             _elementToNode.Remove(element);
+            try
+            {
+                element.sceneElement = null;
+            }
+            catch { }
         }
         else
         {
@@ -134,17 +151,32 @@ public class WorldElementSceneSyncer
         DebugPrint($"Running RunComponentLogic for component type: {comp?.GetType().FullName ?? "<null>"} name: '{comp?.Name ?? ""}'");
         var compNode = comp.RunComponentLogic();
         DebugPrint($"RunComponentLogic returned node type: {compNode?.GetType().FullName ?? "<null>"} name: {compNode?.Name ?? "<null>"}");
-        DebugPrint($"Adding Component: {comp.Name} as Node: {compNode?.Name ?? "<null>"} to Parent: {parent.Name}");
+        DebugPrint($"Adding Component: {comp.Name ?? comp.GetType().Name} as Node: {compNode?.Name ?? "<null>"} to Parent: {parent.Name}");
         if (compNode == null)
         {
-            DebugPrint($"[Info] Component {comp.Name} did not return a node. Creating default Node3D.");
-            compNode = new Node3D { Name = comp.Name };
+            DebugPrint($"[Info] Component {comp.Name ?? comp.GetType().Name} did not return a node. Creating default Node3D.");
+            compNode = new Node3D { Name = comp.Name ?? comp.GetType().Name };
         }
         else if (compNode.GetParent() != null)
         {
             DebugPrint($"[Warning] Component node {compNode.Name} already has a parent. Removing from previous parent.");
             compNode.GetParent().RemoveChild(compNode);
         }
+        // Sanitize Node3D transform to avoid zero-determinant basis errors in Godot
+        if (compNode is Node3D compNode3D)
+        {
+            // Fix NaNs
+            var pos = compNode3D.Position;
+            if (float.IsNaN(pos.X) || float.IsNaN(pos.Y) || float.IsNaN(pos.Z))
+                compNode3D.Position = new Vector3(0, 0, 0);
+            var rot = compNode3D.Rotation;
+            if (float.IsNaN(rot.X) || float.IsNaN(rot.Y) || float.IsNaN(rot.Z))
+                compNode3D.Rotation = new Vector3(0, 0, 0);
+            var scl = compNode3D.Scale;
+            if (float.IsNaN(scl.X) || float.IsNaN(scl.Y) || float.IsNaN(scl.Z) || scl.X == 0f || scl.Y == 0f || scl.Z == 0f)
+                compNode3D.Scale = new Vector3(1, 1, 1);
+        }
+
         parent.AddChild(compNode);
         _componentToNode[comp] = compNode;
 
@@ -155,20 +187,20 @@ public class WorldElementSceneSyncer
         }
         catch (Exception ex)
         {
-            DebugPrint($"[Error] Exception in OnSceneNodeAssigned for {comp.Name}: {ex.Message}");
+            DebugPrint($"[Error] Exception in OnSceneNodeAssigned for {comp.Name ?? comp.GetType().Name}: {ex.Message}");
         }
     }
 
     private void OnComponentAdded(IComponent comp)
     {
-        if (_elementToNode.TryGetValue(comp.ParentElement, out var parent))
+        if (_elementToNode.TryGetValue(comp.attachedElement, out var parent))
         {
-            DebugPrint($"Component Added: {comp.Name} to Parent Element: {comp.ParentElement?.Name}");
+            DebugPrint($"Component Added: {comp.Name ?? comp.GetType().Name} to Parent Element: {comp.attachedElement?.Name}");
             AddComponentNode(comp, parent);
         }
         else
         {
-            DebugPrint($"[Warning] Tried to add component {comp.Name} but parent element node not found.");
+            DebugPrint($"[Warning] Tried to add component {comp.Name ?? comp.GetType().Name} but parent element node not found.");
         }
     }
 
@@ -176,7 +208,7 @@ public class WorldElementSceneSyncer
     {
         if (_componentToNode.TryGetValue(comp, out var node))
         {
-            DebugPrint($"Component Removed: {comp.Name}");
+            DebugPrint($"Component Removed: {comp.Name ?? comp.GetType().Name}");
             node.QueueFree();
             _componentToNode.Remove(comp);
 
@@ -186,12 +218,12 @@ public class WorldElementSceneSyncer
             }
             catch (Exception ex)
             {
-                DebugPrint($"[Error] Exception in OnSceneNodeRemoved for {comp.Name}: {ex.Message}");
+                DebugPrint($"[Error] Exception in OnSceneNodeRemoved for {comp.Name ?? comp.GetType().Name}: {ex.Message}");
             }
         }
         else
         {
-            DebugPrint($"[Warning] Tried to remove component {comp.Name} but node not found.");
+            DebugPrint($"[Warning] Tried to remove component {comp.Name ?? comp.GetType().Name} but node not found.");
         }
     }
 

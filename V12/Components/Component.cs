@@ -10,9 +10,12 @@ namespace V12.Components
         public virtual string? Description { get; set; }
         public virtual string? Category { get; set; }
         bool active { get; set; }
+        public string Name { get; set; } = string.Empty;
         public List<IComponent> SubComponents { get; set; } = new();
         public IWorldElement? attachedElement { get; set; }
         bool IComponent.active { get; set; }
+        // Node associated with this component in the scene tree (if any)
+        protected Node? _sceneNode;
 
         // Ran when the component is created
         public virtual void OnAwake() {}
@@ -31,6 +34,24 @@ namespace V12.Components
         public virtual void OnDeactivated() {}
         // Ran once when the component is about to be destroyed
         public virtual void OnDestroy() {}
+
+        public virtual Node? RunComponentLogic()
+        {
+            // By default components don't produce nodes
+            return null;
+        }
+
+        public virtual void OnSceneNodeAssigned(Node? node)
+        {
+            _sceneNode = node;
+        }
+
+        public virtual void OnSceneNodeRemoved()
+        {
+            _sceneNode = null;
+        }
+
+        public virtual void OnTick(float delta) { }
 
         // Add a child component
         public virtual void AddChildComponent(IComponent component)

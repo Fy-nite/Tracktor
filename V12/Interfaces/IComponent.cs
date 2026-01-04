@@ -8,8 +8,18 @@ namespace V12.Interfaces
         public string? Description { get; set; }
         public string? Category { get; set; }
         bool active { get; set; }
+        // A human friendly name for the component (default implementations may return type name)
+        public string Name { get; set; }
         public List<IComponent> SubComponents { get; set; }
         public IWorldElement? attachedElement { get; set; }
+        // Called by scene syncer to produce or return a Node representing this component in the scene
+        public Node? RunComponentLogic();
+        // Called by the scene syncer when the scene node for this component has been assigned/attached
+        public void OnSceneNodeAssigned(Node? node);
+        // Called by the scene syncer when the scene node for this component has been removed
+        public void OnSceneNodeRemoved();
+        // Per-frame tick invoked by the scene syncer
+        public void OnTick(float delta);
         // Ran when the component is created
         public void OnAwake();
         // Ran whenever the component is attached to a element

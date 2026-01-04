@@ -1,4 +1,5 @@
-﻿using V12.Elements;
+﻿using Godot;
+using V12.Elements;
 using V12.Types;
 
 namespace V12.Interfaces
@@ -18,6 +19,7 @@ namespace V12.Interfaces
         string Description { get; set; }
         string Type { get; set; }
         int Level { get; set; }
+        Node3D sceneElement { get; set; }
         DoubleVector3 Position { get; set; }
         DoubleVector3 Rotation { get; set; }
         DoubleVector3 Scale { get; set; }

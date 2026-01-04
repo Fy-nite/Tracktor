@@ -28,19 +28,28 @@ namespace V12.Components
         public override string Category => "Lights";
         public DirectionalLight()
         {
-            sceneElement = new DirectionalLight3D
-            {
-                Position = Position,
-                Rotation = Rotation,
-                Scale = Scale,
-                Name = Name,
-                LightEnergy = Energy,
-                LightColor = Color,
-            };
+            // Defer creation so initializer values (Position, Rotation, etc.) are applied
         }
         public override Control GenerateUI()
         {
             return ComponentUIGenerator.GenerateAutoUI(this);
+        }
+
+        public override Node? RunComponentLogic()
+        {
+            if (sceneElement == null)
+            {
+                sceneElement = new DirectionalLight3D
+                {
+                    Position = Position,
+                    Rotation = Rotation,
+                    Scale = Scale,
+                    Name = Name,
+                    LightEnergy = Energy,
+                    LightColor = Color,
+                };
+            }
+            return sceneElement;
         }
     }
 }

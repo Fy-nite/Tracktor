@@ -20,15 +20,7 @@ namespace V12.Components
         public string MeshType => "Box";
         public BoxMesh()
         {
-            sceneElement = new CsgBox3D
-            {
-                Position = Position,
-                Name = "BoxMesh",
-                Rotation = Rotation,
-                Scale = Scale,
-                UseCollision = true
-                //Material = this.ParentElement.Components.Find(c => c is MeshMaterial) is MeshMaterial matComp ? matComp.GetMaterial().material : null
-            };
+            // defer creation of sceneElement until RunComponentLogic so object initializer values are applied
         }
         public BoxMesh(Vector3 position, Vector3 rotation, Vector3 scale)
         {
@@ -42,5 +34,21 @@ namespace V12.Components
         }
 
         public override void OnAttach() {}
+
+        public override Node? RunComponentLogic()
+        {
+            if (sceneElement == null)
+            {
+                sceneElement = new CsgBox3D
+                {
+                    Position = Position,
+                    Name = "BoxMesh",
+                    Rotation = Rotation,
+                    Scale = Scale,
+                    UseCollision = true
+                };
+            }
+            return sceneElement;
+        }
     }
 }

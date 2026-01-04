@@ -11,9 +11,25 @@ namespace V12.Components
         {
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
-		public override void OnAttach()
+
+        public override Node? RunComponentLogic()
         {
-            attachedElement?.sceneElement.AddChild(sceneElement);
+            // If this component already has a scene element, return it. Otherwise null.
+            return sceneElement;
+        }
+
+        public override void OnAttach()
+        {
+            // When attached, try to parent the scene element under the element's scene node
+            if (sceneElement == null) return;
+            var parentNode = attachedElement?.sceneElement as Node3D;
+            if (parentNode != null)
+            {
+                // Remove from previous parent if necessary
+                if (sceneElement.GetParent() != null)
+                    sceneElement.GetParent().RemoveChild(sceneElement);
+                parentNode.AddChild(sceneElement);
+            }
         }
     }
 }
