@@ -9,15 +9,15 @@ namespace V12.Components.VR
 		[InspectorExpose]
 		public float HeightOffset { get; set; } = 1.7f;
 
-        public override string? Description => "Creates an XR camera for head tracking";
+		public override string? Description => "Creates an XR camera for head tracking";
 
 		public VRCameraComponent()
-        {
-            sceneElement = new XRCamera3D
-            {
-                Name = "VRCamera"
-            };
-        }
+		{
+			sceneElement = new XRCamera3D
+			{
+				Name = "VRCamera"
+			};
+		}
 		public override Control GenerateUI() => ComponentUIGenerator.GenerateAutoUI(this);
 	}
 }

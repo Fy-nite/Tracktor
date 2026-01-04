@@ -11,8 +11,6 @@ namespace V12
     {
         public static V12World? CurrentWorld { get; private set; }
 
-        public static WorldElementSceneSyncer? CurrentSyncer => CurrentWorld?.Syncer;
-
         public static Element? RootElement => CurrentWorld?.RootElement;
 
         public static void SetCurrent(V12World world)

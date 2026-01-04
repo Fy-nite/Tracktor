@@ -15,7 +15,7 @@ namespace V12.Components
         {
             // When attached, try to parent the scene element under the element's scene node
             if (sceneElement == null) return;
-            var parentNode = attachedElement?.sceneElement as Node3D;
+            var parentNode = attachedElement?.sceneElement;
             if (parentNode != null)
             {
                 // Remove from previous parent if necessary

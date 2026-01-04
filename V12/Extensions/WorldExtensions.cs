@@ -1,4 +1,5 @@
 using Godot;
+using V12.Components;
 using V12.Interfaces;
 
 namespace V12.Extensions
@@ -38,35 +39,14 @@ namespace V12.Extensions
             return null;
         }
 
-        // Return the Godot Node associated with this component if the world syncer is available
-        // This requires the caller to have access to the WorldElementSceneSyncer instance.
-        public static Node GetSceneNode(this IComponent component, WorldElementSceneSyncer syncer)
-        {
-            if (component == null || syncer == null) return null;
-            return syncer.GetNodeForComponent(component);
-        }
-
         // Convenience overload using the globally registered current syncer
-        public static Node GetSceneNode(this IComponent component)
+        public static Node? GetSceneNode(this IComponent component)
         {
-            if (component == null) return null;
-            var syncer = V12.WorldManager.CurrentSyncer;
-            if (syncer == null) return null;
-            return syncer.GetNodeForComponent(component);
-        }
-
-        public static Node GetSceneNode(this IWorldElement element, WorldElementSceneSyncer syncer)
-        {
-            if (element == null || syncer == null) return null;
-            return syncer.GetNodeForElement(element);
-        }
-
-        public static Node GetSceneNode(this IWorldElement element)
-        {
-            if (element == null) return null;
-            var syncer = V12.WorldManager.CurrentSyncer;
-            if (syncer == null) return null;
-            return syncer.GetNodeForElement(element);
+            if (component is NodeComponent nodeComponent)
+            {
+                return nodeComponent.sceneElement;
+            }
+            return null;
         }
     }
 }

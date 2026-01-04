@@ -58,6 +58,9 @@ namespace V12.Types
 
         public Element()
         {
+            if (Position == null) Position = new DoubleVector3(0, 0, 0, 0);
+            if (Rotation == null) Rotation = new DoubleVector3(0, 0, 0, 0);
+            if (Scale == null) Scale = new DoubleVector3(1, 1, 1, 0);
         }
 
         public Element Initialize()

@@ -10,7 +10,6 @@ namespace V12.Components
         public DoubleVector3 Position { get; set; }
         public DoubleVector3 Rotation { get; set; }
         public DoubleVector3 Scale { get; set; }
-        public WorldElementSceneSyncer? SceneSyncer { get; set; } = WorldManager.CurrentSyncer;
         public override string Category => "Transform";
 
         public TransformComponent()

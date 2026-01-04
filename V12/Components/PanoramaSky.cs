@@ -54,10 +54,6 @@ namespace V12.Components
                     {
                         mat.AlbedoTexture = tex;
                     }
-                    else
-                    {
-                        // If a file path was given (e.g., res:// or user path) but load failed, ignore silently
-                    }
                 }
 
                 // Assign material to surface 0 if present

@@ -9,7 +9,7 @@ namespace V12
         public World3D World3D { get; private set; }
         public Node3D Viewport { get; private set; }
         public Element RootElement { get; private set; }
-        public WorldElementSceneSyncer Syncer { get; private set; }
+        public SceneGenerator sceneGenerator { get; private set; }
         public List<Action> LoopCallbacks { get; set; } = new();
         public bool IsLocalOnly { get; set; } = false; // For worlds like UserSpace that aren't synced
         public bool CanBeLeft { get; set; } = true; // Whether the world can be switched away from
@@ -22,7 +22,8 @@ namespace V12
             World3D = new World3D();
             Viewport = new Node3D();
             RootElement = new Element { Name = "Root" };
-            Syncer = new WorldElementSceneSyncer(RootElement, Viewport);
+            sceneGenerator = new SceneGenerator(RootElement, Viewport);
+            sceneGenerator.RegenerateTree();
         }
 
         public void Activate(Node? parent = null)

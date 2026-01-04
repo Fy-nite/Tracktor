@@ -27,7 +27,7 @@ project/assembly_name="Tracktor"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/Control3D/plugin.cfg", "res://addons/Gizmo3DScript/plugin.cfg", "res://addons/UCharacterBody3D-d676a3eed696c29b733c106bb83204a7e7b47bb4/addons/ultimate_character/plugin.cfg", "res://addons/addons/modplayer/plugin.cfg", "res://addons/curvemesh3d/plugin.cfg", "res://addons/godot-xr-tools/plugin.cfg", "res://addons/modplayer/plugin.cfg", "res://addons/node_graph_3D/plugin.cfg", "res://addons/rich_text_3d/plugin.cfg")
+enabled=PackedStringArray("res://addons/Gizmo3DScript/plugin.cfg", "res://addons/UCharacterBody3D-d676a3eed696c29b733c106bb83204a7e7b47bb4/addons/ultimate_character/plugin.cfg", "res://addons/curvemesh3d/plugin.cfg", "res://addons/godot-xr-tools/plugin.cfg", "res://addons/modplayer/plugin.cfg", "res://addons/node_graph_3D/plugin.cfg", "res://addons/rich_text_3d/plugin.cfg")
 
 [input]
 
