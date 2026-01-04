@@ -38,7 +38,6 @@ namespace V12.World
                         Scale = new Vector3(100, 1, 100),
 
                     }
-
                 }
             };
 

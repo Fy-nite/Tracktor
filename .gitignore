@@ -485,20 +485,4 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 /.godot
-/.godot/editor/editor_layout.cfg
-/.godot/editor/project_metadata.cfg
-/.godot/editor/script_editor_cache.cfg
-/.godot/mono/metadata/ide_messaging_meta.txt
-/.godot/uid_cache.bin
-/V12/bin/Debug/net10.0/V12.dll
-/V12/bin/Debug/net10.0/V12.pdb
-/V12/obj/Debug/net10.0/ref/V12.dll
-/V12/obj/Debug/net10.0/refint/V12.dll
-/V12/obj/Debug/net10.0/V12.AssemblyInfo.cs
-/V12/obj/Debug/net10.0/V12.AssemblyInfoInputs.cache
-/V12/obj/Debug/net10.0/V12.assets.cache
-/V12/obj/Debug/net10.0/V12.csproj.CoreCompileInputs.cache
-/V12/obj/Debug/net10.0/V12.dll
-/V12/obj/Debug/net10.0/V12.GeneratedMSBuildEditorConfig.editorconfig
-/V12/obj/Debug/net10.0/V12.pdb
-/V12/obj/Debug/net10.0/V12.sourcelink.json
+*.import

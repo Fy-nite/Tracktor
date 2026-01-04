@@ -6,5 +6,5 @@ namespace V12.Interfaces;
 
 public interface IExist
 {
-    public Node3D sceneElement { get; set; }
+    public Node3D? sceneElement { get; set; }
 }

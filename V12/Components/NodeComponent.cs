@@ -5,30 +5,12 @@ namespace V12.Components
 {
     public class NodeComponent : Component, IExist
     {
-        private Node3D? _sceneElement;
-        public Node3D? sceneElement
-        {
-            get => _sceneElement;
-            set
-            {
-                _sceneElement = value;
-                // keep base protected field in sync for general components
-                _sceneNode = value;
-            }
-        }
+        public Node3D? sceneElement { get; set; }
 
         public override Control GenerateUI()
         {
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
-
-        public override Node? RunComponentLogic()
-        {
-            // By default return the cached scene node (if any). Specific components
-            // should create and assign their node in OnAttach().
-            return _sceneNode;
-        }
-
         public override void OnAttach()
         {
             // When attached, try to parent the scene element under the element's scene node

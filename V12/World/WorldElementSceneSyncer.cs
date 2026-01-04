@@ -158,47 +158,58 @@ public class WorldElementSceneSyncer
             DebugPrint($"[Error] Exception in OnAttach for {comp.Name ?? comp.GetType().Name}: {ex.Message}");
         }
 
-        // after attach, request the node (components may return their created node here)
-        var compNode = comp.RunComponentLogic();
-        DebugPrint($"Component node resolved: type: {compNode?.GetType().FullName ?? "<null>"} name: {compNode?.Name ?? "<null>"}");
-        DebugPrint($"Adding Component: {comp.Name ?? comp.GetType().Name} as Node: {compNode?.Name ?? "<null>"} to Parent: {parent.Name}");
-        if (compNode == null)
-        {
-            DebugPrint($"[Info] Component {comp.Name ?? comp.GetType().Name} did not return a node. Creating default Node3D.");
-            compNode = new Node3D { Name = comp.Name ?? comp.GetType().Name };
-        }
-        else if (compNode.GetParent() != null)
-        {
-            DebugPrint($"[Warning] Component node {compNode.Name} already has a parent. Removing from previous parent.");
-            compNode.GetParent().RemoveChild(compNode);
-        }
-        // Sanitize Node3D transform to avoid zero-determinant basis errors in Godot
-        if (compNode is Node3D compNode3D)
-        {
-            // Fix NaNs
-            var pos = compNode3D.Position;
-            if (float.IsNaN(pos.X) || float.IsNaN(pos.Y) || float.IsNaN(pos.Z))
-                compNode3D.Position = new Vector3(0, 0, 0);
-            var rot = compNode3D.Rotation;
-            if (float.IsNaN(rot.X) || float.IsNaN(rot.Y) || float.IsNaN(rot.Z))
-                compNode3D.Rotation = new Vector3(0, 0, 0);
-            var scl = compNode3D.Scale;
-            if (float.IsNaN(scl.X) || float.IsNaN(scl.Y) || float.IsNaN(scl.Z) || scl.X == 0f || scl.Y == 0f || scl.Z == 0f)
-                compNode3D.Scale = new Vector3(1, 1, 1);
-        }
-
-        parent.AddChild(compNode);
-        _componentToNode[comp] = compNode;
-
+        
         // Notify component its scene node has been assigned so it can cache references
         try
         {
-            comp.OnSceneNodeAssigned(compNode);
+            comp.OnAttach();
         }
         catch (Exception ex)
         {
             DebugPrint($"[Error] Exception in OnSceneNodeAssigned for {comp.Name ?? comp.GetType().Name}: {ex.Message}");
         }
+        //
+        //// after attach, request the node (components may return their created node here)
+        //var compNode = comp.RunComponentLogic();
+        //DebugPrint($"Component node resolved: type: {compNode?.GetType().FullName ?? "<null>"} name: {compNode?.Name ?? "<null>"}");
+        //DebugPrint($"Adding Component: {comp.Name ?? comp.GetType().Name} as Node: {compNode?.Name ?? "<null>"} to Parent: {parent.Name}");
+        //if (compNode == null)
+        //{
+        //    DebugPrint($"[Info] Component {comp.Name ?? comp.GetType().Name} did not return a node. Creating default Node3D.");
+        //    compNode = new Node3D { Name = comp.Name ?? comp.GetType().Name };
+        //}
+        //else if (compNode.GetParent() != null)
+        //{
+        //    DebugPrint($"[Warning] Component node {compNode.Name} already has a parent. Removing from previous parent.");
+        //    compNode.GetParent().RemoveChild(compNode);
+        //}
+        //// Sanitize Node3D transform to avoid zero-determinant basis errors in Godot
+        //if (compNode is Node3D compNode3D)
+        //{
+        //    // Fix NaNs
+        //    var pos = compNode3D.Position;
+        //    if (float.IsNaN(pos.X) || float.IsNaN(pos.Y) || float.IsNaN(pos.Z))
+        //        compNode3D.Position = new Vector3(0, 0, 0);
+        //    var rot = compNode3D.Rotation;
+        //    if (float.IsNaN(rot.X) || float.IsNaN(rot.Y) || float.IsNaN(rot.Z))
+        //        compNode3D.Rotation = new Vector3(0, 0, 0);
+        //    var scl = compNode3D.Scale;
+        //    if (float.IsNaN(scl.X) || float.IsNaN(scl.Y) || float.IsNaN(scl.Z) || scl.X == 0f || scl.Y == 0f || scl.Z == 0f)
+        //        compNode3D.Scale = new Vector3(1, 1, 1);
+        //}
+
+        //parent.AddChild(compNode);
+        //_componentToNode[comp] = compNode;
+
+        //// Notify component its scene node has been assigned so it can cache references
+        //try
+        //{
+        //    comp.OnSceneNodeAssigned(compNode);
+        //}
+        //catch (Exception ex)
+        //{
+        //    DebugPrint($"[Error] Exception in OnSceneNodeAssigned for {comp.Name ?? comp.GetType().Name}: {ex.Message}");
+        //}
     }
 
     private void OnComponentAdded(IComponent comp)
@@ -224,7 +235,7 @@ public class WorldElementSceneSyncer
 
             try
             {
-                comp.OnSceneNodeRemoved();
+                comp.OnDestroy();
             }
             catch (Exception ex)
             {
@@ -246,7 +257,7 @@ public class WorldElementSceneSyncer
             var comp = kv.Key;
             try
             {
-                comp.OnUpdate();
+                comp.OnUpdate(delta);
             }
             catch (Exception ex)
             {

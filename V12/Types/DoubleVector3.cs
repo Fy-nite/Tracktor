@@ -32,7 +32,7 @@ namespace V12.Types
 
         internal Vector3 ToVector3()
         {
-            throw new NotImplementedException();
+            return new Vector3((float)x, (float)y, (float)z);
         }
     }
 }

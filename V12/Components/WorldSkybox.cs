@@ -21,7 +21,7 @@ namespace V12.Components
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
 
-        public override Node? RunComponentLogic()
+        public override void OnAwake()
         {
             if (sceneElement == null)
             {
@@ -47,7 +47,6 @@ namespace V12.Components
 
                 sceneElement = meshInstance;
             }
-            return sceneElement;
         }
     }
 }

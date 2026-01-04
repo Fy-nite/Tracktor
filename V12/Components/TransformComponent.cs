@@ -10,8 +10,7 @@ namespace V12.Components
         public DoubleVector3 Position { get; set; }
         public DoubleVector3 Rotation { get; set; }
         public DoubleVector3 Scale { get; set; }
-        public WorldElementSceneSyncer SceneSyncer { get; set; } = WorldManager.CurrentSyncer;
-        public Node3D _slot;
+        public WorldElementSceneSyncer? SceneSyncer { get; set; } = WorldManager.CurrentSyncer;
         public override string Category => "Transform";
 
         public TransformComponent()
@@ -22,54 +21,28 @@ namespace V12.Components
             // slot will be assigned when the syncer attaches the component node
         }
         public override void OnAttach() {}
-        //public override Node3D GenComponent()
-        //{
-
-        //}
         public override Control GenerateUI()
         {
-            // Simple UI generation example - in practice, create controls for editing
-            var ui = new Control();
-            // Add UI elements here (e.g., labels, inputs)
-            return ui;
-        }
-
-        // Called by the syncer when the scene node for this component is assigned.
-        public void OnSceneNodeAssigned(Node? node)
-        {
-            _slot = node as Node3D;
-            if (_slot != null)
-            {
-                // initialize transform from component data with new values
-                _slot.Position = new Vector3((float)Position.x, (float)Position.y, (float)Position.z);
-                _slot.Rotation = new Vector3((float)Rotation.x, (float)Rotation.y, (float)Rotation.z);
-                _slot.Scale = new Vector3((float)Scale.x, (float)Scale.y, (float)Scale.z);
-            }
-        }
-
-        public void OnSceneNodeRemoved()
-        {
-            _slot = null;
+            return ComponentUIGenerator.GenerateAutoUI(this);
         }
 
         // Called each tick to update the slot from component values (or vice versa).
-        public void OnTick(float delta)
+        public void OnUpdate(float delta)
         {
-            if (_slot == null) return;
-            // push component values to the node with updated logic
-            _slot.Position = new Vector3((float)Position.x, (float)Position.y, (float)Position.z);
-            _slot.Rotation = new Vector3((float)Rotation.x, (float)Rotation.y, (float)Rotation.z);
-            _slot.Scale = new Vector3((float)Scale.x, (float)Scale.y, (float)Scale.z);
+            if (attachedElement == null) return;
+            attachedElement.sceneElement.Position = new Vector3((float)Position.x, (float)Position.y, (float)Position.z);
+            attachedElement.sceneElement.Rotation = new Vector3((float)Rotation.x, (float)Rotation.y, (float)Rotation.z);
+            attachedElement.sceneElement.Scale = new Vector3((float)Scale.x, (float)Scale.y, (float)Scale.z);
         }
         // Called each update to sync the slot from component values (or vice versa).
-        public override void OnUpdate()
-        {
-            if (_slot == null) return;
-            // push component values to the node
-            _slot.Position = new Vector3((float)Position.x, (float)Position.y, (float)Position.z);
-            _slot.Rotation = new Vector3((float)Rotation.x, (float)Rotation.y, (float)Rotation.z);
-            _slot.Scale = new Vector3((float)Scale.x, (float)Scale.y, (float)Scale.z);
-        }
+        // public override void OnUpdate()
+        // {
+        //     if (_slot == null) return;
+        //     // push component values to the node
+        //     _slot.Position = new Vector3((float)Position.x, (float)Position.y, (float)Position.z);
+        //     _slot.Rotation = new Vector3((float)Rotation.x, (float)Rotation.y, (float)Rotation.z);
+        //     _slot.Scale = new Vector3((float)Scale.x, (float)Scale.y, (float)Scale.z);
+        // }
 
        
     }

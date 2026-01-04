@@ -11,14 +11,16 @@ namespace V12.Components
         public virtual string? Category { get; set; }
         bool active { get; set; }
         public string Name { get; set; } = string.Empty;
-        public List<IComponent> SubComponents { get; set; } = new();
+        public List<IComponent> Addons { get; set; } = new();
         public IWorldElement? attachedElement { get; set; }
         bool IComponent.active { get; set; }
         // Node associated with this component in the scene tree (if any)
-        protected Node? _sceneNode;
+
 
         // Ran when the component is created
         public virtual void OnAwake() {}
+        // Ran whenever the component goes to sleep / inactive
+        public virtual void OnSleep() {}
         // Ran whenever the component is attached to a element (should register events here)
         public virtual void OnAttach() {}
         // Ran before the component is removed from a element (moved or deleted)
@@ -27,44 +29,19 @@ namespace V12.Components
             attachedElement?.eventManager.deregisterComponentEvents(this);
         }
         // Ran once every engine update
-        public virtual void OnUpdate() {}
-        // Ran whenever the component becomes active
-        public virtual void OnActivated() {}
-        // Ran whenever the component becomes deactive
-        public virtual void OnDeactivated() {}
+        public virtual void OnUpdate(double delta) {}
         // Ran once when the component is about to be destroyed
         public virtual void OnDestroy() {}
 
-        public virtual Node? RunComponentLogic()
-        {
-            // Backwards-compat shim: some components may still rely on this returning
-            // the node they created in OnAttach. Return the cached scene node.
-            return _sceneNode;
-        }
-
-        public virtual void OnSceneNodeAssigned(Node? node)
-        {
-            _sceneNode = node;
-        }
-
-        public virtual void OnSceneNodeRemoved()
-        {
-            _sceneNode = null;
-        }
-
-        public virtual void OnTick(float delta) { }
-        // Backwards compatibility: call OnUpdate by default so legacy code still works
-        public virtual void OnUpdateShim(float delta) { OnUpdate(); }
-
         // Add a child component
-        public virtual void AddChildComponent(IComponent component)
+        public virtual void AddChildAddon(IComponent addon)
         {
-            SubComponents.Add(component);
+            Addons.Add(addon);
         }
         // Remove a child component
-        public virtual void RemoveChildComponent(IComponent component)
+        public virtual void RemoveChildAddon(IComponent addon)
         {
-            SubComponents.Remove(component);
+            Addons.Remove(addon);
         }
 
         public abstract Control GenerateUI();
