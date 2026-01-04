@@ -1,8 +1,24 @@
-[gd_scene load_steps=2 format=3 uid="uid://4l8cvbldfvuw"]
+[gd_scene load_steps=6 format=3 uid="uid://4l8cvbldfvuw"]
 
 [ext_resource type="Script" uid="uid://c6rc3t6i2t4dd" path="res://CSharp/EngineInit.cs" id="1_xj5yv"]
+[ext_resource type="Texture2D" uid="uid://k7v31hdsj1n2" path="res://Assets/Day.hdr" id="2_pjpa4"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_bxsma"]
+panorama = ExtResource("2_pjpa4")
+
+[sub_resource type="Sky" id="Sky_lkrbl"]
+sky_material = SubResource("PanoramaSkyMaterial_bxsma")
+
+[sub_resource type="Environment" id="Environment_xj5yv"]
+background_energy_multiplier = 0.2
+sky = SubResource("Sky_lkrbl")
+adjustment_enabled = true
+adjustment_saturation = 2.61
 
 [node name="GameRoot" type="Node3D"]
 
 [node name="WorldRoot" type="Node3D" parent="."]
 script = ExtResource("1_xj5yv")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_xj5yv")

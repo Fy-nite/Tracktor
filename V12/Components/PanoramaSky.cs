@@ -8,7 +8,7 @@ namespace V12.Components
         public string TexturePath { get; set; } = string.Empty;
 
         [InspectorExpose]
-        public Color Tint { get; set; } = Colors.White;
+        public Color Tint { get; set; } = Colors.Gray;
 
         [InspectorExpose]
         public float Size { get; set; } = 1000f;
@@ -39,11 +39,11 @@ namespace V12.Components
                 };
                 meshInstance.Mesh = sphere;
                 meshInstance.Name = Name;
-                meshInstance.Scale = new Vector3(-Size, Size, Size); // invert normals so inside is visible
+                meshInstance.Scale = new Vector3(Size, Size, Size); // invert normals so inside is visible
 
                 var mat = new StandardMaterial3D();
-                mat.ShadingMode = BaseMaterial3D.ShadingMode.Unshaded;
-                mat.CullMode = BaseMaterial3D.CullMode.Back;
+                mat.ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded;
+                mat.CullMode = BaseMaterial3D.CullModeEnum.Front;
                 mat.AlbedoColor = Tint;
 
                 if (!string.IsNullOrWhiteSpace(TexturePath))

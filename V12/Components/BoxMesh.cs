@@ -33,9 +33,7 @@ namespace V12.Components
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
 
-        public override void OnAttach() {}
-
-        public override Node? RunComponentLogic()
+        public override void OnAttach() 
         {
             if (sceneElement == null)
             {
@@ -48,7 +46,6 @@ namespace V12.Components
                     UseCollision = true
                 };
             }
-            return sceneElement;
         }
     }
 }

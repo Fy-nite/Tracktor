@@ -24,7 +24,7 @@ namespace V12.Components
         public override string Description => "A simple box mesh";
 
         public string MeshType => "Box";
-  
+        public Spotlight() { }
         public Spotlight(Vector3 position, Vector3 rotation, Vector3 scale)
         {
             Position = position;
@@ -36,9 +36,7 @@ namespace V12.Components
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
 
-        public override void OnAttach() {}
-
-        public override Node? RunComponentLogic()
+        public override void OnAttach() 
         {
             if (sceneElement == null)
             {
@@ -54,7 +52,6 @@ namespace V12.Components
 
                 };
             }
-            return sceneElement;
         }
     }
 }

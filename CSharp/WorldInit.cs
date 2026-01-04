@@ -23,15 +23,43 @@ namespace Tracktor.CSharp
                             new V12.Components.DirectionalLight
                             {
                                 Position = new Vector3(0, 10, 0),
-                                Rotation = new Vector3(-45, 0, 0),
+                                Rotation = new Vector3(-90, 0, 0),
                                 Scale = new Vector3(1, 1, 1),
-                                Name = "Sun Light",
-                                Color = new Color(1, 1, 0.9f),
-                                Energy = 1.0f,
-                                ShadowEnabled = true
+                                Energy = 0.5f,
+                            }
+                           
+                        }
+                    },
+                    new Element {
+                        Name = "SkyBox",
+                        Components = new List<IComponent>
+                        {
+                            new V12.Components.PanoramaSky
+                            {
+                                TexturePath = "res://Assets/Day.hdr",
+                               
+                                Size = 300.0f,
                             }
                         }
-                    }
+                    },
+                    
+                    new Element {
+                        Name = "Root Inspector",
+                        Components = new List<IComponent>
+                        {
+                            new V12.Components.Inspector
+                            {
+                                Position = new Vector3(2, 2, 0),
+                            }
+                        }
+                    },
+                    new Element { },
+                    new Element { },
+                    new Element { },
+                    new Element { },
+                    new Element { },
+
+                    
                 },
                 Components = new List<IComponent>
                 {
