@@ -13,6 +13,16 @@ namespace V12.UI
         public Inspector(IWorldElement root)
         {
             UIRoot = new PanelContainer { Name = "InspectorRoot" };
+            // add a simple border/background style to make the UI stand out
+            var style = new StyleBoxFlat();
+            style.BgColor = Colors.White;
+            style.BorderWidthBottom = 2;
+            style.BorderWidthLeft = 2;
+            style.BorderWidthRight = 2;
+            style.BorderWidthTop = 2;
+
+            style.BorderColor = Colors.Black;
+            UIRoot.AddThemeStyleboxOverride("panel", style);
             UIRoot.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             UIRoot.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
             UIRoot.Size = new Vector2(400, 600);
@@ -92,6 +102,13 @@ namespace V12.UI
                         _componentVBox.AddChild(control);
                 }
             }
+        }
+
+        public static implicit operator Node3D(Inspector v)
+        {
+            var node = new Node3D();
+            node.AddChild(v.UIRoot);
+            return node;
         }
     }
 }

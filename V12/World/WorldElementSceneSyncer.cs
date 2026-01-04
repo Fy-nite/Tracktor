@@ -145,12 +145,22 @@ public class WorldElementSceneSyncer
         }
     }
 
-    private void AddComponentNode(IComponent comp, Node parent)
+        private void AddComponentNode(IComponent comp, Node parent)
     {
-        // attach component logic directly to parent node
-        DebugPrint($"Running RunComponentLogic for component type: {comp?.GetType().FullName ?? "<null>"} name: '{comp?.Name ?? ""}'");
+        // attach component: call its attach lifecycle so it can create internal node if needed
+        DebugPrint($"Calling OnAttach for component type: {comp?.GetType().FullName ?? "<null>"} name: '{comp?.Name ?? ""}'");
+        try
+        {
+            comp.OnAttach();
+        }
+        catch (Exception ex)
+        {
+            DebugPrint($"[Error] Exception in OnAttach for {comp.Name ?? comp.GetType().Name}: {ex.Message}");
+        }
+
+        // after attach, request the node (components may return their created node here)
         var compNode = comp.RunComponentLogic();
-        DebugPrint($"RunComponentLogic returned node type: {compNode?.GetType().FullName ?? "<null>"} name: {compNode?.Name ?? "<null>"}");
+        DebugPrint($"Component node resolved: type: {compNode?.GetType().FullName ?? "<null>"} name: {compNode?.Name ?? "<null>"}");
         DebugPrint($"Adding Component: {comp.Name ?? comp.GetType().Name} as Node: {compNode?.Name ?? "<null>"} to Parent: {parent.Name}");
         if (compNode == null)
         {
@@ -236,11 +246,11 @@ public class WorldElementSceneSyncer
             var comp = kv.Key;
             try
             {
-                comp.OnTick(delta);
+                comp.OnUpdate();
             }
             catch (Exception ex)
             {
-                DebugPrint($"[Error] Exception in OnTick for {comp.GetType().Name}: {ex.Message}");
+                DebugPrint($"[Error] Exception in OnUpdate for {comp.GetType().Name}: {ex.Message}");
             }
         }
     }

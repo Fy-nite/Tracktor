@@ -57,8 +57,8 @@ public partial class EngineInit : Node3D
                 GD.Print("   - Child Element: " + item2.Name);
             }
         }
-        var inspector = new V12.UI.Inspector(userWorld.RootElement);
-        AddChild(inspector.UIRoot); // Add to the scene as a UI overlay
+        //var inspector = new V12.UI.Inspector(userWorld.RootElement);
+        //AddChild(inspector.UIRoot); // Add to the scene as a UI overlay
 
         engine.Run();
     }

@@ -35,7 +35,7 @@ namespace V12.Components
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
 
-        public override Node? RunComponentLogic()
+        public override void OnAttach()
         {
             if (sceneElement == null)
             {
@@ -49,7 +49,6 @@ namespace V12.Components
                     LightColor = Color,
                 };
             }
-            return sceneElement;
         }
     }
 }

@@ -40,8 +40,8 @@ namespace V12.Components
 
                 var mat = new StandardMaterial3D();
                 mat.AlbedoColor = SkyColor;
-                mat.CullMode = BaseMaterial3D.CullMode.Back;
-                mat.ShadingMode = BaseMaterial3D.ShadingMode.Unshaded;
+                mat.CullMode = BaseMaterial3D.CullModeEnum.Back;
+                mat.ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded;
 
                 meshInstance.SetSurfaceOverrideMaterial(0, mat);
 

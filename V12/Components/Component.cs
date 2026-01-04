@@ -37,8 +37,9 @@ namespace V12.Components
 
         public virtual Node? RunComponentLogic()
         {
-            // By default components don't produce nodes
-            return null;
+            // Backwards-compat shim: some components may still rely on this returning
+            // the node they created in OnAttach. Return the cached scene node.
+            return _sceneNode;
         }
 
         public virtual void OnSceneNodeAssigned(Node? node)
@@ -52,6 +53,8 @@ namespace V12.Components
         }
 
         public virtual void OnTick(float delta) { }
+        // Backwards compatibility: call OnUpdate by default so legacy code still works
+        public virtual void OnUpdateShim(float delta) { OnUpdate(); }
 
         // Add a child component
         public virtual void AddChildComponent(IComponent component)

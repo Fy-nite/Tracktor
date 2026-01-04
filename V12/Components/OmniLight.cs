@@ -53,7 +53,7 @@ namespace V12.Components
                 // Range property isn't on OmniLight3D in Godot 4's API directly; use shadow or attenuation via light size.
                 if (sceneElement is OmniLight3D omni)
                 {
-                    omni.Range = Range;
+                    omni.OmniRange = Range;
                 }
             }
             return sceneElement;
