@@ -5,18 +5,18 @@ for building interactive 3D experiences. The codebase mixes engine initializatio
 collection of reusable components (meshes, lights, sky/environment helpers) under the `V12` project.
 
 Quick overview
-- Projects: `Tracktor` (root) and `V12` (components/frameworks) — both target .NET 10 in this workspace.
+- Projects: `Tracktor` (root) and `V12` (components/frameworks) ï¿½ both target .NET 10 in this workspace.
 - Engine integration: C# bootstrap files under `CSharp/` (e.g. `EngineInit.cs`, `WorldInit.cs`, `VrPlayer.cs`).
 - Scenes: `Scenes/Userspace.cs` and other scene glue code live alongside runtime logic.
 
 V12 highlights
-- `V12/Components/` — Component-based building blocks for scene content:
+- `V12/Components/` ï¿½ Component-based building blocks for scene content:
   - `NodeComponent`, `Component` base classes that expose runtime and editor UI integration.
   - Mesh components: `BoxMesh`, etc.
   - Lighting components: `Spotlight`, `DirectionalLight`, `OmniLight`.
   - Environment helpers: `WorldSkybox`, `PanoramaSky` (panorama texture support via `TexturePath`).
-- `V12/World/` — World and element management (e.g. `WorldManager`, `WorldElementSceneSyncer`, `ErrorSpace`).
-- `V12/Types/` and `V12/Interfaces/` — shared types and interface contracts used across the system.
+- `V12/World/` ï¿½ World and element management (e.g. `WorldManager`, `WorldElementSceneSyncer`, `ErrorSpace`).
+- `V12/Types/` and `V12/Interfaces/` ï¿½ shared types and interface contracts used across the system.
 
 Addons
 - The repository contains several Godot addons under `addons/` used for tooling, XR, and debugging.
@@ -27,9 +27,7 @@ Build & run
 - To run and test scenes, open the project folder in the Godot editor and run the main scene.
 
 Extending the project
-- New components follow the `NodeComponent` pattern: expose properties with `InspectorExpose`, defer
-  node creation to `RunComponentLogic`, and return the created `Node3D` so it can be parented into the
-  world by `NodeComponent.OnAttach()`.
+- New components extend the `Component` class and if you component needs to add a node then it should extend the `NodeComponent` class and create the component in `OnAwake` and store the node in `sceneElement`. `NodeComponent.OnAttach` will automatically parent the node for you. (take a look at `BoxMesh`)
 
 Contact / notes
 - This README is a brief summary; see inline source files and comments for implementation details.
