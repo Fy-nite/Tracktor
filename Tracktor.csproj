@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="Readme.md" />
   </ItemGroup>
   <!-- lets hope we dont loose this Project again.... -->
 </Project>
