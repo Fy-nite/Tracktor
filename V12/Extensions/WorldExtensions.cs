@@ -20,15 +20,15 @@ namespace V12.Extensions
         // Get sibling components on the same element
         public static List<IComponent> GetSiblingComponents(this IComponent component)
         {
-            if (component == null || component.ParentElement == null) return new List<IComponent>();
-            return component.ParentElement.Components.Where(c => c != component).ToList();
+            if (component == null || component.attachedElement == null) return new List<IComponent>();
+            return component.attachedElement.Components.Where(c => c != component).ToList();
         }
 
         // Find first component of given type in this element or any ancestor
         public static T? FindComponentInAncestors<T>(this IComponent component) where T : class, IComponent
         {
             if (component == null) return null;
-            var current = component.ParentElement;
+            IWorldElement? current = component.attachedElement;
             while (current != null)
             {
                 var found = current.Components.OfType<T>().FirstOrDefault();

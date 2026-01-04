@@ -86,7 +86,7 @@ namespace V12.UI
                 GD.Print($"Selected element: {element.Name}, components: {element.Components.Count}");
                 foreach (var comp in element.Components)
                 {
-                    GD.Print($"Component: {comp.Name}");
+                    GD.Print($"Component: {comp.GetType().Name}");
                     var ui = comp.GenerateUI();
                     if (ui is Control control)
                         _componentVBox.AddChild(control);

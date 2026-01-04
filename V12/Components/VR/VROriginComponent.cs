@@ -2,20 +2,19 @@ using Godot;
 
 namespace V12.Components.VR
 {
-    public class VROriginComponent : Component
+    public class VROriginComponent : NodeComponent
     {
         public override string Category => "VR";
-
-        public VROriginComponent() : base("VR Origin", "Provides an XR origin/root for the VR rig")
+        public override string Description =>  "Provides an XR origin/root for the VR rig";
+        public VROriginComponent()
         {
+            sceneElement = new XROrigin3D
+            {
+                Name = "VR Origin"
+            };
         }
         public override void OnAttach() {}
 
         public override Control GenerateUI() => ComponentUIGenerator.GenerateAutoUI(this);
-
-        public override Node3D RunComponentLogic() => new XROrigin3D
-        {
-            Name = Name
-        };
     }
 }

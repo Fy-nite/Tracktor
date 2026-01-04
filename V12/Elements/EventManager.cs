@@ -4,12 +4,32 @@ using V12.Interfaces;
 
 namespace V12.Elements;
 
+public abstract class IEventCallback
+{
+    public IComponent? component;
+    public Action<IEvent> callback;
+    public Type eventType;
+
+    public IEventCallback(IComponent? component, Action<IEvent> callback, Type eventType)
+    {
+        this.component = component;
+        this.callback = callback;
+        this.eventType = eventType;
+    }
+}
+
+
+public class EventCallback<E> : IEventCallback where E : IEvent
+{
+    public EventCallback(IComponent? component, Action<IEvent> callback) : base(component, callback, typeof(E)) {}
+}
+
 public class EventManager
 {
-    Dictionary<string,List<Tuple<Type, Action<IEvent>>>> callbacks;
+    Dictionary<string,List<IEventCallback>> callbacks;
     public EventManager()
     {
-        callbacks = new Dictionary<string,List<Tuple<Type, Action<IEvent>>>>();
+        callbacks = new();
     }
     public void fireEvent(IEvent e, string eventName)
     {
@@ -18,18 +38,34 @@ public class EventManager
             GD.Print($"[EventManager] fireEvent: tried to fire event {eventName} which has no listeners.");
             return;
         }
-        foreach (Tuple<Type, Action<IEvent>> callback in callbacks[eventName])
+        foreach (var callback in callbacks[eventName])
         {
-            if (callback.Item1.IsAssignableFrom(e.GetType()))
-                e.fireEvent(callback.Item2);
+            if (callback.eventType.IsAssignableFrom(e.GetType()))
+                e.fireEvent(callback);
         }
     }
-    public void regsiterEvent<E>(string eventName, Action<IEvent> eventCallback) where E : IEvent
+    public void regsiterEvent<E>(string eventName, Action<IEvent> eventCallback, IComponent? component) where E : IEvent
     {
         if(!callbacks.ContainsKey(eventName))
         {
             callbacks[eventName] = new();
         }
-        callbacks[eventName].Add(new Tuple<Type, Action<IEvent>>(typeof(E), eventCallback));
+        callbacks[eventName].Add(new EventCallback<E>(component, eventCallback));
+    }
+    public void deregisterEvent(string eventName, Action<IEvent> eventCallback)
+    {
+        Tuple<Type, Action<IEvent>> t;
+        if (!callbacks.ContainsKey(eventName) || !callbacks[eventName].Any(c => c.callback == eventCallback))
+        {
+            throw new Exception("Tried to deregister callback which is not registered");
+        }
+        callbacks[eventName].RemoveAll(c => c.callback == eventCallback);
+    }
+    public void deregisterComponentEvents(IComponent component)
+    {
+        foreach (var events in callbacks)
+        {
+            events.Value.RemoveAll(c => c.component == component);
+        }
     }
 }

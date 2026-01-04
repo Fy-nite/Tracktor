@@ -13,7 +13,7 @@ namespace V12.Interfaces
         event Action<IWorldElement> OnElementChanged;
         event Action<IComponent> OnComponentAdded;
         event Action<IComponent> OnComponentRemoved;
-        EventManager eventManager { get; set; }
+        public EventManager eventManager { get; set; }
         string Name { get; set; }
         string Description { get; set; }
         string Type { get; set; }

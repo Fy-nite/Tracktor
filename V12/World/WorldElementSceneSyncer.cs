@@ -1,5 +1,6 @@
 ﻿using Godot;
 using V12.Interfaces;
+using V12.Types;
 
 public class WorldElementSceneSyncer
 {
@@ -42,7 +43,7 @@ public class WorldElementSceneSyncer
         DebugPrint($"Element '{element.Name}' has {element.Components.Count} components.");
         foreach (var comp in element.Components)
         {
-            DebugPrint($" - Component: type={comp?.GetType().FullName ?? "<null>"} name='{comp?.Name ?? ""}'");
+            DebugPrint($" - Component: type={comp?.GetType().FullName ?? "<null>"} name='{comp?.GetType().Name ?? ""}'");
             AddComponentNode(comp, node);
         }
 
@@ -60,7 +61,7 @@ public class WorldElementSceneSyncer
         return node;
     }
 
-    private void OnElementAdded(IWorldElement element)
+    private void OnElementAdded(Element element)
     {
         if (element.ParentElement != null && _elementToNode.TryGetValue(element.ParentElement, out var parentNode))
         {
@@ -77,7 +78,7 @@ public class WorldElementSceneSyncer
             foreach (var comp in element.Components)
             {
                 // Ensure component ParentElement is set
-                comp.ParentElement = element;
+                comp.attachedElement = element;
                 AddComponentNode(comp, node);
             }
 
@@ -207,7 +208,7 @@ public class WorldElementSceneSyncer
             }
             catch (Exception ex)
             {
-                DebugPrint($"[Error] Exception in OnTick for {comp.Name}: {ex.Message}");
+                DebugPrint($"[Error] Exception in OnTick for {comp.GetType().Name}: {ex.Message}");
             }
         }
     }

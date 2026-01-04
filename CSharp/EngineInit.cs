@@ -50,7 +50,7 @@ public partial class EngineInit : Node3D
             GD.Print("UserSpace Child Element: " + item.Name);
             foreach (var comp in item.Components)
             {
-                GD.Print(" - Component: " + comp.Name);
+                GD.Print(" - Component: " + comp.GetType().FullName);
             }
             foreach (var item2 in item.ChildElements)
             {

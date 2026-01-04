@@ -12,10 +12,9 @@ namespace V12.Components
         public DoubleVector3 Scale { get; set; }
         public WorldElementSceneSyncer SceneSyncer { get; set; } = WorldManager.CurrentSyncer;
         public Node3D _slot;
-
         public override string Category => "Transform";
 
-        public TransformComponent() : base("Transform", "Handles position, rotation, and scale")
+        public TransformComponent()
         {
             Position = new DoubleVector3(0, 0, 0, 1);
             Rotation = new DoubleVector3(0, 0, 0, 0);
@@ -23,12 +22,6 @@ namespace V12.Components
             // slot will be assigned when the syncer attaches the component node
         }
         public override void OnAttach() {}
-        public override Node3D RunComponentLogic()
-        {
-            // create and return a Node3D that will be attached to the element's node
-            var node = new Node3D { Name = Name };
-            return node;
-        }
         //public override Node3D GenComponent()
         //{
 

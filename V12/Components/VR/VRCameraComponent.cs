@@ -2,22 +2,22 @@ using Godot;
 
 namespace V12.Components.VR
 {
-	public class VRCameraComponent : Component
+	public class VRCameraComponent : NodeComponent
 	{
 		public override string Category => "VR";
 
 		[InspectorExpose]
 		public float HeightOffset { get; set; } = 1.7f;
 
-		public VRCameraComponent() : base("VR Camera", "Creates an XR camera for head tracking")
-		{
-		}
-		public override void OnAttach() {}
-		public override Control GenerateUI() => ComponentUIGenerator.GenerateAutoUI(this);
+        public override string? Description => "Creates an XR camera for head tracking";
 
-		public override Node3D RunComponentLogic() => new XRCamera3D
-		{
-			Name = Name
-		};
+		public VRCameraComponent()
+        {
+            sceneElement = new XRCamera3D
+            {
+                Name = "VRCamera"
+            };
+        }
+		public override Control GenerateUI() => ComponentUIGenerator.GenerateAutoUI(this);
 	}
 }

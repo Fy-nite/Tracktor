@@ -31,7 +31,6 @@ namespace V12.World
                 {
                     new BoxMesh
                     {
-                        Name = "UserSpaceBoundary",
                         Position = new Vector3(0, 0, 0),
                         Rotation = new Vector3(0, 0, 0),
                         Scale = new Vector3(100, 1, 100),
