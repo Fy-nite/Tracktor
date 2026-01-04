@@ -12,7 +12,9 @@ namespace V12.Components.VR
         [InspectorExpose]
         public float TurnSpeedDegrees { get; set; } = 90f;
 
-        public VRLocomotionComponent() : base("VR Locomotion", "Provides basic locomotion settings")
+        public override string Description => "Provides basic locomotion settings";
+
+        public VRLocomotionComponent()
         {
         }
         public override void OnAttach() {}
@@ -21,10 +23,5 @@ namespace V12.Components.VR
         {
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
-
-        public override Node3D RunComponentLogic() => new Node3D
-        {
-            Name = Name
-        };
     }
 }

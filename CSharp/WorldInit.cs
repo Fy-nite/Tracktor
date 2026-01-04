@@ -40,7 +40,6 @@ namespace Tracktor.CSharp
                         Position = new Vector3(0, -0.5f, 0),
                         Rotation = new Vector3(0, 0, 0),
                         Scale = new Vector3(100, 1, 100),
-                        // Name is set in BoxMesh constructor
                     }
                 }
             };

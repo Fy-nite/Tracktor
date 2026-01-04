@@ -25,7 +25,7 @@ namespace V12
             Syncer = new WorldElementSceneSyncer(RootElement, Viewport);
         }
 
-        public void Activate(Node parent = null)
+        public void Activate(Node? parent = null)
         {
             if (IsActive) return;
             if (parent != null && Viewport.GetParent() != parent)

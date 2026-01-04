@@ -484,6 +484,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+/.godot
 /.godot/editor/editor_layout.cfg
 /.godot/editor/project_metadata.cfg
 /.godot/editor/script_editor_cache.cfg

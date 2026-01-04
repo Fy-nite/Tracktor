@@ -1,4 +1,5 @@
-﻿using V12.Elements;
+﻿using Godot;
+using V12.Elements;
 using V12.Types;
 
 namespace V12.Interfaces
@@ -13,11 +14,12 @@ namespace V12.Interfaces
         event Action<IWorldElement> OnElementChanged;
         event Action<IComponent> OnComponentAdded;
         event Action<IComponent> OnComponentRemoved;
-        EventManager eventManager { get; set; }
+        public EventManager eventManager { get; set; }
         string Name { get; set; }
         string Description { get; set; }
         string Type { get; set; }
         int Level { get; set; }
+        Node3D sceneElement { get; set; }
         DoubleVector3 Position { get; set; }
         DoubleVector3 Rotation { get; set; }
         DoubleVector3 Scale { get; set; }

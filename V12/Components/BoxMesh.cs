@@ -2,7 +2,7 @@
 
 namespace V12.Components
 {
-    public class BoxMesh : Component
+    public class BoxMesh : NodeComponent
     {
         [InspectorExpose]
         public Vector3 Position { get; set; }
@@ -15,13 +15,12 @@ namespace V12.Components
         public List<string> strings { get; set; } = new List<string>();
 
         public override string Category => "Mesh";
+        public override string Description => "A simple box mesh";
 
         public string MeshType => "Box";
         public BoxMesh()
         {
-            // Ensure we set the base Component properties instead of shadowing them
-            Name = "BoxMesh";
-            Description = "A simple box mesh.";
+            // defer creation of sceneElement until RunComponentLogic so object initializer values are applied
         }
         public BoxMesh(Vector3 position, Vector3 rotation, Vector3 scale)
         {
@@ -34,20 +33,22 @@ namespace V12.Components
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
 
-        public override Node3D RunComponentLogic()
-        {
-            var box = new CsgBox3D
-            {
-                Position = Position,
-                Name = Name,
-                Rotation = Rotation,
-                Scale = Scale,
-                UseCollision = true
-                //Material = this.ParentElement.Components.Find(c => c is MeshMaterial) is MeshMaterial matComp ? matComp.GetMaterial().material : null
-            };
-            return box;
-        }
-
         public override void OnAttach() {}
+
+        public override Node? RunComponentLogic()
+        {
+            if (sceneElement == null)
+            {
+                sceneElement = new CsgBox3D
+                {
+                    Position = Position,
+                    Name = "BoxMesh",
+                    Rotation = Rotation,
+                    Scale = Scale,
+                    UseCollision = true
+                };
+            }
+            return sceneElement;
+        }
     }
 }

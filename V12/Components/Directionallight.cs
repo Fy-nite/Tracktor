@@ -1,8 +1,9 @@
 ﻿using Godot;
+using V12.Interfaces;
 
 namespace V12.Components
 {
-    public class DirectionalLight : Component
+    public class DirectionalLight : NodeComponent
     {
         [InspectorExpose]
         public float Energy { get; set; } = 1.0f;
@@ -23,30 +24,32 @@ namespace V12.Components
         [InspectorExpose]
         public string Name { get; set; } = "DirectionalLight";
         [InspectorExpose]
-        public string Description => "A directional light that simulates sunlight.";
-
+        public override string Description => "A directional light that simulates sunlight.";
         public override string Category => "Lights";
         public DirectionalLight()
         {
+            // Defer creation so initializer values (Position, Rotation, etc.) are applied
         }
-        public override void OnAttach() {}
         public override Control GenerateUI()
         {
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
-        public override Node3D RunComponentLogic()
+
+        public override Node? RunComponentLogic()
         {
-            GD.Print("Running DirectionalLight Component Logic");
-            var light = new DirectionalLight3D
+            if (sceneElement == null)
             {
-                Position = Position,
-                Rotation = Rotation,
-                Scale = Scale,
-                Name = Name,
-                LightEnergy = Energy,
-                LightColor = Color,
-            };
-            return light;
+                sceneElement = new DirectionalLight3D
+                {
+                    Position = Position,
+                    Rotation = Rotation,
+                    Scale = Scale,
+                    Name = Name,
+                    LightEnergy = Energy,
+                    LightColor = Color,
+                };
+            }
+            return sceneElement;
         }
     }
 }

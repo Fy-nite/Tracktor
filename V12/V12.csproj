@@ -12,6 +12,12 @@
     <PackageReference Include="GodotSharpEditor" Version="4.5.1" />
   </ItemGroup>
 
+
+
+	<ItemGroup>
+	  <None Remove="**\*.uid" />
+	</ItemGroup>
+
   <ItemGroup>
     <Folder Include="Elements\" />
     <Folder Include="Types\Models\" />

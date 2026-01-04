@@ -5,7 +5,7 @@ using V12.Interfaces;
 
 namespace V12.Types
 {
-    public class Element : IWorldElement
+    public class Element : IWorldElement, IExist
     {
         public IWorldElement ParentElement { get; set; }
         public List<IWorldElement> ChildElements { get; set; } = new();
@@ -19,6 +19,7 @@ namespace V12.Types
         public string Description { get; set; }
         public string Type { get; set; }
         public int Level { get; set; }
+        public Node3D sceneElement { get; set; }
 
         private DoubleVector3 _position;
         public DoubleVector3 Position
@@ -63,7 +64,7 @@ namespace V12.Types
         {
             foreach (var comp in Components)
             {
-                comp.ParentElement = this;
+                comp.attachedElement = this;
                 comp.OnAttach();
             }
             return this;
@@ -93,7 +94,7 @@ namespace V12.Types
             // Ensure components on this node have correct parent reference
             foreach (var comp in node.Components)
             {
-                comp.ParentElement = node;
+                comp.attachedElement = node;
             }
 
             foreach (var child in node.ChildElements)
@@ -140,8 +141,8 @@ namespace V12.Types
         public void AddComponent(IComponent component)
         {
             Components.Add(component);
-            component.ParentElement = this;
-            GD.Print($"[Element] AddComponent: Added component '{component.Name}' to element '{this.Name}'");
+            component.attachedElement = this;
+            GD.Print($"[Element] AddComponent: Added component '{component.GetType().Name}' to element '{this.Name}'");
             OnComponentAdded?.Invoke(component);
             component.OnAttach();
         }

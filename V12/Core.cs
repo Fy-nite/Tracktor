@@ -14,7 +14,7 @@ namespace V12
         }
 
         // Adds a world to the engine and optionally attaches its viewport to a scene node
-        public void AddWorld(V12World world, Node parent = null)
+        public void AddWorld(V12World world, Node? parent = null)
         {
             if (world == null) return;
             Worlds.Add(world);

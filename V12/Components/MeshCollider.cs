@@ -10,10 +10,6 @@ namespace V12.Components
         public List<DoubleVector3> Vertices { get; set; } = new();
         public List<int> Indices { get; set; } = new();
 
-        public MeshCollider(string name, string description) : base(name, description)
-        {
-
-        }
         public override void OnAttach() {}
 
         public void AttachMeshData(List<DoubleVector3> vertices, List<int> indices)
@@ -23,11 +19,6 @@ namespace V12.Components
         }
 
         public override Control GenerateUI()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Node3D RunComponentLogic()
         {
             throw new NotImplementedException();
         }

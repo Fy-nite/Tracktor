@@ -1,88 +1,45 @@
 ﻿using Godot;
-using V12;
+using V12.Types;
 
 namespace V12.Interfaces
 {
     public interface IComponent
     {
-        string Name { get; }
-        string Description { get; }
-        public Control GenerateUI();
-        public Node3D RunComponentLogic();
+        public string? Description { get; set; }
+        public string? Category { get; set; }
+        bool active { get; set; }
+        // A human friendly name for the component (default implementations may return type name)
+        public string Name { get; set; }
         public List<IComponent> SubComponents { get; set; }
-        IWorldElement ParentElement { get; set; }
+        public IWorldElement? attachedElement { get; set; }
+        // Called by scene syncer to produce or return a Node representing this component in the scene
+        public Node? RunComponentLogic();
+        // Called by the scene syncer when the scene node for this component has been assigned/attached
+        public void OnSceneNodeAssigned(Node? node);
+        // Called by the scene syncer when the scene node for this component has been removed
+        public void OnSceneNodeRemoved();
+        // Per-frame tick invoked by the scene syncer
+        public void OnTick(float delta);
+        // Ran when the component is created
+        public void OnAwake();
+        // Ran whenever the component is attached to a element
+        public void OnAttach();
+        // Ran before the component is removed from a element (moved or deleted)
+        public void OnDetach();
+        // Ran once every engine update
+        public void OnUpdate();
+        // Ran whenever the component becomes active
+        public void OnActivated();
+        // Ran whenever the component becomes deactive
+        public void OnDeactivated();
+        // Ran once when the component is about to be destroyed
+        public void OnDestroy();
 
-        // Convenience helpers with default interface implementations so existing
-        // components automatically gain these helpers.
-        public IWorldElement GetParentElement()
-        {
-            return ParentElement;
-        }
-
-        public IWorldElement GetRootElement()
-        {
-            var current = ParentElement;
-            while (current?.ParentElement != null)
-            {
-                current = current.ParentElement;
-            }
-            return current;
-        }
-
-        public List<IComponent> GetSiblingComponents()
-        {
-            if (ParentElement == null) return new List<IComponent>();
-            return ParentElement.Components.Where(c => c != this).ToList();
-        }
-
-        public T? FindComponentInAncestors<T>() where T : class, IComponent
-        {
-            var current = ParentElement;
-            while (current != null)
-            {
-                var found = current.Components.OfType<T>().FirstOrDefault();
-                if (found != null) return found as T;
-                current = current.ParentElement;
-            }
-            return null;
-        }
-
-        // Returns the Godot Node for this component using the provided syncer.
-        public Node GetSceneNode(WorldElementSceneSyncer syncer)
-        {
-            if (syncer == null) return null;
-            return syncer.GetNodeForComponent(this);
-        }
-
-        // Convenience overload that uses the globally registered current syncer.
-        public Node GetSceneNode()
-        {
-            var syncer = WorldManager.CurrentSyncer;
-            if (syncer == null) return null;
-            return syncer.GetNodeForComponent(this);
-        }
-
-        // Called when the syncer has created or assigned a scene Node for this component.
-        // Components can use this to capture a reference to their slot/node and
-        // perform initialization that requires the Godot Node.
-        public void OnSceneNodeAssigned(Node? node)
-        {
-            // default no-op
-        }
-
-        // Called when the syncer is about to remove the scene Node for this component.
-        public void OnSceneNodeRemoved()
-        {
-            // default no-op
-        }
-
-        // Called each engine tick (if the syncer/engine calls it). Components that
-        // need per-frame updates may override this.
-        public void OnTick(float delta)
-        {
-            // default no-op
-        }
-
-        public void OnAttach() {}
+        // Add a child component
+        public void AddChildComponent(IComponent component);
+        // Remove a child component
+        public void RemoveChildComponent(IComponent component);
+        
+        public Control GenerateUI();
     }
 }

@@ -10,7 +10,8 @@ namespace V12.Components
         public Color AlbedoColor { get; set; }
         public string TexturePath { get; set; }
         public Material material { get; set; }
-        public MeshMaterial() : base("Mesh Material", "Defines a material for meshes")
+        public override string Description => "Defines a material for meshes";
+        public MeshMaterial()
         {
         }
         public override void OnAttach() {}
@@ -35,11 +36,6 @@ namespace V12.Components
         public override Control GenerateUI()
         {
             return ComponentUIGenerator.GenerateAutoUI(this);
-        }
-
-        public override Node3D RunComponentLogic()
-        {
-            return null; // This component does not create a Node3D directly
         }
 
         void IMaterial.ApplyToMesh(MeshInstance3D mesh)
