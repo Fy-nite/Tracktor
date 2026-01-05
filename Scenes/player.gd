@@ -38,6 +38,21 @@ func recenter():
 	# Update our XR location
 	origin_node.global_transform = new_camera_transform * camera_transform.inverse()
 
+func _ready() -> void:
+	await get_tree().create_timer(1.0).timeout
+	var XREventsManager = get_tree().root.find_child("XRHandler",true,false)
+	if XREventsManager == null:
+		print("failed to find Event manager, is it in the scene?")
+	
+	
+			
+	var LeftHand = find_child("LeftHand") as XRController3D
+	var RightHand = find_child("RightHand") as XRController3D
+	LeftHand.connect("button_pressed", Callable(XREventsManager, "OnLeftNodeButtonPressed"))
+	RightHand.connect("button_pressed",Callable(XREventsManager, "OnRightNodeButtonPressed"))
+
+
+
 # `_get_movement_input` returns our move input by querying the move action on each controller
 func _get_movement_input() -> Vector2:
 	var movement : Vector2 = Vector2()
@@ -136,3 +151,9 @@ func _process_movement_on_input(is_colliding, delta):
 func _physics_process(delta):
 	var is_colliding = _process_on_physical_movement(delta)
 	_process_movement_on_input(is_colliding, delta)
+
+
+
+#
+#func _on_left_hand_button_pressed(name: String) -> void:
+	#print(name)

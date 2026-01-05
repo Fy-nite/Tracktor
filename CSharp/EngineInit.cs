@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Tracktor.CSharp;
 using V12;
 using V12.Components.VR;
+using V12.Extensions;
 using V12.Interfaces;
 using V12.Types;
 
@@ -25,61 +26,15 @@ public partial class EngineInit : Node3D
             }
         }
     }
-    public void Initialize()
-    {
-        var vrNode = GD.Load<PackedScene>("res://V12/Scenes/VR/VRPlayerBody.tscn").Instantiate<Node3D>();
-        AddChild(vrNode);
-        GD.Print("[VRPlayer] Created VRPlayer Node3D");
 
-        // search inside the instance (recursive) instead of GetTree().Root
-        var leftNode = vrNode.FindChild("LeftHand", true, false) as XRController3D;
-        var rightNode = vrNode.FindChild("RightHand", true, false) as XRController3D;
 
-        if (leftNode != null)
-        {
-            leftNode.Connect("button_pressed", new Callable(xrHandler, "OnLeftNodeButtonPressed"));
-            leftNode.Connect("input_float_changed", new Callable(xrHandler, "OnLeftNodeFloatChanged"));
-            leftNode.Connect("input_vector2_changed", new Callable(xrHandler, "OnLeftNodeVector2Changed"));
-            GD.Print("[VRPlayer] Connected LeftHand XRController3D signals");
-        }
-        else
-        {
-            GD.Print("[VRPlayer] LeftHand not found under vrNode");
-        }
-
-        if (rightNode != null)
-        {
-            rightNode.Connect("button_pressed", new Callable(xrHandler, "OnRightNodeButtonPressed"));
-            rightNode.Connect("input_float_changed", new Callable(xrHandler, "OnRightNodeFloatChanged"));
-            rightNode.Connect("input_vector2_changed", new Callable(xrHandler, "OnRightNodeVector2Changed"));
-            GD.Print("[VRPlayer] Connected RightHand XRController3D signals");
-        }
-        else
-        {
-            GD.Print("[VRPlayer] RightHand not found under vrNode");
-        }
-
-        // Subscribe to XRInteractionHandler events (centralized handling)
-        xrHandler.ButtonPressed += (hand, button) =>
-        {
-            GD.Print($"[VRPlayer] {hand} controller pressed {button}");
-
-        };
-        xrHandler.TriggerChanged += (hand, value) =>
-        {
-            GD.Print($"[VRPlayer] {hand} trigger value: {value}");
-        };
-        xrHandler.StickChanged += (hand, value) =>
-        {
-            GD.Print($"[VRPlayer] {hand} stick value: {value}");
-        };
-    }
     public override void _Ready()
     {
 
 
         AddToGroup("engine_init");
-        Initialize();
+        AddChild(V12.Components.VR.VRPlayer.Generate()); // Add VRPlayer to the scene, and make sure the player can be used all worlds (AT THE ROOT!)
+
         engine = new V12Engine();
 
 

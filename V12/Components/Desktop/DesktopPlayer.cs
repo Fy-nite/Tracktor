@@ -183,7 +183,7 @@ namespace V12.Components
 
         public override void OnAwake()
         {
-            
+            base.OnAwake();
         }
 
         private partial class DesktopPlayerBody : CharacterBody3D

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace V12.Components.VR
 {
-    public class XRInteractionHandler : GodotObject
+    public partial class XRInteractionHandler : Node
     {
         // Events for button presses
         public event Action<string, string>? ButtonPressed; // (hand, button)
@@ -22,6 +22,7 @@ namespace V12.Components.VR
         public void OnLeftNodeButtonPressed(string button)
         {
             OnButtonPressed("left", button);
+            GD.Print($"[XRInteractionHandler] Left node button pressed: {button}");
         }
         public void OnRightNodeButtonPressed(string button)
         {
