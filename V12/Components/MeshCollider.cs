@@ -10,7 +10,7 @@ namespace V12.Components
         public List<DoubleVector3> Vertices { get; set; } = new();
         public List<int> Indices { get; set; } = new();
 
-        public override void OnAttach() {}
+        public override void OnAttach() { }
 
         public void AttachMeshData(List<DoubleVector3> vertices, List<int> indices)
         {

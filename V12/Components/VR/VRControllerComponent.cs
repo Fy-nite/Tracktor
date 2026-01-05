@@ -23,7 +23,7 @@ namespace V12.Components.VR
             cHand.Tracker = new StringName(Hand ? "left_hand" : "right_hand");
             sceneElement = cHand;
         }
-        public override void OnAttach() {}
+        public override void OnAttach() { }
 
         public override Control GenerateUI() => ComponentUIGenerator.GenerateAutoUI(this);
     }

@@ -30,7 +30,7 @@ namespace V12.Interfaces
         public void AddChildAddon(IComponent addon);
         // Remove a child component
         public void RemoveChildAddon(IComponent addon);
-        
+
         public Control GenerateUI();
     }
 }

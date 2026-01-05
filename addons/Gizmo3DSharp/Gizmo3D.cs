@@ -119,7 +119,7 @@ public partial class Gizmo3D : Node3D
         private set
         {
             if (editing && !value)
-                EmitSignal(SignalName.TransformEnd, (int) Edit.Mode);
+                EmitSignal(SignalName.TransformEnd, (int)Edit.Mode);
             editing = value;
             if (!value)
                 Message = "";
@@ -280,7 +280,7 @@ public partial class Gizmo3D : Node3D
         public Vector3 ClickRay, ClickRayPos;
         public Vector3 Center;
         public Vector2 MousePos;
-        
+
         // Rotation arc
         public Vector3 RotationAxis;
         public float AccumulatedRotationAngle, DisplayRotationAngle;
@@ -365,7 +365,7 @@ public partial class Gizmo3D : Node3D
                 List<Vector2> circlePoints = [];
                 for (int i = 0; i <= circleSegments; i++)
                 {
-                    float angle = (float) i / (float) circleSegments * Mathf.Tau;
+                    float angle = (float)i / (float)circleSegments * Mathf.Tau;
                     Vector3 point_3d = Edit.Center + GizmoScale * GIZMO_CIRCLE_SIZE * (right * Mathf.Cos(angle) + forward * Mathf.Sin(angle));
                     Vector2 point_2d = PointToScreen(point_3d);
                     circlePoints.Add(point_2d);
@@ -388,13 +388,13 @@ public partial class Gizmo3D : Node3D
                 float absAngle = Mathf.Abs(displayAngle);
                 if (absAngle > Mathf.Tau)
                 {
-                    float remainder = (float) Mathf.PosMod((double)absAngle, Mathf.Tau);
-                    remainder = remainder < 0.01f ? (float) Math.Tau : remainder;
+                    float remainder = (float)Mathf.PosMod((double)absAngle, Mathf.Tau);
+                    remainder = remainder < 0.01f ? (float)Math.Tau : remainder;
                     displayAngle = Mathf.Sign(displayAngle) * remainder;
                     absAngle = remainder;
                 }
 
-                int numSegments = Mathf.Max(8, (int) (absAngle / (Mathf.Tau / segments) * segments));
+                int numSegments = Mathf.Max(8, (int)(absAngle / (Mathf.Tau / segments) * segments));
                 numSegments = Mathf.Min(numSegments, segments);
 
                 Color fillColor = new(1.0f, 1.0f, 1.0f, 0.2f);
@@ -405,13 +405,13 @@ public partial class Gizmo3D : Node3D
 
                 for (int i = 0; i < numSegments; i++)
                 {
-                    float t1 = ((float) i) / (float) numSegments;
-                    float t2 = ((float) i + 1) / (float) numSegments;
+                    float t1 = ((float)i) / (float)numSegments;
+                    float t2 = ((float)i + 1) / (float)numSegments;
                     float angle1 = Mathf.Lerp(startAngle, endAngle, t1);
                     float angle2 = Mathf.Lerp(startAngle, endAngle, t2);
 
-                    Vector3 point1_3d = Edit.Center + GizmoScale * GIZMO_CIRCLE_SIZE * (right * (float) Math.Cos(angle1) + forward * Mathf.Sin(angle1));
-                    Vector3 point2_3d = Edit.Center + GizmoScale * GIZMO_CIRCLE_SIZE * (right * (float) Math.Cos(angle2) + forward * Mathf.Sin(angle2));
+                    Vector3 point1_3d = Edit.Center + GizmoScale * GIZMO_CIRCLE_SIZE * (right * (float)Math.Cos(angle1) + forward * Mathf.Sin(angle1));
+                    Vector3 point2_3d = Edit.Center + GizmoScale * GIZMO_CIRCLE_SIZE * (right * (float)Math.Cos(angle2) + forward * Mathf.Sin(angle2));
 
                     Vector2 center_2d = center;
                     Vector2 point1_2d = PointToScreen(point1_3d);
@@ -461,7 +461,7 @@ public partial class Gizmo3D : Node3D
     /// </summary>
     public bool IsRotationArcVisible()
     {
-	    return Edit.Mode == TransformMode.Rotate && ShowRotationArc && Edit.AccumulatedRotationAngle != 0.0f && Edit.GizmoInitiated;
+        return Edit.Mode == TransformMode.Rotate && ShowRotationArc && Edit.AccumulatedRotationAngle != 0.0f && Edit.GizmoInitiated;
     }
 
     /// <summary>
@@ -531,7 +531,7 @@ public partial class Gizmo3D : Node3D
             Edit.MousePos = button.Position;
             Editing = TransformGizmoSelect(button.Position);
             if (Editing)
-                EmitSignal(SignalName.TransformBegin, (int) Edit.Mode);
+                EmitSignal(SignalName.TransformBegin, (int)Edit.Mode);
         }
         else if (@event is InputEventMouseMotion motion)
         {
@@ -541,7 +541,7 @@ public partial class Gizmo3D : Node3D
                 {
                     Edit.MousePos = motion.Position;
                     Vector3 value = UpdateTransform(false);
-                    EmitSignal(SignalName.TransformChanged, (int) Edit.Mode, value);
+                    EmitSignal(SignalName.TransformChanged, (int)Edit.Mode, value);
                 }
                 return;
             }
@@ -549,7 +549,7 @@ public partial class Gizmo3D : Node3D
         }
     }
 
-#region Selection
+    #region Selection
 
     /// <summary>
     /// Add a node to the list of nodes currently being edited.
@@ -610,7 +610,7 @@ public partial class Gizmo3D : Node3D
         return Selections.Count;
     }
 
-#endregion
+    #endregion
 
     public override void _EnterTree()
     {
@@ -744,8 +744,8 @@ public partial class Gizmo3D : Node3D
             };
             mat.SetOnTopOfAlpha(true);
             GizmoColor[i] = mat;
-            GizmoColorHl[i] = (StandardMaterial3D) mat.Duplicate();
-#region Translate
+            GizmoColorHl[i] = (StandardMaterial3D)mat.Duplicate();
+            #region Translate
             SurfaceTool surfTool = CreateArrow([
                 nivec * 0.0f + ivec * GIZMO_ARROW_OFFSET,
                 nivec * 0.01f + ivec * GIZMO_ARROW_OFFSET,
@@ -765,8 +765,8 @@ public partial class Gizmo3D : Node3D
             ], ivec, 5, 16);
             surfTool.SetMaterial(mat);
             surfTool.Commit(MoveArrowGizmo[i]);
-#endregion
-#region Plane Translation
+            #endregion
+            #region Plane Translation
             surfTool = new SurfaceTool();
             surfTool.Begin(Mesh.PrimitiveType.Triangles);
 
@@ -804,9 +804,9 @@ public partial class Gizmo3D : Node3D
             PlaneGizmoColor[i] = planeMat;
             surfTool.SetMaterial(planeMat);
             surfTool.Commit(MovePlaneGizmo[i]);
-            PlaneGizmoColorHl[i] = (StandardMaterial3D) planeMat.Duplicate();
-#endregion
-#region Rotation
+            PlaneGizmoColorHl[i] = (StandardMaterial3D)planeMat.Duplicate();
+            #endregion
+            #region Rotation
             surfTool = new();
             surfTool.Begin(Mesh.PrimitiveType.Triangles);
 
@@ -845,7 +845,7 @@ public partial class Gizmo3D : Node3D
                     surfTool.AddIndex(currentRing + nextSegment);
                 }
             }
-            
+
             Shader rotateShader = new()
             {
                 Code = @"
@@ -882,7 +882,7 @@ void fragment() {
 
             ShaderMaterial rotateMat = new()
             {
-                RenderPriority = (int) Material.RenderPriorityMax,
+                RenderPriority = (int)Material.RenderPriorityMax,
                 Shader = rotateShader
             };
             RotateGizmoColor[i] = rotateMat;
@@ -891,11 +891,11 @@ void fragment() {
             RotateGizmo[i].AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
             RotateGizmo[i].SurfaceSetMaterial(0, rotateMat);
 
-            RotateGizmoColorHl[i] = (ShaderMaterial) rotateMat.Duplicate();
+            RotateGizmoColorHl[i] = (ShaderMaterial)rotateMat.Duplicate();
 
             if (i == 2) // Rotation white outline
             {
-                ShaderMaterial borderMat = (ShaderMaterial) rotateMat.Duplicate();
+                ShaderMaterial borderMat = (ShaderMaterial)rotateMat.Duplicate();
 
                 Shader borderShader = new()
                 {
@@ -930,85 +930,85 @@ void fragment() {
 	ALBEDO = albedo.rgb;
 	ALPHA = albedo.a;
 }"
-                    };
+                };
 
-                    borderMat.Shader = borderShader;
-                    RotateGizmoColor[3] = borderMat;
+                borderMat.Shader = borderShader;
+                RotateGizmoColor[3] = borderMat;
 
-                    RotateGizmo[3] = new ArrayMesh();
-                    RotateGizmo[3].AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
-                    RotateGizmo[3].SurfaceSetMaterial(0, borderMat);
-                }
-#endregion
-#region Scale
-                surfTool = CreateArrow([
-                    nivec * 0.0f + ivec * 0.0f,
+                RotateGizmo[3] = new ArrayMesh();
+                RotateGizmo[3].AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+                RotateGizmo[3].SurfaceSetMaterial(0, borderMat);
+            }
+            #endregion
+            #region Scale
+            surfTool = CreateArrow([
+                nivec * 0.0f + ivec * 0.0f,
                     nivec * 0.01f + ivec * 0.0f,
                     nivec * 0.01f + ivec * 1.0f * GIZMO_SCALE_OFFSET,
                     nivec * 0.07f + ivec * 1.0f * GIZMO_SCALE_OFFSET,
                     nivec * 0.07f + ivec * 1.2f * GIZMO_SCALE_OFFSET,
                     nivec * 0.0f + ivec * 1.2f * GIZMO_SCALE_OFFSET
-                ], ivec, 6, 4);
-                surfTool.SetMaterial(mat);
-                surfTool.Commit(ScaleGizmo[i]);
-#endregion
-#region Plane Scale
-                surfTool = new();
-                surfTool.Begin(Mesh.PrimitiveType.Triangles);
+            ], ivec, 6, 4);
+            surfTool.SetMaterial(mat);
+            surfTool.Commit(ScaleGizmo[i]);
+            #endregion
+            #region Plane Scale
+            surfTool = new();
+            surfTool.Begin(Mesh.PrimitiveType.Triangles);
 
-                vec = ivec2 - ivec3;
-                plane = [
-                    vec * GIZMO_PLANE_DST,
+            vec = ivec2 - ivec3;
+            plane = [
+                vec * GIZMO_PLANE_DST,
                     vec * GIZMO_PLANE_DST + ivec2 * GIZMO_PLANE_SIZE,
                     vec * (GIZMO_PLANE_DST + GIZMO_PLANE_SIZE),
                     vec * GIZMO_PLANE_DST - ivec3 * GIZMO_PLANE_SIZE
-                ];
+            ];
 
-                ma = new(ivec, Mathf.Pi / 2);
+            ma = new(ivec, Mathf.Pi / 2);
 
-                points = [
-                    ma * plane[0],
+            points = [
+                ma * plane[0],
                     ma * plane[1],
                     ma * plane[2],
                     ma * plane[3]
-                ];
-                surfTool.AddVertex(points[0]);
-                surfTool.AddVertex(points[1]);
-                surfTool.AddVertex(points[2]);
+            ];
+            surfTool.AddVertex(points[0]);
+            surfTool.AddVertex(points[1]);
+            surfTool.AddVertex(points[2]);
 
-                surfTool.AddVertex(points[0]);
-                surfTool.AddVertex(points[2]);
-                surfTool.AddVertex(points[3]);
+            surfTool.AddVertex(points[0]);
+            surfTool.AddVertex(points[2]);
+            surfTool.AddVertex(points[3]);
 
-                planeMat = new()
-                {
-                    ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-                    DisableFog = true,
-                    Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-                    CullMode = BaseMaterial3D.CullModeEnum.Disabled
-                };
-                planeMat.SetOnTopOfAlpha(true);
-                PlaneGizmoColor[i] = planeMat;
-                surfTool.SetMaterial(planeMat);
-                surfTool.Commit(ScalePlaneGizmo[i]);
+            planeMat = new()
+            {
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                DisableFog = true,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                CullMode = BaseMaterial3D.CullModeEnum.Disabled
+            };
+            planeMat.SetOnTopOfAlpha(true);
+            PlaneGizmoColor[i] = planeMat;
+            surfTool.SetMaterial(planeMat);
+            surfTool.Commit(ScalePlaneGizmo[i]);
 
-                PlaneGizmoColorHl[i] = (StandardMaterial3D) planeMat.Duplicate();
-#endregion
-#region Lines to visualize transforms locked to an axis/plane
-                surfTool = new SurfaceTool();
-                surfTool.Begin(Mesh.PrimitiveType.LineStrip);
+            PlaneGizmoColorHl[i] = (StandardMaterial3D)planeMat.Duplicate();
+            #endregion
+            #region Lines to visualize transforms locked to an axis/plane
+            surfTool = new SurfaceTool();
+            surfTool.Begin(Mesh.PrimitiveType.LineStrip);
 
-                vec = new();
-                vec[i] = 1;
-                // line extending through infinity(ish)
-                surfTool.AddVertex(vec * -1048576);
-                surfTool.AddVertex(new());
-                surfTool.AddVertex(vec * 1048576);
-                surfTool.SetMaterial(GizmoColorHl[i]);
-                surfTool.Commit(AxisGizmo[i]);
+            vec = new();
+            vec[i] = 1;
+            // line extending through infinity(ish)
+            surfTool.AddVertex(vec * -1048576);
+            surfTool.AddVertex(new());
+            surfTool.AddVertex(vec * 1048576);
+            surfTool.SetMaterial(GizmoColorHl[i]);
+            surfTool.Commit(AxisGizmo[i]);
         }
-#endregion
-	    GenerateSelectionBoxes();
+        #endregion
+        GenerateSelectionBoxes();
     }
 
     SurfaceTool CreateArrow(Vector3[] arrow, Vector3 ivec, int arrowPoints, int arrowSides)
@@ -1392,7 +1392,7 @@ void fragment() {
                 if (hitNormal.Dot(GetCameraNormal()) < 0.05f)
                 {
                     hitPosition = (hitPosition * gt).Abs();
-                    int minAxis = (int) hitPosition.MinAxisIndex();
+                    int minAxis = (int)hitPosition.MinAxisIndex();
                     if (hitPosition[minAxis] < GizmoScale * GIZMO_RING_HALF_WIDTH)
                         colAxis = minAxis;
                 }
@@ -1671,7 +1671,7 @@ void fragment() {
                     snap = GetScaleSnap();
                 if (slocalCoords)
                     smotion = Edit.Original.Basis.Inverse() * smotion;
-                
+
                 smotion = EditScale(smotion);
 
                 Vector3 smotionSnapped = smotion.Snapped(snap);
@@ -1735,7 +1735,7 @@ void fragment() {
                     snap = GetTranslateSnap();
                 if (tlocalCoords)
                     tmotion = Transform.Basis.Inverse() * tmotion;
-                
+
                 tmotion = EditTranslate(tmotion);
 
                 Vector3 tmotionSnapped = tmotion.Snapped(snap);
@@ -1819,7 +1819,7 @@ void fragment() {
                 {
                     Edit.ShowRotationLine = true;
                     Vector3 clickAxis = (rclick.Value - Edit.Center).Normalized();
-				    angle = clickAxis.SignedAngleTo(currentRotationVector, globalAxis);
+                    angle = clickAxis.SignedAngleTo(currentRotationVector, globalAxis);
                 }
 
                 if (Edit.PreviousRotationVector != null)
@@ -1860,7 +1860,7 @@ void fragment() {
         }
 
         return default;
-	}
+    }
 
     void ApplyTransform(Vector3 motion, float snap)
     {

@@ -12,7 +12,7 @@ namespace V12.Components
         public override string Category => "Environment";
         public override string Description => "A simple skybox using an inverted sphere mesh and basic material.";
 
-        public WorldSkybox() {Name="WorldSkybox";}
+        public WorldSkybox() { Name = "WorldSkybox"; }
 
         public override Control GenerateUI()
         {

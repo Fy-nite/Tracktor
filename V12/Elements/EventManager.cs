@@ -21,12 +21,12 @@ public abstract class IEventCallback
 
 public class EventCallback<E> : IEventCallback where E : IEvent
 {
-    public EventCallback(IComponent? component, Action<IEvent> callback) : base(component, callback, typeof(E)) {}
+    public EventCallback(IComponent? component, Action<IEvent> callback) : base(component, callback, typeof(E)) { }
 }
 
 public class EventManager
 {
-    Dictionary<string,List<IEventCallback>> callbacks;
+    Dictionary<string, List<IEventCallback>> callbacks;
     public EventManager()
     {
         callbacks = new();
@@ -46,7 +46,7 @@ public class EventManager
     }
     public void regsiterEvent<E>(string eventName, Action<IEvent> eventCallback, IComponent? component) where E : IEvent
     {
-        if(!callbacks.ContainsKey(eventName))
+        if (!callbacks.ContainsKey(eventName))
         {
             callbacks[eventName] = new();
         }

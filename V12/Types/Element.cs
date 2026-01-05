@@ -51,7 +51,7 @@ namespace V12.Types
                 OnElementChanged?.Invoke(this);
             }
         }
-        public void OnChanged() {OnElementChanged?.Invoke(this);}
+        public void OnChanged() { OnElementChanged?.Invoke(this); }
         public List<IComponent> Components { get; set; } = new();
 
         public event Action<IWorldElement> OnElementChanged;
@@ -165,5 +165,7 @@ namespace V12.Types
             AddChildElement(element);
 
         }
+
+
     }
 }

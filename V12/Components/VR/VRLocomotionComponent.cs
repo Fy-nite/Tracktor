@@ -17,7 +17,7 @@ namespace V12.Components.VR
         public VRLocomotionComponent()
         {
         }
-        public override void OnAttach() {}
+        public override void OnAttach() { }
 
         public override Control GenerateUI()
         {

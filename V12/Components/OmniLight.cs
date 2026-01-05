@@ -10,7 +10,7 @@ namespace V12.Components
         public Vector3 Rotation { get; set; }
 
         [InspectorExpose]
-        public Vector3 Scale { get; set; } = new Vector3(1,1,1);
+        public Vector3 Scale { get; set; } = new Vector3(1, 1, 1);
         [InspectorExpose]
         public Color LightColor { get; set; } = Colors.White;
         [InspectorExpose]
@@ -21,7 +21,7 @@ namespace V12.Components
         public override string Category => "Lighting";
         public override string Description => "An omni/point light";
 
-        public OmniLight() {}
+        public OmniLight() { }
 
         public OmniLight(Vector3 position, Vector3 rotation, Vector3 scale)
         {
@@ -35,7 +35,7 @@ namespace V12.Components
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
 
-        public override void OnAwake() 
+        public override void OnAwake()
         {
             if (sceneElement == null)
             {
@@ -54,7 +54,7 @@ namespace V12.Components
                     omni.OmniRange = Range;
                 }
             }
-           
+
         }
     }
 }

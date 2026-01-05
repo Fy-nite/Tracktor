@@ -11,7 +11,7 @@ namespace V12.Components
         public string TexturePath { get; set; } = "";
         public Material? material { get; set; }
         public override string Description => "Defines a material for meshes";
-        public override void OnAttach() {}
+        public override void OnAttach() { }
         public MeshMaterial(Color albedoColor, string texturePath)
         {
             AlbedoColor = albedoColor;

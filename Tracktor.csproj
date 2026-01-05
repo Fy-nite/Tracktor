@@ -17,6 +17,7 @@
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="Readme.md" />
+    <None Include="XRInteraction.md" />
   </ItemGroup>
   <!-- lets hope we dont loose this Project again.... -->
 </Project>

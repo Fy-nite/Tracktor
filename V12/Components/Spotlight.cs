@@ -36,7 +36,7 @@ namespace V12.Components
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
 
-        public override void OnAwake() 
+        public override void OnAwake()
         {
             if (sceneElement == null)
             {

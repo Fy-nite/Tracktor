@@ -15,7 +15,21 @@ namespace Tracktor.CSharp
                 Name = "World Floor",
                 ChildElements = new List<IWorldElement>
                 {
-                    new Element
+                new Element
+                    {
+                    Name = "Desktop player",
+                    Components = new List<IComponent>
+                    {
+                        new V12.Components.DesktopPlayer
+                        {
+                            Position = new Vector3(0, 5, 0),
+                            Rotation = new Vector3(0, 0, 0),
+                            Scale = new Vector3(1, 1, 1),
+                        }
+                    }
+                },
+                
+                new Element
                     {
                         Name = "Light Source",
                         Components = new List<IComponent>
@@ -27,7 +41,7 @@ namespace Tracktor.CSharp
                                 Scale = new Vector3(1, 1, 1),
                                 Energy = 0.5f,
                             }
-                           
+
                         }
                     },
                     new Element {
@@ -37,12 +51,12 @@ namespace Tracktor.CSharp
                             new V12.Components.PanoramaSky
                             {
                                 TexturePath = "res://Assets/Day.hdr",
-                               
+
                                 Size = 300.0f,
                             }
                         }
                     },
-                    
+
                     new Element {
                         Name = "Root Inspector",
                         Components = new List<IComponent>
@@ -53,14 +67,7 @@ namespace Tracktor.CSharp
                                 Rotation = new Vector3(0, 180, 0)
                             }
                         }
-                    },
-                    new Element { },
-                    new Element { },
-                    new Element { },
-                    new Element { },
-                    new Element { },
-
-                    
+                    }
                 },
                 Components = new List<IComponent>
                 {
@@ -73,6 +80,8 @@ namespace Tracktor.CSharp
                 }
             };
             world.RootElement.AddChildElement(WorldFloor);
+            // Add Desktop player
+            GD.Print("World Initialization Completed");
             return this;
         }
     }

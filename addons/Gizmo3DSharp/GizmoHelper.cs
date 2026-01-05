@@ -17,7 +17,7 @@ public static class GizmoHelper
     public static void SetOnTopOfAlpha(this BaseMaterial3D material, bool alpha = false)
     {
         material.Transparency = alpha ? BaseMaterial3D.TransparencyEnum.Alpha : BaseMaterial3D.TransparencyEnum.Disabled;
-        material.RenderPriority = (int) Material.RenderPriorityMax;
+        material.RenderPriority = (int)Material.RenderPriorityMax;
         material.NoDepthTest = true;
     }
 
@@ -35,66 +35,78 @@ public static class GizmoHelper
         Vector3 size = aabb.Size;
         switch (edge)
         {
-            case 0: {
-                from = new(position.X + size.X, position.Y, position.Z);
-                to = new(position.X, position.Y, position.Z);
-                break;
-            }
-            case 1: {
-                from = new(position.X + size.X, position.Y, position.Z + size.Z);
-                to = new(position.X + size.X, position.Y, position.Z);
-                break;
-            }
-            case 2: {
-                from = new(position.X, position.Y, position.Z + size.Z);
-                to = new(position.X + size.X, position.Y, position.Z + size.Z);
-                break;
-            }
-            case 3: {
-                from = new(position.X, position.Y, position.Z);
-                to = new(position.X, position.Y, position.Z + size.Z);
-                break;
-            }
-            case 4: {
-                from = new(position.X, position.Y + size.Y, position.Z);
-                to = new(position.X + size.X, position.Y + size.Y, position.Z);
-                break;
-            }
-            case 5: {
-                from = new(position.X + size.X, position.Y + size.Y, position.Z);
-                to = new(position.X + size.X, position.Y + size.Y, position.Z + size.Z);
-                break;
-            }
-            case 6: {
-                from = new(position.X + size.X, position.Y + size.Y, position.Z + size.Z);
-                to = new(position.X, position.Y + size.Y, position.Z + size.Z);
-                break;
-            }
-            case 7: {
-                from = new(position.X, position.Y + size.Y, position.Z + size.Z);
-                to = new(position.X, position.Y + size.Y, position.Z);
-                break;
-            }
-            case 8: {
-                from = new(position.X, position.Y, position.Z + size.Z);
-                to = new(position.X, position.Y + size.Y, position.Z + size.Z);
-                break;
-            }
-            case 9: {
-                from = new(position.X, position.Y, position.Z);
-                to = new(position.X, position.Y + size.Y, position.Z);
-                break;
-            }
-            case 10: {
-                from = new(position.X + size.X, position.Y, position.Z);
-                to = new(position.X + size.X, position.Y + size.Y, position.Z);
-                break;
-            }
-            case 11: {
-                from = new(position.X + size.X, position.Y, position.Z + size.Z);
-                to = new(position.X + size.X, position.Y + size.Y, position.Z + size.Z);
-                break;
-            }
+            case 0:
+                {
+                    from = new(position.X + size.X, position.Y, position.Z);
+                    to = new(position.X, position.Y, position.Z);
+                    break;
+                }
+            case 1:
+                {
+                    from = new(position.X + size.X, position.Y, position.Z + size.Z);
+                    to = new(position.X + size.X, position.Y, position.Z);
+                    break;
+                }
+            case 2:
+                {
+                    from = new(position.X, position.Y, position.Z + size.Z);
+                    to = new(position.X + size.X, position.Y, position.Z + size.Z);
+                    break;
+                }
+            case 3:
+                {
+                    from = new(position.X, position.Y, position.Z);
+                    to = new(position.X, position.Y, position.Z + size.Z);
+                    break;
+                }
+            case 4:
+                {
+                    from = new(position.X, position.Y + size.Y, position.Z);
+                    to = new(position.X + size.X, position.Y + size.Y, position.Z);
+                    break;
+                }
+            case 5:
+                {
+                    from = new(position.X + size.X, position.Y + size.Y, position.Z);
+                    to = new(position.X + size.X, position.Y + size.Y, position.Z + size.Z);
+                    break;
+                }
+            case 6:
+                {
+                    from = new(position.X + size.X, position.Y + size.Y, position.Z + size.Z);
+                    to = new(position.X, position.Y + size.Y, position.Z + size.Z);
+                    break;
+                }
+            case 7:
+                {
+                    from = new(position.X, position.Y + size.Y, position.Z + size.Z);
+                    to = new(position.X, position.Y + size.Y, position.Z);
+                    break;
+                }
+            case 8:
+                {
+                    from = new(position.X, position.Y, position.Z + size.Z);
+                    to = new(position.X, position.Y + size.Y, position.Z + size.Z);
+                    break;
+                }
+            case 9:
+                {
+                    from = new(position.X, position.Y, position.Z);
+                    to = new(position.X, position.Y + size.Y, position.Z);
+                    break;
+                }
+            case 10:
+                {
+                    from = new(position.X + size.X, position.Y, position.Z);
+                    to = new(position.X + size.X, position.Y + size.Y, position.Z);
+                    break;
+                }
+            case 11:
+                {
+                    from = new(position.X + size.X, position.Y, position.Z + size.Z);
+                    to = new(position.X + size.X, position.Y + size.Y, position.Z + size.Z);
+                    break;
+                }
         }
     }
 

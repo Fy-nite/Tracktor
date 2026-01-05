@@ -6,15 +6,15 @@ using V12.UI;
 
 namespace V12.Components
 {
-    public class Inspector: NodeComponent
+    public class Inspector : NodeComponent
     {
         [InspectorExpose]
-        public Vector3 Position { get; set; } = new Vector3(0,0,0);
+        public Vector3 Position { get; set; } = new Vector3(0, 0, 0);
         [InspectorExpose]
-        public Vector3 Rotation { get; set; } = new Vector3(0,0,0);
+        public Vector3 Rotation { get; set; } = new Vector3(0, 0, 0);
 
         [InspectorExpose]
-        public Vector3 Scale { get; set; } = new Vector3(1,1,1);
+        public Vector3 Scale { get; set; } = new Vector3(1, 1, 1);
 
         public IWorldElement? Root { get; set; }
 
@@ -108,7 +108,7 @@ namespace V12.Components
                 // add the 3D title above the quad (local position so it follows the mesh)
                 var titleText = attachedElement?.Name ?? "Inspector";
                 var title = new Label3D
-                {       
+                {
                     Name = "InspectorTitle3D",
                     Text = titleText
                 };

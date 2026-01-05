@@ -130,6 +130,8 @@ func _process_movement_on_input(is_colliding, delta):
 
 	move_and_slide()
 
+
+
 # _physics_process handles our player movement.
 func _physics_process(delta):
 	var is_colliding = _process_on_physical_movement(delta)

@@ -1,4 +1,5 @@
 ﻿using Godot;
+using V12.Interfaces;
 using V12.Types;
 
 namespace V12
@@ -94,10 +95,41 @@ namespace V12
         public void Update(double delta)
         {
             // World-specific update logic
+            // Execute registered loop callbacks first
             foreach (var callback in LoopCallbacks)
             {
-                callback();
+                try
+                {
+                    callback();
+                }
+                catch (Exception ex)
+                {
+                    GD.PrintErr($"[V12World] Exception in LoopCallback: {ex.Message}");
+                }
             }
+
+            // Traverse element tree and call OnUpdate on every component
+            void UpdateElementComponents(IWorldElement element)
+            {
+                if (element == null) return;
+                foreach (var comp in element.Components)
+                {
+                    try
+                    {
+                        comp.OnUpdate(delta);
+                    }
+                    catch (Exception ex)
+                    {
+                        GD.PrintErr($"[V12World] Exception in component OnUpdate ({comp?.GetType().Name}): {ex.Message}");
+                    }
+                }
+                foreach (var child in element.ChildElements)
+                {
+                    UpdateElementComponents(child);
+                }
+            }
+
+            UpdateElementComponents(RootElement);
         }
     }
 }

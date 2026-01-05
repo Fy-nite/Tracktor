@@ -19,14 +19,14 @@ namespace V12.Components
             Scale = new DoubleVector3(1, 1, 1, 1);
             // slot will be assigned when the syncer attaches the component node
         }
-        public override void OnAttach() {}
+        public override void OnAttach() { }
         public override Control GenerateUI()
         {
             return ComponentUIGenerator.GenerateAutoUI(this);
         }
 
         // Called each tick to update the slot from component values (or vice versa).
-        public void OnUpdate(float delta)
+        public override void OnUpdate(double delta)
         {
             if (attachedElement == null) return;
             attachedElement.sceneElement.Position = new Vector3((float)Position.x, (float)Position.y, (float)Position.z);
@@ -43,6 +43,6 @@ namespace V12.Components
         //     _slot.Scale = new Vector3((float)Scale.x, (float)Scale.y, (float)Scale.z);
         // }
 
-       
+
     }
 }

@@ -18,20 +18,20 @@ namespace V12.Components
 
 
         // Ran when the component is created
-        public virtual void OnAwake() {}
+        public virtual void OnAwake() { }
         // Ran whenever the component goes to sleep / inactive
-        public virtual void OnSleep() {}
+        public virtual void OnSleep() { }
         // Ran whenever the component is attached to a element (should register events here)
-        public virtual void OnAttach() {}
+        public virtual void OnAttach() { }
         // Ran before the component is removed from a element (moved or deleted)
         public virtual void OnDetach()
         {
             attachedElement?.eventManager.deregisterComponentEvents(this);
         }
         // Ran once every engine update
-        public virtual void OnUpdate(double delta) {}
+        public virtual void OnUpdate(double delta) { }
         // Ran once when the component is about to be destroyed
-        public virtual void OnDestroy() {}
+        public virtual void OnDestroy() { }
 
         // Add a child component
         public virtual void AddChildAddon(IComponent addon)
