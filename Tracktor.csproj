@@ -12,6 +12,7 @@
     <ProjectReference Include="V12/V12.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="android\" />
     <Folder Include="Scenes\" />
   </ItemGroup>
   <ItemGroup>

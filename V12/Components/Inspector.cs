@@ -18,8 +18,8 @@ namespace V12.Components
 
         public IWorldElement? Root { get; set; }
 
-        public override string Category => "Mesh";
-        public override string Description => "A simple box mesh";
+        public override string Category => "UI";
+        public override string Description => "3D in-world inspector for elements and components.";
 
         public string MeshType => "Box";
         public Inspector()
@@ -44,11 +44,13 @@ namespace V12.Components
             if (sceneElement == null)
             {
                 GD.Print($"{WorldManager.CurrentWorld?.Name ?? "<null>"}");
+                Root ??= attachedElement ?? WorldManager.CurrentWorld?.sceneGenerator.rootElement ?? WorldManager.CurrentWorld?.RootElement;
                 if (Root == null)
-                    if (WorldManager.CurrentWorld?.RootElement == null)
-                        return;
-                    else
-                        Root = WorldManager.CurrentWorld?.sceneGenerator.rootElement;
+                {
+                    GD.PrintErr("[InspectorComponent] No root element available for inspector.");
+                    return;
+                }
+
                 var inspectorUI = new UI.Inspector(Root);
                 var SubViewport = new Godot.SubViewport();
                 // put the UI root inside the viewport
@@ -62,6 +64,18 @@ namespace V12.Components
                 {
                     Size = quadSize
                 };
+
+                // crisp, unshaded UI surface
+                var material = new StandardMaterial3D
+                {
+                    AlbedoTexture = SubViewport.GetTexture(),
+                    ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                    Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                    CullMode = BaseMaterial3D.CullModeEnum.Disabled
+                };
+                InspectorMesh.MaterialOverride = material;
+                InspectorMesh.MaterialOverlay = material;
+                InspectorMesh.SetSurfaceOverrideMaterial(0, material);
 
                 InspectorMesh.RotationDegrees = Rotation;
                 InspectorMesh.Scale = Scale;
@@ -94,14 +108,6 @@ namespace V12.Components
                 backMaterial.CullMode = BaseMaterial3D.CullModeEnum.Disabled; // show both sides
                 backMesh.SetSurfaceOverrideMaterial(0, backMaterial);
 
-                // obtain the viewport's texture and assign to the mesh material
-                var material = new StandardMaterial3D();
-                var viewportTexture = SubViewport.GetTexture();
-                material.AlbedoTexture = viewportTexture;
-                InspectorMesh.MaterialOverride = material;
-                InspectorMesh.MaterialOverlay = material;
-                InspectorMesh.SetSurfaceOverrideMaterial(0, material);
-
                 // add the backing and title as children of InspectorMesh
                 InspectorMesh.AddChild(backMesh);
 
@@ -121,6 +127,8 @@ namespace V12.Components
                 // add the mesh after the viewport has been added to the container
                 node3D.AddChild(InspectorMesh);
                 node3D.Position = Position;
+                node3D.RotationDegrees = Rotation;
+                node3D.Scale = Scale;
                 sceneElement = node3D;
             }
         }
