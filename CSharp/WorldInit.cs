@@ -1,6 +1,8 @@
 ﻿using Godot;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using V12;
+using V12.Components.Test;
 using V12.Interfaces;
 using V12.Types;
 namespace Tracktor.CSharp
@@ -66,6 +68,48 @@ namespace Tracktor.CSharp
                                 Position = new Vector3(0, 1, 0),
                                 Rotation = new Vector3(0, 0, 0),
                                 Scale = new Vector3(0.5f, 0.5f, 0.5f)
+                            }
+                        }
+                    },
+
+                    new Element
+                    {
+                        Name = "EventTesting",
+                        Components = new List<IComponent>
+                        {
+                            new V12.Components.Test.BlinkBox
+                            {
+                                Position = new Vector3(1, 1, 1),
+                                Rotation = new Vector3(0, 0, 0),
+                                Scale = new Vector3(1, 1, 1)
+                            }
+                        },
+                        ChildElements = new List<IWorldElement>
+                        {
+                            new Element
+                            {
+                                Name = "test",
+                                ChildElements = new List<IWorldElement>
+                                {
+                                    new Element
+                                    {
+                                        Name = "test2",
+                                        Components = new List<IComponent>
+                                        {
+                                            new V12.Components.Test.BlinkBox
+                                            {
+                                                Position = new Vector3(1, 2.1f, 1),
+                                                Rotation = new Vector3(0, 0, 0),
+                                                Scale = new Vector3(1, 1, 1)
+                                            },
+                                            new V12.Components.Test.EventSender
+                                            {
+                                                Event = "TestEvent",
+                                                Interval = 1
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

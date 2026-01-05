@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace V12.Components.VR
 {
+    [Obsolete("XRInteractionHandler shouldn't be used, use VRInteractionController instead (I would delete this but idk if charlie still wants it)")]
     public partial class XRInteractionHandler : Node
     {
         // Events for button presses

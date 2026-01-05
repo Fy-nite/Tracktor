@@ -31,6 +31,7 @@ public class SceneGenerator
         }
         rootElement.sceneElement = sceneRoot;
         List<IWorldElement> elements = FlattenTree(rootElement);
+        AwakeComponents(rootElement);
         foreach (var elem in elements)
         {
             DebugPrint($"[RegenerateTree] Generating Element {elem.Name}");
@@ -39,6 +40,19 @@ public class SceneGenerator
             foreach (var comp in elem.Components)
                 DebugPrint($"[RegenerateTree]   - Has Component {(comp.Name != null && comp.Name.Length != 0 ? comp.Name : comp.GetType().Name)}");
             GenerateElement(elem);
+        }
+    }
+    private void AwakeComponents(IWorldElement root)
+    {
+        foreach (var elem in root.ChildElements)
+        {
+            elem.ParentElement = root;
+            AwakeComponents(elem);
+        }
+        foreach (var comp in root.Components)
+        {
+            comp.attachedElement = root;
+            comp.OnAwake();
         }
     }
     private List<IWorldElement> FlattenTree(IWorldElement root)
@@ -62,8 +76,6 @@ public class SceneGenerator
 
         foreach (var component in element.Components)
         {
-            component.attachedElement = element;
-            component.OnAwake();
             component.OnAttach();
             DebugPrint($"[GenerateElement] Attached Component {component.Name}");
             if (component is NodeComponent nc)
@@ -74,7 +86,7 @@ public class SceneGenerator
         elemNode.Rotation = element.Rotation.ToVector3();
         elemNode.Scale = element.Scale.ToVector3();
 
-        element.OnElementAdded += (e) => { Node3D root = new(); e.ParentElement.sceneElement.AddChild(root); RegenerateTree(e, root); };
+        element.OnElementAdded += (e) => { Node3D root = new(); e.ParentElement.sceneElement?.AddChild(root); RegenerateTree(e, root); };
         element.OnElementChanged += (e) => { RegenerateTree(e); };
         element.OnRootChanged += (e) => { RegenerateTree(e); };
         element.OnElementRemoved += (e) => { element.sceneElement.QueueFree(); };

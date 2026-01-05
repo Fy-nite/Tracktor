@@ -18,6 +18,7 @@ namespace V12.Components
         public override string Description => "A simple box mesh";
 
         public string MeshType => "Box";
+        public Mesh mesh;
         public BoxMesh()
         {
             Name = "Box";
@@ -38,13 +39,16 @@ namespace V12.Components
         {
             if (sceneElement == null)
             {
-                sceneElement = new CsgBox3D
+                mesh = new Godot.BoxMesh
                 {
+                    Size = Scale
+                };
+                sceneElement = new MeshInstance3D
+                {
+                    Mesh = mesh,
                     Position = Position,
-                    Name = "BoxMesh",
                     Rotation = Rotation,
-                    Scale = Scale,
-                    UseCollision = true
+                    Name = Name
                 };
             }
         }

@@ -14,7 +14,7 @@ namespace V12.Types
         public event Action<IWorldElement> OnRootChanged;
         public event Action<IComponent> OnComponentAdded;
         public event Action<IComponent> OnComponentRemoved;
-        public EventManager eventManager { get; set; } = new();
+        public EventManager eventManager { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Type { get; set; }
@@ -58,6 +58,7 @@ namespace V12.Types
 
         public Element()
         {
+            eventManager = new(this);
             if (Position == null) Position = new DoubleVector3(0, 0, 0, 0);
             if (Rotation == null) Rotation = new DoubleVector3(0, 0, 0, 0);
             if (Scale == null) Scale = new DoubleVector3(1, 1, 1, 0);
