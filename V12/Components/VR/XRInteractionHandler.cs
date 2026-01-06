@@ -102,7 +102,7 @@ namespace V12.Components.VR
             {
                 Righthand.ButtonPressed += (button) =>
                 {
-                    HandleButtonPressed(button, Righthand);
+                    OnXRButtonPressed?.Invoke(button, Righthand);
                 };
                 Righthand.ButtonReleased += (button) =>
                 {

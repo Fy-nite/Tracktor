@@ -1,5 +1,7 @@
 ﻿using Godot;
+using V12.Components.Tools;
 using V12.Elements;
+using V12.Types;
 
 namespace V12.Components.VR
 {
@@ -40,31 +42,42 @@ namespace V12.Components.VR
 
         }
 
+        private static ToolComponent? FindNearbyToolWithWorld(Vector3 handPosition, float radius = 1.0f)
+        {
+            var rootElement = V12.WorldManager.CurrentWorld?.RootElement;
+            if (rootElement == null)
+                return null;
+
+            // You may need to get the SceneGenerator instance; if it's static, use it directly
+            var elements = WorldManager.CurrentWorld?.sceneGenerator.FlattenTree(rootElement);
+
+            foreach (var elem in elements)
+            {
+                foreach (var comp in elem.Components)
+                {
+                    if (comp is ToolComponent tool && !tool.IsEquipped && tool.sceneElement != null)
+                    {
+                        if ((tool.sceneElement.GlobalTransform.Origin - handPosition).Length() < radius)
+                            return tool;
+                    }
+                }
+            }
+            return null;
+        }
+
         public static Node3D Generate()
         {
             Node3D VR = GD.Load<PackedScene>("res://V12/Scenes/VR/VRPlayerBody.tscn").Instantiate<Node3D>();
             GD.Print("[VRPlayer] Created VRPlayer Node3D in OnAwake");
-            // Connect XRController3D signals from LeftHand and RightHand to local handlers
+     
             var left = VR.GetNodeOrNull("LeftHand");
             var right = VR.GetNodeOrNull("RightHand");
-
 
             if (left is XRController3D leftHand)
             {
                 leftHand.ButtonPressed += (button) =>
                 {
                     GD.Print($"[VRPlayer] LeftHand button {button} pressed");
-
-                    var slotNode = this
-                    if (slotNode is NodeComponent slotComponent && V12.WorldManager.RootElement != null)
-                    {
-                        var evt = new PointerEvent(PointerEvent.Kind.Pressed, slotComponent, null, slotComponent.GlobalTransform.Origin, slotComponent.GlobalTransform.Origin)
-                        {
-                            CustomAction = "your_action",
-                            CustomData = yourData
-                        };
-                        V12.WorldManager.RootElement.eventManager.fireEvent(evt, "Tool_Use");
-                    }
 
                 };
                 GD.Print("[VRPlayer] Connected LeftHand XRController3D signals");
@@ -92,6 +105,8 @@ namespace V12.Components.VR
             }
             return VR;
 
+
         }
+
     }
 }

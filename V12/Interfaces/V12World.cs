@@ -57,7 +57,26 @@ namespace V12
                 WorldManager.ClearCurrent();
             }
         }
+        public static Element GenerateElementTree(Node3D node, Element parent)
+        {
+            // Create an Element for this node (customize as needed)
+            Element element = new Element(node.Name);
+            element.sceneElement = node;
 
+            // Attach to parent
+            parent.AddChild(element);
+
+            // Recursively process children
+            foreach (var child in node.GetChildren())
+            {
+                if (child is Node3D childNode3D)
+                {
+                    GenerateElementTree(childNode3D, element);
+                }
+            }
+
+            return element;
+        }
         // Internal helpers to toggle visibility and processing on the root viewport node.
         public void InternalSetVisible(bool visible)
         {

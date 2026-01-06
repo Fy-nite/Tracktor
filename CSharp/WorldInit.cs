@@ -124,7 +124,7 @@ namespace Tracktor.CSharp
                     }
                 }
             };
-            world.RootElement.AddChildElement(WorldFloor);
+            world.RootElement.AddChild(WorldFloor);
             // Add Desktop player
             GD.Print("World Initialization Completed");
             return this;

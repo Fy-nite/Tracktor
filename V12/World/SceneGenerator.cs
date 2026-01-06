@@ -15,7 +15,7 @@ public class SceneGenerator
         this.rootElement = rootElement;
         DebugPrint($"[Constructor] New SceneGenerator created");
     }
-    private void DebugPrint(string msg)
+    public void DebugPrint(string msg)
     {
         if (DEBUGMODE)
             GD.Print($"[SceneGenerator] {msg}");
@@ -42,7 +42,7 @@ public class SceneGenerator
             GenerateElement(elem);
         }
     }
-    private void AwakeComponents(IWorldElement root)
+    public void AwakeComponents(IWorldElement root)
     {
         foreach (var elem in root.ChildElements)
         {
@@ -55,7 +55,7 @@ public class SceneGenerator
             comp.OnAwake();
         }
     }
-    private List<IWorldElement> FlattenTree(IWorldElement root)
+    public List<IWorldElement> FlattenTree(IWorldElement root)
     {
         List<IWorldElement> return_val = new List<IWorldElement> { root };
         foreach (IWorldElement child in root.ChildElements)
@@ -65,7 +65,7 @@ public class SceneGenerator
         }
         return return_val;
     }
-    private void GenerateElement(IWorldElement element)
+    public void GenerateElement(IWorldElement element)
     {
         Node3D elemNode = new Node3D();
         Node3D parent = sceneRoot;
@@ -93,7 +93,7 @@ public class SceneGenerator
         element.OnComponentAdded += (e) => { if (e.attachedElement != null) RegenerateElement(e.attachedElement); };
         element.OnComponentRemoved += (e) => { if (e.attachedElement != null) RegenerateElement(e.attachedElement); };
     }
-    private void RegenerateElement(IWorldElement element)
+    public void RegenerateElement(IWorldElement element)
     {
         var oldElem = element.sceneElement;
         //element.sceneElement = null;

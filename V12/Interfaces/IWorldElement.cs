@@ -26,7 +26,7 @@ namespace V12.Interfaces
         List<IComponent> Components { get; set; }
 
         public void OnChanged();
-        void AddChildElement(IWorldElement childElement);
+        void AddChild(IWorldElement childElement);
         IWorldElement GetChildElementByName(string name);
         void RemoveChildElement(IWorldElement childElement);
         void RemoveChildElementByName(string name);

@@ -28,7 +28,7 @@ namespace V12.World.Templates
                     transformComp.Position = block.Position;
                     transformComp.Scale = block.Scale;
                     block.AddComponent(transformComp);
-                    rootElement.AddChildElement(block);
+                    rootElement.AddChild(block);
                 }
             }
         }

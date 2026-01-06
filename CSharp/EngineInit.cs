@@ -66,7 +66,7 @@ public partial class EngineInit : Node3D
 		userWorld.IsLocalOnly = true;
 		userWorld.CanBeLeft = true;
 		userWorld.CanBeClosed = false;
-		userWorld.RootElement.AddChildElement(V12.World.Userspace.Generate());
+		userWorld.RootElement.AddChild(V12.World.Userspace.Generate());
 
 		foreach (var w in engine.Worlds)
 		{

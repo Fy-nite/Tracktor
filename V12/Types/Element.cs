@@ -63,7 +63,14 @@ namespace V12.Types
             if (Rotation == null) Rotation = new DoubleVector3(0, 0, 0, 0);
             if (Scale == null) Scale = new DoubleVector3(1, 1, 1, 0);
         }
-
+        public Element(string Name)
+        {
+            eventManager = new(this);
+            this.Name = Name;
+            if (Position == null) Position = new DoubleVector3(0, 0, 0, 0);
+            if (Rotation == null) Rotation = new DoubleVector3(0, 0, 0, 0);
+            if (Scale == null) Scale = new DoubleVector3(1, 1, 1, 0);
+        }
         public Element Initialize()
         {
             foreach (var comp in Components)
@@ -83,7 +90,7 @@ namespace V12.Types
             return sb.ToString();
         }
 
-        public void AddChildElement(IWorldElement childElement)
+        public void AddChild(IWorldElement childElement)
         {
             ChildElements.Add(childElement);
             childElement.ParentElement = this;
@@ -92,7 +99,22 @@ namespace V12.Types
             GD.Print($"[Element] AddChildElement: Added '{childElement.Name}' to parent '{this.Name}'");
             OnElementAdded?.Invoke(childElement);
         }
-
+        public Element GetChild(string name)
+        {
+            return ChildElements.FirstOrDefault(e => e.Name == name) as Element;
+        }
+        public Element FindChild(string name)
+        {
+            foreach (Element child in ChildElements)
+            {
+                if (child.Name == name)
+                    return child as Element;
+                var foundInDescendant = child.FindChild(name);
+                if (foundInDescendant != null)
+                    return foundInDescendant as Element;
+            }
+            return null;
+        }
         private void SetParentsRecursively(IWorldElement node)
         {
             // Ensure components on this node have correct parent reference
@@ -161,9 +183,9 @@ namespace V12.Types
 
         public void AddChildElement(Node3D Node)
         {
-            // convert Node3D to IWorldElement and add
-            IWorldElement element = new Element { Name = Node.Name };
-            AddChildElement(element);
+            // convert Node3D to Element and add
+            Element element = new Element { Name = Node.Name };
+            AddChild(element);
 
         }
 
