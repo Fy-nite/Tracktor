@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://cpj7vtj6gr3tv"]
+[gd_scene load_steps=6 format=3 uid="uid://cpj7vtj6gr3tv"]
 
 [ext_resource type="Script" uid="uid://cyk7wbo7ya7qm" path="res://Scenes/player.gd" id="1_fnqq2"]
+[ext_resource type="PackedScene" uid="uid://c6porm4thf2oo" path="res://Assets/Controller.blend" id="4_e30gj"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xe2ly"]
 
@@ -39,33 +40,50 @@ tracker = &"left_hand"
 pose = &"aim"
 
 [node name="PlaceholderHand" type="MeshInstance3D" parent="Glasses/CharacterBody3D/XROrigin3D/LeftHand"]
+visible = false
 mesh = SubResource("BoxMesh_sldd7")
 
-[node name="LeftLazer" type="RayCast3D" parent="Glasses/CharacterBody3D/XROrigin3D/LeftHand"]
+[node name="Controller" parent="Glasses/CharacterBody3D/XROrigin3D/LeftHand" instance=ExtResource("4_e30gj")]
+transform = Transform3D(0.12, 0, 0, 0, 0.11817692, -0.02083778, 0, 0.02083778, 0.11817692, -0.005, -0.03, 0.035)
+
+[node name="LeftLazer" type="RayCast3D" parent="Glasses/CharacterBody3D/XROrigin3D/LeftHand/Controller"]
+transform = Transform3D(7.142857, 0, 0, 0, 7.142857, 0, 0, 0, 7.142857, 0, 0.26708746, 0)
 target_position = Vector3(0, 0, -1)
 
-[node name="LeftLazerMesh" type="MeshInstance3D" parent="Glasses/CharacterBody3D/XROrigin3D/LeftHand/LeftLazer"]
-transform = Transform3D(0.056019556, 0, 0, 0, -2.4486926e-09, 0.056019556, 0, -0.056019556, -2.4486926e-09, 0, 0, -0.08174074)
+[node name="LeftLazerMesh" type="MeshInstance3D" parent="Glasses/CharacterBody3D/XROrigin3D/LeftHand/Controller/LeftLazer"]
+transform = Transform3D(0.027530607, 0, 0, 0, -1.203401e-09, 0.027530607, 0, -0.027530607, -1.203401e-09, 0, 0.014015436, -0.1131016)
 mesh = SubResource("CylinderMesh_adg5p")
 
 [node name="RightHand" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1, -0.5)
 tracker = &"right_hand"
-pose = &"aim"
 
 [node name="PlaceholderHand" type="MeshInstance3D" parent="Glasses/CharacterBody3D/XROrigin3D/RightHand"]
+visible = false
 mesh = SubResource("BoxMesh_sldd7")
-skeleton = NodePath("../../LeftHand")
 
-[node name="RightLazer" type="RayCast3D" parent="Glasses/CharacterBody3D/XROrigin3D/RightHand"]
+[node name="Controller" parent="Glasses/CharacterBody3D/XROrigin3D/RightHand" instance=ExtResource("4_e30gj")]
+transform = Transform3D(0.12, 0, 0, 0, 0.11817692, -0.02083778, 0, 0.02083778, 0.11817692, -0.005, -0.03, 0.035)
+
+[node name="LeftLazer" type="RayCast3D" parent="Glasses/CharacterBody3D/XROrigin3D/RightHand/Controller"]
+transform = Transform3D(7.142857, 0, 0, 0, 7.142857, 0, 0, 0, 7.142857, 0, 0.26708746, 0)
 target_position = Vector3(0, 0, -1)
 
-[node name="RightLazerMesh" type="MeshInstance3D" parent="Glasses/CharacterBody3D/XROrigin3D/RightHand/RightLazer"]
-transform = Transform3D(0.056019556, 0, 0, 0, -2.4486926e-09, 0.056019556, 0, -0.056019556, -2.4486926e-09, 0, 0, -0.08174074)
+[node name="LeftLazerMesh" type="MeshInstance3D" parent="Glasses/CharacterBody3D/XROrigin3D/RightHand/Controller/LeftLazer"]
+transform = Transform3D(0.027530607, 0, 0, 0, -1.203401e-09, 0.027530607, 0, -0.027530607, -1.203401e-09, 0, 0.014015436, -0.1131016)
 mesh = SubResource("CylinderMesh_adg5p")
-skeleton = NodePath("../../../LeftHand/LeftLazer")
 
-[node name="RightLazerMesh" type="MeshInstance3D" parent="Glasses/CharacterBody3D/XROrigin3D/RightHand/RightLazer/RightLazerMesh"]
-transform = Transform3D(0.056019556, 0, 0, 0, -2.4486926e-09, 0.056019556, 0, -0.056019556, -2.4486926e-09, 0, 0, -0.08174074)
-mesh = SubResource("CylinderMesh_adg5p")
-skeleton = NodePath("../../../LeftHand/LeftLazer")
+[node name="Head" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+tracker = &"head"
+
+[node name="LeftFoot" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+tracker = &"/user/vive_tracker_htcx/role/left_foot"
+
+[node name="RightFoot" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+tracker = &"/user/vive_tracker_htcx/role/right_foot"
+
+[node name="LeftElbow" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+tracker = &"/user/vive_tracker_htcx/role/left_elbow"
+
+[node name="RightElbow" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+tracker = &"/user/vive_tracker_htcx/role/right_elbow"

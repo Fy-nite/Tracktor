@@ -37,7 +37,6 @@ public partial class EngineInit : Node3D
 
 		engine = new V12Engine();
 
-
 		var world = new V12World("LocalWorld");
 		new WorldInit().InitializeLocalHome(world);
 		var userWorld = new V12World("UserSpace");

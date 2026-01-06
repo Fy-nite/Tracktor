@@ -4,117 +4,127 @@ using System.Collections.Generic;
 
 namespace V12.Components.VR
 {
-    [Obsolete("XRInteractionHandler shouldn't be used, use VRInteractionController instead (I would delete this but idk if charlie still wants it)")]
+
     public partial class XRInteractionHandler : Node
     {
-        // Events for button presses
-        public event Action<string, string>? ButtonPressed; // (hand, button)
-        public event Action<string, float>? TriggerChanged; // (hand, value)
-        public event Action<string, Vector2>? StickChanged; // (hand, value)
+        /// <summary>
+        /// Represents the method that will handle an event when a button is pressed on an XR controller.   
+        /// </summary>
+        /// <param name="button">The name of the button that was pressed. This value identifies which button triggered the event.</param>
+        /// <param name="controller">The XR controller instance on which the button press occurred. Provides context about the source of the
+        /// event.</param>
+        public delegate void XRButtonPressedEvent(string button, XRController3D controller);
+        /// <summary>
+        /// Represents the method that will handle an event when a button is released on an XR controller.
+        /// </summary>
+        /// <param name="button">The name of the button that was released. This value identifies which button triggered the event.</param>
+        /// <param name="controller">The XR controller instance associated with the button release event. Provides context about the source
+        /// device.</param>
+        public delegate void XRButtonReleasedEvent(string button, XRController3D controller);
+        /// <summary>
+        /// Represents the method that handles an event when a button is touched on an XR controller.
+        /// </summary>
+        /// <param name="button">The name of the button that was touched. This value identifies which button triggered the event.</param>
+        /// <param name="controller">The XR controller instance on which the button was touched. Provides context about the source of the event.</param>
+        public delegate void XRButtonTouchedEvent(string button, XRController3D controller);
+        /// <summary>
+        /// Represents a method that handles joystick movement events from an XR controller, providing the current axis
+        /// position and the source controller.
+        /// </summary>
+        /// <param name="axis">The current position of the joystick axis, typically ranging from -1 to 1 on each component, where (0, 0)
+        /// represents the neutral position.</param>
+        /// <param name="controller">The XR controller that generated the joystick movement event.</param>
+        public delegate void XRJoystickMovedEvent(Vector2 axis, XRController3D controller);
+        /// <summary>
+        /// Represents the method that handles an event when the trigger on an XR controller is pulled.
+        /// </summary>
+        /// <remarks>Use this delegate to respond to trigger actions on XR controllers, such as initiating
+        /// interactions or actions in a 3D environment. The value parameter may vary depending on the controller's
+        /// hardware and configuration.</remarks>
+        /// <param name="value">The analog value of the trigger pull, typically ranging from 0.0 (not pressed) to 1.0 (fully pressed).</param>
+        /// <param name="controller">The XR controller instance that generated the trigger pull event.</param>
+        public delegate void XRTriggerPulledEvent(double value, XRController3D controller);
+        /// <summary>
+        /// Represents a method that is called when the grip input is pulled on an XR controller.
+        /// </summary>
+        /// <param name="value">The normalized grip value, typically ranging from 0.0 (not pressed) to 1.0 (fully pressed).</param>
+        /// <param name="controller">The XR controller instance that triggered the grip event.</param>
+        public delegate void XRGripPulledEvent(double value, XRController3D controller);
+        /// <summary>
+        /// Represents the method that will handle an event when a two-step trigger is clicked on an XR controller.
+        /// </summary>
+        /// <remarks>This delegate is intended for use with XR headsets that feature two-step triggers,
+        /// allowing applications to respond to distinct trigger stages. The event is typically raised when the user
+        /// actuates the trigger beyond the first stage.</remarks>
+        /// <param name="controller">The XR controller instance that raised the event. Typically represents a device with a two-step trigger,
+        /// such as the Vive Cosmos or Valve Index.</param>
+        public delegate void XRTwoStepTriggerClickedEvent(XRController3D controller); // meant for headsets that have two-step triggers like vive cosmos or Valves Steam frame
+        public event XRButtonPressedEvent? OnXRButtonPressed;
+        public event XRButtonReleasedEvent? OnXRButtonReleased;
+        public event XRButtonTouchedEvent? OnXRButtonTouched;
+        public event XRJoystickMovedEvent? OnXRJoystickMoved;
+        public event XRTriggerPulledEvent? OnXRTriggerPulled;
+        public event XRGripPulledEvent? OnXRGripPulled;
+        public event XRTwoStepTriggerClickedEvent? OnXRTwoStepTriggerClicked;
 
-        // Call this from your controller nodes' signals
-        public void OnButtonPressed(string hand, string button)
+        public void RegisterVRSetup(Node3D Root)
         {
-            GD.Print($"[XRInteractionHandler] {hand} button pressed: {button}");
-            ButtonPressed?.Invoke(hand, button);
-        }
+            var Lefthand = Root.GetNodeOrNull<XRController3D>("LeftHand");
+            if (Lefthand != null)
+            {
+                Lefthand.ButtonPressed += (button) =>
+                {
+                    OnXRButtonPressed?.Invoke(button, Lefthand);
+                };
+                Lefthand.ButtonReleased += (button) =>
+                {
+                    OnXRButtonReleased?.Invoke(button, Lefthand);
+                };
+                Lefthand.InputVector2Changed += (name,axis) =>
+                {
+                    OnXRJoystickMoved?.Invoke(axis, Lefthand);
+                };
+                Lefthand.InputFloatChanged += (name, value) =>
+                {
+                    if (name == "trigger")
+                        OnXRTriggerPulled?.Invoke(value, Lefthand);
+                    else if (name == "grip")
+                        OnXRGripPulled?.Invoke(value, Lefthand);
+                };
 
-        // Convenience methods to connect XRController3D signals directly
-        public void OnLeftNodeButtonPressed(string button)
-        {
-            OnButtonPressed("left", button);
-            GD.Print($"[XRInteractionHandler] Left node button pressed: {button}");
-        }
-        public void OnRightNodeButtonPressed(string button)
-        {
-            OnButtonPressed("right", button);
-        }
-
-        public void OnTriggerChanged(string hand, float value)
-        {
-            GD.Print($"[XRInteractionHandler] {hand} trigger value: {value}");
-            TriggerChanged?.Invoke(hand, value);
-        }
-
-        public void OnStickChanged(string hand, Vector2 value)
-        {
-            GD.Print($"[XRInteractionHandler] {hand} stick value: {value}");
-            StickChanged?.Invoke(hand, value);
-        }
-
-        public void OnLeftNodeFloatChanged(string action, float value)
-        {
-            OnTriggerChanged("left", value);
-        }
-        public void OnRightNodeFloatChanged(string action, float value)
-        {
-            OnTriggerChanged("right", value);
-        }
-
-        public void OnLeftNodeVector2Changed(string action, Vector2 value)
-        {
-            OnStickChanged("left", value);
-        }
-        public void OnRightNodeVector2Changed(string action, Vector2 value)
-        {
-            OnStickChanged("right", value);
-        }
-
-        // Poll OpenXR actions for left/right hand-specific actions only
-        public void PollActions()
-        {
-            // Button clicks (trigger, grip, menu, select, ax/by, primary/secondary)
-            PollButton("trigger_click_left", "left", "trigger_click");
-            PollButton("trigger_click_right", "right", "trigger_click");
-            PollButton("grip_click_left", "left", "grip_click");
-            PollButton("grip_click_right", "right", "grip_click");
-            PollButton("menu_button_left", "left", "menu_button");
-            PollButton("menu_button_right", "right", "menu_button");
-            PollButton("select_button_left", "left", "select_button");
-            PollButton("select_button_right", "right", "select_button");
-            PollButton("ax_button_left", "left", "ax_button");
-            PollButton("ax_button_right", "right", "ax_button");
-            PollButton("by_button_left", "left", "by_button");
-            PollButton("by_button_right", "right", "by_button");
-            PollButton("primary_click_left", "left", "primary_click");
-            PollButton("primary_click_right", "right", "primary_click");
-            PollButton("secondary_click_left", "left", "secondary_click");
-            PollButton("secondary_click_right", "right", "secondary_click");
-
-            // Analog triggers
-            PollAnalog("trigger_left", "left");
-            PollAnalog("trigger_right", "right");
-            PollAnalog("grip_left", "left_grip");
-            PollAnalog("grip_right", "right_grip");
-
-            // Thumbstick/trackpad (primary/secondary)
-            PollStick("primary_left", "left");
-            PollStick("primary_right", "right");
-            PollStick("secondary_left", "left_secondary");
-            PollStick("secondary_right", "right_secondary");
-        }
-
-        private void PollButton(string action, string hand, string buttonName)
-        {
-            if (Input.IsActionJustPressed(action))
-                OnButtonPressed(hand, buttonName);
-        }
-
-        private void PollAnalog(string action, string handName)
-        {
-            float value = Input.GetActionStrength(action);
-            OnTriggerChanged(handName, value);
-        }
-
-        private void PollStick(string actionPrefix, string handName)
-        {
-            // e.g. primary_left_left, primary_left_right, primary_left_up, primary_left_down
-            Vector2 stick = Input.GetVector(
-                actionPrefix + "_left",
-                actionPrefix + "_right",
-                actionPrefix + "_up",
-                actionPrefix + "_down");
-            OnStickChanged(handName, stick);
+            }
+            else
+            {
+                GD.PrintErr("[XRInteractionHandler] LeftHand XRController3D not found in VR Player Node3D");
+            }
+            var Righthand = Root.GetNodeOrNull<XRController3D>("RightHand");
+            if (Righthand != null)
+            {
+                Righthand.ButtonPressed += (button) =>
+                {
+                    HandleButtonPressed(button, Righthand);
+                };
+                Righthand.ButtonReleased += (button) =>
+                {
+                    OnXRButtonReleased?.Invoke(button, Righthand);
+                };
+                Righthand.InputVector2Changed += (name, axis) =>
+                {
+                    OnXRJoystickMoved?.Invoke(axis, Righthand);
+                };
+                Righthand.InputFloatChanged += (name, value) =>
+                {
+                    if (name == "trigger")
+                        OnXRTriggerPulled?.Invoke(value, Righthand);
+                    else if (name == "grip")
+                        OnXRGripPulled?.Invoke(value, Righthand);
+                };
+            }
+            else
+            {
+                GD.PrintErr("[XRInteractionHandler] RightHand XRController3D not found in VR Player Node3D");
+            }
+            GD.Print("[XRInteractionHandler] VR Setup Registered" );
         }
     }
 }

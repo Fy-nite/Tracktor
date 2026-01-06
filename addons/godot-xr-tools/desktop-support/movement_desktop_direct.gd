@@ -27,7 +27,6 @@ extends XRToolsMovementProvider
 @export var input_left : String = "ui_left"
 @export var input_right : String = "ui_right"
 
-
 # XRStart node
 @onready var xr_start_node = XRTools.find_xr_child(
 	XRTools.find_xr_ancestor(self,
@@ -43,7 +42,11 @@ func is_xr_class(xr_name:  String) -> bool:
 # Perform jump movement
 func physics_movement(_delta: float, player_body: XRToolsPlayerBody, _disabled: bool):
 	# Skip if the controller isn't active
-	if !player_body.enabled or xr_start_node.is_xr_active():
+	if player_body == null:
+		player_body == find_parent("VRPlayer").find_child("XRToolsPlayerBody",true,false)
+		print(player_body)
+		print("meow")
+	if !player_body.enabled:
 		return
 
 	#Calculate input vector

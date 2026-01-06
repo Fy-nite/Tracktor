@@ -1,4 +1,5 @@
 ﻿using Godot;
+using V12.Elements;
 
 namespace V12.Components.VR
 {
@@ -53,25 +54,18 @@ namespace V12.Components.VR
                 leftHand.ButtonPressed += (button) =>
                 {
                     GD.Print($"[VRPlayer] LeftHand button {button} pressed");
-                    var ray = leftHand.FindChild("RightLazer") as RayCast3D;
-                    // Raycast from left hand
-                    if (ray != null) {
-                        GodotObject contents = ray.GetCollider();
-                        if (contents is Node3D targetNode) {
-                            Vector3 hitPos = ray.GetGlobalTransform().Origin;
-                            var pe = new V12.Elements.PointerEvent(V12.Elements.PointerEvent.Kind.Pressed, leftHand, targetNode, hitPos, hitPos);
-                            var root = V12.WorldManager.RootElement;
-                            if (root != null)
-                                root.eventManager.fireEvent(pe, "pointer");
-                        }
-                        else if (contents != null) {
-                            GD.Print($"[VRPlayer] LeftHand raycast hit non-Node3D collider: {contents}");
-                        }
-                        else {
-                            GD.Print("[VRPlayer] LeftHand raycast did not hit");
-                        }
+
+                    var slotNode = this
+                    if (slotNode is NodeComponent slotComponent && V12.WorldManager.RootElement != null)
+                    {
+                        var evt = new PointerEvent(PointerEvent.Kind.Pressed, slotComponent, null, slotComponent.GlobalTransform.Origin, slotComponent.GlobalTransform.Origin)
+                        {
+                            CustomAction = "your_action",
+                            CustomData = yourData
+                        };
+                        V12.WorldManager.RootElement.eventManager.fireEvent(evt, "Tool_Use");
                     }
-                  
+
                 };
                 GD.Print("[VRPlayer] Connected LeftHand XRController3D signals");
             }

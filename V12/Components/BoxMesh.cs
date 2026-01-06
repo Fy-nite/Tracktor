@@ -48,8 +48,20 @@ namespace V12.Components
                     Mesh = mesh,
                     Position = Position,
                     Rotation = Rotation,
-                    Name = Name
+                    Name = Name,
+                    
                 };
+                var CSGCollider = new CollisionShape3D
+                {
+                    Shape = new BoxShape3D
+                    {
+                        Size = Scale
+                    },
+                    
+                };
+                var shape = new StaticBody3D();
+                shape.AddChild(CSGCollider);
+                sceneElement.AddChild(shape);
             }
         }
     }

@@ -1,5 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://4l8cvbldfvuw"]
+[gd_scene load_steps=7 format=3 uid="uid://4l8cvbldfvuw"]
 
+[ext_resource type="Script" uid="uid://bspdfeh7bgpw8" path="res://CSharp/V12WorldToolLoader.cs" id="1_bxsma"]
 [ext_resource type="Script" uid="uid://c6rc3t6i2t4dd" path="res://CSharp/EngineInit.cs" id="1_xj5yv"]
 [ext_resource type="Texture2D" uid="uid://k7v31hdsj1n2" path="res://Assets/Day.hdr" id="2_pjpa4"]
 
@@ -16,6 +17,7 @@ adjustment_enabled = true
 adjustment_saturation = 2.61
 
 [node name="GameRoot" type="Node3D"]
+script = ExtResource("1_bxsma")
 
 [node name="WorldRoot" type="Node3D" parent="."]
 script = ExtResource("1_xj5yv")

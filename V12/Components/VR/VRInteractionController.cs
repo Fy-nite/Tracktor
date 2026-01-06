@@ -2,6 +2,7 @@ using Godot;
 
 namespace V12.Components.VR
 {
+    [Obsolete("VRInteractionController does not match XR scheme, Use V12.Input.XRControllerInputHandler instead")]
     public class VRInteractionController
     {
         XRController3D leftHand;
