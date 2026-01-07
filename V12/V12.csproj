@@ -10,6 +10,8 @@
     <PackageReference Include="GodotSharp" Version="4.5.1" />
     <PackageReference Include="GodotSharp.SourceGenerators" Version="2.6.0" />
     <PackageReference Include="GodotSharpEditor" Version="4.5.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.26.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.57.0" PrivateAssets="All" />
   </ItemGroup>
 
 
@@ -18,8 +20,11 @@
 	  <None Remove="**\*.uid" />
 	</ItemGroup>
 
+
+
   <ItemGroup>
-    <Folder Include="Types\Models\" />
+    <Protobuf Include="Headless\Proto\WorldElement.proto" />
+    <Protobuf Include="Headless\Proto\chat.proto" />
   </ItemGroup>
 
 </Project>

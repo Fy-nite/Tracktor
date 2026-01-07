@@ -1,0 +1,14 @@
+\section{Networking and Scene Sync}
+
+Scenes are synchronized across peers using a deterministic event model.
+
+\subsection{Scene Syncer}
+The scene syncer handles:
+\begin{itemize}
+	\item Entity creation and destruction
+	\item Component replication
+	\item Authority resolution
+\end{itemize}
+
+\subsection{Events}
+Events are serialized and replayed to maintain consistency.

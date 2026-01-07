@@ -1,0 +1,50 @@
+﻿syntax = "proto3";
+package v12.headless;
+
+option csharp_namespace = "V12.Headless";
+
+// A simple 4-component vector to mirror DoubleVector3 in the engine.
+message Vector4D {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+  double w = 4;
+}
+
+// Minimal representation of a component for sync/UI purposes.
+message ComponentProto {
+  string name = 1;
+  string description = 2;
+  string category = 3;
+  // Allow nested addons for component trees
+  repeated ComponentProto addons = 4;
+  // unique id for the component (optional)
+  string id = 5;
+}
+
+// Recursive element representation. Matches fields from V12.Types.Element
+message FullElementDto {
+  string name = 1;
+  string description = 2;
+  string type = 3;
+  int32 level = 4;
+  // unique id for this element
+  string id = 5;
+
+  Vector4D position = 6;
+  Vector4D rotation = 7;
+  Vector4D scale = 8;
+
+  repeated ComponentProto components = 9;
+  repeated FullElementDto children = 10;
+}
+
+// World-level information that can be used to sync or describe a world.
+message WorldProto {
+  string name = 1;
+  bool is_local_only = 2; // maps to V12World.IsLocalOnly
+  bool can_be_left = 3;   // maps to V12World.CanBeLeft
+  bool can_be_closed = 4; // maps to V12World.CanBeClosed
+
+  FullElementDto root = 5; // Root element of the world
+}

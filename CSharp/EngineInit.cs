@@ -6,13 +6,18 @@ using V12.Components.VR;
 using V12.Extensions;
 using V12.Interfaces;
 using V12.Types;
+using V12.Headless;
+using V12.Headless.Messages;
+using System.Threading.Tasks;
+using V12.Types.Models;
 
 public partial class EngineInit : Node3D
 {
 	public V12Engine engine;
-	VRInteractionController vrInteractionController;
 	XRInteractionHandler xrHandler = new XRInteractionHandler();
 	public int currentWorldIndex = 0;
+    // optional network client for requesting world from server
+    ChatClient? networkClient;
 
 	// Called when the node enters the scene tree for the first time.
 	public void RecursePrint(Node node)
@@ -40,7 +45,6 @@ public partial class EngineInit : Node3D
 		var world = new V12World("LocalWorld");
 		new WorldInit().InitializeLocalHome(world);
 		var userWorld = new V12World("UserSpace");
-
 
 		// Add worlds through the engine (activation decides parenting/visibility)
 		engine.AddWorld(world);
@@ -88,6 +92,106 @@ public partial class EngineInit : Node3D
 		//AddChild(inspector.UIRoot); // Add to the scene as a UI overlay
 	   
 		engine.Run();
+		
+		// connect to server if requested via command line
+		try
+		{
+			var args = OS.GetCmdlineArgs();
+			var lower = new List<string>();
+			foreach (var a in args) lower.Add(a.ToLowerInvariant());
+			if (lower.Contains("--connect-server"))
+			{
+				string serverAddress = "127.0.0.1";
+				int port = 7777;
+				int serverIdx = lower.IndexOf("--server");
+				if (serverIdx != -1 && serverIdx + 1 < args.Length) serverAddress = args[serverIdx + 1];
+				int portIdx = lower.IndexOf("--port");
+				if (portIdx != -1 && portIdx + 1 < args.Length && int.TryParse(args[portIdx + 1], out var p)) port = p;
+
+				networkClient = new ChatClient(serverAddress, port);
+				networkClient.OnFullWorldReceived += (full) =>
+				{
+					GD.Print($"[Network] Received full world '{full.Name}'");
+					// build a V12World from proto
+					var remote = new V12World(full.Name ?? "RemoteWorld");
+					remote.IsLocalOnly = full.IsLocalOnly;
+					remote.CanBeLeft = full.CanBeLeft;
+					remote.CanBeClosed = full.CanBeClosed;
+
+					if (full.Root != null)
+					{
+						// convert the proto root to engine Element
+						var rootEl = full.Root.ToElement();
+						// copy basic info into the world's existing RootElement
+						remote.RootElement.Name = rootEl.Name;
+						remote.RootElement.Description = rootEl.Description;
+						remote.RootElement.Type = rootEl.Type;
+						remote.RootElement.Level = rootEl.Level;
+						remote.RootElement.Position = rootEl.Position;
+						remote.RootElement.Rotation = rootEl.Rotation;
+						remote.RootElement.Scale = rootEl.Scale;
+
+						// attach children and components
+						foreach (var child in rootEl.ChildElements)
+						{
+							remote.RootElement.AddChild(child);
+						}
+						foreach (var comp in rootEl.Components)
+						{
+							remote.RootElement.AddComponent(comp);
+						}
+					}
+
+					// add to engine and activate
+					engine.AddWorld(remote, this);
+					engine.ActivateWorld(engine.Worlds.Count - 1, this);
+
+					// regenerate the scene for the new world
+					var sg = remote.sceneGenerator;
+					if (sg != null)
+					{
+						sg.RegenerateFull();
+					}
+
+					// subscribe to incremental element updates for this remote world
+					var worldName = full.Name ?? "RemoteWorld";
+					networkClient.OnElementProtoReceived += (elemProto) =>
+					{
+						GD.Print($"[Network] Incremental element received: {elemProto.Name} for world {worldName}");
+						var element = elemProto.ToElement();
+						var remoteWorld = engine.Worlds.Find(w => w.Name == worldName);
+						if (remoteWorld != null)
+						{
+							var existing = remoteWorld.RootElement.FindChild(element.Name);
+							if (existing != null)
+							{
+								existing.Description = element.Description;
+								existing.Type = element.Type;
+								existing.Level = element.Level;
+								existing.Position = element.Position;
+								existing.Rotation = element.Rotation;
+								existing.Scale = element.Scale;
+							}
+							else
+							{
+								remoteWorld.RootElement.AddChild(element);
+							}
+						}
+					};
+				};
+
+				// start listening and request world
+				_ = Task.Run(async () =>
+				{
+					await networkClient.ConnectAsync();
+					await networkClient.RequestWorldAsync();
+				});
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"[EngineInit] Network error: {ex.Message}");
+		}
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.

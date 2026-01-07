@@ -7,6 +7,8 @@ namespace V12.Types
 {
     public class Element : IWorldElement, IExist
     {
+        // optional unique identifier used for network sync and matching
+        public string Id { get; set; } = string.Empty;
         public IWorldElement ParentElement { get; set; }
         public List<IWorldElement> ChildElements { get; set; } = new();
         public event Action<IWorldElement> OnElementAdded;

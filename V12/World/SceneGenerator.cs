@@ -42,6 +42,17 @@ public class SceneGenerator
             GenerateElement(elem);
         }
     }
+
+    // trigger full regeneration for a world root and ensure previous scene nodes are removed
+    public void RegenerateFull()
+    {
+        // clear existing children of sceneRoot
+        foreach (var child in sceneRoot.GetChildren())
+        {
+            if (child is Node c) c.QueueFree();
+        }
+        RegenerateTree(rootElement, sceneRoot);
+    }
     public void AwakeComponents(IWorldElement root)
     {
         foreach (var elem in root.ChildElements)

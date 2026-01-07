@@ -10,6 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="V12/V12.csproj" />
+	<PackageReference Include="System.CommandLine" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="android\" />

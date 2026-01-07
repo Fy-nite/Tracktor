@@ -1,0 +1,64 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---------- Packages ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+% ---------- Page Setup ----------
+\geometry{margin=1in}
+
+% ---------- Code Styling ----------
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codefg}{RGB}{40,40,40}
+
+\lstset{
+	backgroundcolor=\color{codebg},
+	basicstyle=\ttfamily\small\color{codefg},
+	frame=single,
+	breaklines=true,
+	tabsize=2,
+	captionpos=b
+}
+
+% ---------- Section Styling ----------
+\titleformat{\section}
+{\Large\bfseries}
+{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\large\bfseries}
+{\thesubsection}{1em}{}
+
+% ---------- Metadata ----------
+\title{\textbf{V12 Engine \& Tracktor}\\
+	\large Technical Documentation}
+\author{Finite}
+\date{\today}
+
+\begin{document}
+	
+	\maketitle
+	\tableofcontents
+	\newpage
+	
+	% ---------- Sections ----------
+	\input{sections/intro}
+	\input{sections/engine_overview}
+	\input{sections/architecture}
+	\input{sections/ecs}
+	\input{sections/vr_desktop}
+	\input{sections/networking}
+	\input{sections/editor_tools}
+	\input{sections/game_overview}
+	\input{sections/gameplay_systems}
+	\input{sections/future_work}
+	
+\end{document}
