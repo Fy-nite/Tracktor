@@ -72,7 +72,7 @@ namespace Tracktor.CSharp
                         }
                     },
 
-                    new Element
+                    /*new Element
                     {
                         Name = "EventTesting",
                         Components = new List<IComponent>
@@ -85,34 +85,7 @@ namespace Tracktor.CSharp
                             }
                         },
                         ChildElements = new List<IWorldElement>
-                        {
-                            new Element
-                            {
-                                Name = "test",
-                                ChildElements = new List<IWorldElement>
-                                {
-                                    new Element
-                                    {
-                                        Name = "test2",
-                                        Components = new List<IComponent>
-                                        {
-                                            new V12.Components.Test.BlinkBox
-                                            {
-                                                Position = new Vector3(1, 2.1f, 1),
-                                                Rotation = new Vector3(0, 0, 0),
-                                                Scale = new Vector3(1, 1, 1)
-                                            },
-                                            new V12.Components.Test.EventSender
-                                            {
-                                                Event = "TestEvent",
-                                                Interval = 1
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                       */
                 },
                 Components = new List<IComponent>
                 {
@@ -121,6 +94,7 @@ namespace Tracktor.CSharp
                         Position = new Vector3(0, -0.5f, 0),
                         Rotation = new Vector3(0, 0, 0),
                         Scale = new Vector3(100, 1, 100),
+                        
                     }
                 }
             };

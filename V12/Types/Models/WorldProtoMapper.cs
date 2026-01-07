@@ -122,16 +122,14 @@ namespace V12.Types.Models
                 el.Id = dto.Id;
             }
 
-            // components
+            // components - try to create concrete component instances when possible so clients can reconstruct behavior
             foreach (var c in dto.Components)
             {
-                var nc = new V12.Headless.Network.NetworkComponent
+                IComponent created = CreateComponentFromProto(c, dto);
+                if (created != null)
                 {
-                    Name = c.Name,
-                    Description = c.Description,
-                    Category = c.Category
-                };
-                el.AddComponent(nc);
+                    el.AddComponent(created);
+                }
             }
 
             // children
@@ -148,6 +146,102 @@ namespace V12.Types.Models
             }
 
             return el;
+        }
+
+        // Attempt to instantiate concrete component types by name using reflection.
+        // Falls back to Network.NetworkComponent when unknown.
+        private static IComponent CreateComponentFromProto(ComponentProto c, FullElementDto parent)
+        {
+            try
+            {
+                var compName = (c.Name ?? string.Empty).Trim();
+                if (string.IsNullOrEmpty(compName))
+                {
+                    return new V12.Headless.Network.NetworkComponent { Name = string.Empty, Description = c.Description, Category = c.Category };
+                }
+
+                // Normalize simple names (e.g. "DesktopPlayer") and try to find a matching type
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                Type? found = null;
+
+                // Try full-name match first
+                foreach (var asm in assemblies)
+                {
+                    try
+                    {
+                        var t = asm.GetType(compName, false, true);
+                        if (t != null && typeof(IComponent).IsAssignableFrom(t)) { found = t; break; }
+                    }
+                    catch { }
+                }
+
+                // If not found by full name, try matching by short type name within loaded assemblies
+                if (found == null)
+                {
+                    var shortName = compName.Contains('.') ? compName.Substring(compName.LastIndexOf('.') + 1) : compName;
+                    foreach (var asm in assemblies)
+                    {
+                        Type[] types;
+                        try { types = asm.GetTypes(); } catch { continue; }
+                        foreach (var t in types)
+                        {
+                            if (!typeof(IComponent).IsAssignableFrom(t)) continue;
+                            if (string.Equals(t.Name, shortName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                found = t; break;
+                            }
+                            // also allow matching on full name endings like "V12.Components.DesktopPlayer"
+                            if (t.FullName != null && t.FullName.EndsWith("." + shortName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                found = t; break;
+                            }
+                        }
+                        if (found != null) break;
+                    }
+                }
+
+                if (found != null)
+                {
+                    // instantiate
+                    var instance = Activator.CreateInstance(found) as IComponent;
+                    if (instance != null)
+                    {
+                        // set common properties if available
+                        try
+                        {
+                            var pd = found.GetProperty("Description");
+                            if (pd != null && pd.CanWrite) pd.SetValue(instance, c.Description);
+                        }
+                        catch { }
+                        try
+                        {
+                            var pc = found.GetProperty("Category");
+                            if (pc != null && pc.CanWrite) pc.SetValue(instance, c.Category);
+                        }
+                        catch { }
+
+                        // handle addons recursively
+                        try
+                        {
+                            foreach (var addonProto in c.Addons)
+                            {
+                                var child = CreateComponentFromProto(addonProto, parent);
+                                if (child != null) instance.AddChildAddon(child);
+                            }
+                        }
+                        catch { }
+
+                        return instance;
+                    }
+                }
+
+                // fallback to generic network component
+                return new V12.Headless.Network.NetworkComponent { Name = c.Name ?? string.Empty, Description = c.Description, Category = c.Category };
+            }
+            catch
+            {
+                return new V12.Headless.Network.NetworkComponent { Name = c.Name ?? string.Empty, Description = c.Description, Category = c.Category };
+            }
         }
     }
 }

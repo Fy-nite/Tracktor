@@ -67,31 +67,34 @@ public class Program
     }
     private static async Task RunClientAsync(string serverAddress, int port)
     {
-        Console.WriteLine($"[Client] Connecting to chat server at {serverAddress}:{port}");
-        using var client = new ChatClient(serverAddress, port);
+        Console.WriteLine($"[Client] Connecting to world server at {serverAddress}:{port}");
+        using var client = new WorldClient(serverAddress, port);
         using var shutdown = new CancellationTokenSource();
         Console.CancelKeyPress += (s, e) =>
         {
             e.Cancel = true;
             shutdown.Cancel();
         };
-        client.OnChatReceived += msg => Console.WriteLine($"[{msg.User}] {msg.Text}");
-        client.OnElementReceived += elem => Console.WriteLine($"[Element] {elem.Name} ({elem.Type}) lvl {elem.Level}");
-        await client.ConnectAsync();
-        Console.WriteLine("[Client] Connected. Type messages to send, or 'exit' to quit.");
-        var inputTask = Task.Run(async () =>
+
+        client.OnFullWorldReceived += world =>
         {
-            while (!shutdown.Token.IsCancellationRequested)
+            Console.WriteLine($"[Client] Full world received: {world.Name}");
+            try
             {
-                var line = Console.ReadLine();
-                if (line == null || line.ToLowerInvariant() == "exit")
-                {
-                    shutdown.Cancel();
-                    break;
-                }
-                await client.SendChatMessageAsync("User", line);
+                var json = world.Root != null ? Google.Protobuf.JsonFormatter.Default.Format(world) : "(no root)";
+                Console.WriteLine($"[Client] World JSON: {json}");
             }
-        });
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Client] JSON format failed: {ex.Message}");
+            }
+        };
+
+        client.OnElementProtoReceived += elem => Console.WriteLine($"[Client] Incremental element received: {elem.Name}");
+
+        await client.ConnectAsync();
+        await client.RequestWorldAsync();
+
         try
         {
             await Task.Delay(Timeout.Infinite, shutdown.Token);
@@ -100,33 +103,44 @@ public class Program
         {
             Console.WriteLine("[Client] Shutting down...");
         }
-        await inputTask;
     }
-    private static async Task RunServerAsync(int port)
-    {
-        Console.WriteLine($"[Server] Starting chat server on port {port} (Ctrl+C to exit)");
-
-        using var host = new ChatHost(port);
-        using var shutdown = new CancellationTokenSource();
-
-        Console.CancelKeyPress += (s, e) =>
+        private static async Task RunServerAsync(int port)
         {
-            e.Cancel = true;
-            shutdown.Cancel();
-        };
+            Console.WriteLine($"[Server] Starting chat server on port {port} (Ctrl+C to exit)");
 
-        host.OnChatReceived += msg => Console.WriteLine($"[{msg.User}] {msg.Text}");
-        host.OnElementReceived += elem => Console.WriteLine($"[Element] {elem.Name} ({elem.Type}) lvl {elem.Level}");
+            // Build a custom world to host instead of relying on WorldInit
+            // Use headless=true so no Godot engine types are constructed in this process
+            var hostWorld = new V12.V12World("HostedWorld", headless: true);
+            // create a small element tree
+            var root = hostWorld.RootElement;
+            root.Name = "root world"; // explicit name to match incoming observations
+            var childA = new V12.Types.Element("ChildA") { Description = "First child" };
+            var childB = new V12.Types.Element("ChildB") { Description = "Second child" };
+            var grand = new V12.Types.Element("GrandChild") { Description = "Nested child" };
+            childA.AddChild(grand);
+            root.AddChild(childA);
+            root.AddChild(childB);
 
-        host.Start();
+            using var host = new WorldServer(port, () => hostWorld);
+            using var shutdown = new CancellationTokenSource();
 
-        try
-        {
-            await Task.Delay(Timeout.Infinite, shutdown.Token);
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                shutdown.Cancel();
+            };
+
+            // WorldServer will serve the provided hostWorld. Chat events are not available on WorldServer.
+
+            Console.WriteLine("Hosted world built and server started. Press Ctrl+C to stop.");
+
+            try
+            {
+                await Task.Delay(Timeout.Infinite, shutdown.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                Console.WriteLine("[Server] Shutting down...");
+            }
         }
-        catch (TaskCanceledException)
-        {
-            Console.WriteLine("[Server] Shutting down...");
-        }
-    }
 }

@@ -3,7 +3,7 @@ using V12.Extensions;
 
 namespace V12.Components
 {
-	public class DesktopPlayer : NodeComponent
+	public partial class DesktopPlayer : NodeComponent
 	{
 		[InspectorExpose]
 		public Vector3 Position { get; set; }
@@ -12,7 +12,8 @@ namespace V12.Components
 
 		[InspectorExpose]
 		public Vector3 Scale { get; set; }
-		private Camera3D _camera;
+		public bool IsCameralocal { get; set; } = true; // set this to false to disable camera control for non -local players
+        private Camera3D _camera;
 		public Camera3D camera
 		{
 			get { return _camera; }
@@ -54,102 +55,115 @@ namespace V12.Components
 		}
 		public override void OnUpdate(double delta)
 		{
-			base.OnUpdate(delta);
-			if (body == null) return;
-
-			// Toggle mouse capture with Escape
-			if (isMouseLocked && Input.IsActionJustPressed("ui_cancel"))
+		if (IsCameralocal)
+		{
+			if (_camera != null)
 			{
-				Input.MouseMode = Input.MouseModeEnum.Visible;
-				isMouseLocked = false;
+				_camera.Current = true;
 			}
-			else if (!isMouseLocked && Input.IsActionJustPressed("ui_cancel"))
+			// only run if camera is local
+			// run input/control logic for local camera
+			// fall through to input handling below
+		}
+		if (IsCameralocal)
 			{
-				Input.MouseMode = Input.MouseModeEnum.Captured;
-				isMouseLocked = true;
-			}
+				base.OnUpdate(delta);
+				if (body == null) return;
 
-			// Mouse look (only if captured)
-			if (isMouseLocked)
-			{
-				var mouseDelta = body.MouseDelta;
-				body.ResetMouseDelta();
-				yaw -= mouseDelta.X * MouseSensitivity;
-				pitch -= mouseDelta.Y * MouseSensitivity;
-				pitch = Mathf.Clamp(pitch, -1.3f, 1.3f); // clamp pitch to avoid flipping
-			}
-
-			// Keyboard arrow keys for camera rotation (alternative to mouse)
-			float lookSpeed = 1.5f;
-			if (Input.IsKeyPressed(Key.Up)) pitch -= lookSpeed * (float)delta;
-			if (Input.IsKeyPressed(Key.Down)) pitch += lookSpeed * (float)delta;
-			if (Input.IsKeyPressed(Key.Left)) yaw -= lookSpeed * (float)delta;
-			if (Input.IsKeyPressed(Key.Right)) yaw += lookSpeed * (float)delta;
-
-			// Apply rotations
-			body.Rotation = new Vector3(0, yaw, 0);
-			_camera.Rotation = new Vector3(pitch, 0, 0);
-
-			// Movement input
-			Vector3 inputDir = Vector3.Zero;
-			var forward = -body.GlobalTransform.Basis.Z;
-			var right = body.GlobalTransform.Basis.X;
-			if (Input.IsKeyPressed(Key.W)) inputDir += forward;
-			if (Input.IsKeyPressed(Key.S)) inputDir -= forward;
-			if (Input.IsKeyPressed(Key.A)) inputDir -= right;
-			if (Input.IsKeyPressed(Key.D)) inputDir += right;
-
-			// Check if a gamepad is connected
-			if (Input.GetConnectedJoypads().Count > 0)
-			{
-				// Controller input
-				Vector2 leftStick = Input.GetVector("move_left", "move_right", "move_forward", "move_backward");
-				inputDir += -forward * leftStick.Y; // forward/back
-				inputDir += right * leftStick.X;  // left/right
-
-				// Controller right stick for camera rotation
-				Vector2 rightStick = Input.GetVector("turn_left", "turn_right", "look_up", "look_down");
-				yaw += rightStick.X * lookSpeed * (float)delta;
-				pitch -= rightStick.Y * lookSpeed * (float)delta;
-				pitch = Mathf.Clamp(pitch, -1.3f, 1.3f);
-			}
-
-			// Normalize input direction
-			if (inputDir != Vector3.Zero)
-			{
-				inputDir = inputDir.Normalized();
-			}
-
-			// Physics: apply gravity
-			if (!body.IsOnFloor())
-			{
-				velocity.Y += gravity * (float)delta;
-			}
-			else
-			{
-				velocity.Y = 0; // reset vertical velocity on floor
-				bool isSpacePressed = Input.IsKeyPressed(Key.Space);
-				if (isSpacePressed && !wasSpacePressed)
+				// Toggle mouse capture with Escape
+				if (isMouseLocked && Input.IsActionJustPressed("ui_cancel"))
 				{
-					velocity.Y = jumpSpeed;
+					Input.MouseMode = Input.MouseModeEnum.Visible;
+					isMouseLocked = false;
 				}
-				wasSpacePressed = isSpacePressed;
+				else if (!isMouseLocked && Input.IsActionJustPressed("ui_cancel"))
+				{
+					Input.MouseMode = Input.MouseModeEnum.Captured;
+					isMouseLocked = true;
+				}
+
+				// Mouse look (only if captured)
+				if (isMouseLocked)
+				{
+					var mouseDelta = body.MouseDelta;
+					body.ResetMouseDelta();
+					yaw -= mouseDelta.X * MouseSensitivity;
+					pitch -= mouseDelta.Y * MouseSensitivity;
+					pitch = Mathf.Clamp(pitch, -1.3f, 1.3f); // clamp pitch to avoid flipping
+				}
+
+				// Keyboard arrow keys for camera rotation (alternative to mouse)
+				float lookSpeed = 1.5f;
+				if (Input.IsKeyPressed(Key.Up)) pitch -= lookSpeed * (float)delta;
+				if (Input.IsKeyPressed(Key.Down)) pitch += lookSpeed * (float)delta;
+				if (Input.IsKeyPressed(Key.Left)) yaw -= lookSpeed * (float)delta;
+				if (Input.IsKeyPressed(Key.Right)) yaw += lookSpeed * (float)delta;
+
+				// Apply rotations
+				body.Rotation = new Vector3(0, yaw, 0);
+				_camera.Rotation = new Vector3(pitch, 0, 0);
+
+				// Movement input
+				Vector3 inputDir = Vector3.Zero;
+				var forward = -body.GlobalTransform.Basis.Z;
+				var right = body.GlobalTransform.Basis.X;
+				if (Input.IsKeyPressed(Key.W)) inputDir += forward;
+				if (Input.IsKeyPressed(Key.S)) inputDir -= forward;
+				if (Input.IsKeyPressed(Key.A)) inputDir -= right;
+				if (Input.IsKeyPressed(Key.D)) inputDir += right;
+
+				// Check if a gamepad is connected
+				if (Input.GetConnectedJoypads().Count > 0)
+				{
+					// Controller input
+					Vector2 leftStick = Input.GetVector("move_left", "move_right", "move_forward", "move_backward");
+					inputDir += -forward * leftStick.Y; // forward/back
+					inputDir += right * leftStick.X;  // left/right
+
+					// Controller right stick for camera rotation
+					Vector2 rightStick = Input.GetVector("turn_left", "turn_right", "look_up", "look_down");
+					yaw += rightStick.X * lookSpeed * (float)delta;
+					pitch -= rightStick.Y * lookSpeed * (float)delta;
+					pitch = Mathf.Clamp(pitch, -1.3f, 1.3f);
+				}
+
+				// Normalize input direction
+				if (inputDir != Vector3.Zero)
+				{
+					inputDir = inputDir.Normalized();
+				}
+
+				// Physics: apply gravity
+				if (!body.IsOnFloor())
+				{
+					velocity.Y += gravity * (float)delta;
+				}
+				else
+				{
+					velocity.Y = 0; // reset vertical velocity on floor
+					bool isSpacePressed = Input.IsKeyPressed(Key.Space);
+					if (isSpacePressed && !wasSpacePressed)
+					{
+						velocity.Y = jumpSpeed;
+					}
+					wasSpacePressed = isSpacePressed;
+				}
+
+				// Horizontal velocity
+				velocity.X = inputDir.X * MoveSpeed;
+				velocity.Z = inputDir.Z * MoveSpeed;
+
+				// Move using CharacterBody3D physics
+				body.Velocity = velocity;
+				body.MoveAndSlide();
+				// Update velocity after MoveAndSlide
+				velocity = body.Velocity;
 			}
-
-			// Horizontal velocity
-			velocity.X = inputDir.X * MoveSpeed;
-			velocity.Z = inputDir.Z * MoveSpeed;
-
-			// Move using CharacterBody3D physics
-			body.Velocity = velocity;
-			body.MoveAndSlide();
-			// Update velocity after MoveAndSlide
-			velocity = body.Velocity;
 		}
 		public override void OnAttach()
 		{
 
-			if (sceneElement == null)
+			if (sceneElement == null && IsCameralocal)
 			{
 				// create a simple player body with a camera and collision shape
 				var b = new DesktopPlayerBody()
@@ -177,7 +191,7 @@ namespace V12.Components
 			body = sceneElement as DesktopPlayerBody;
 
 			// Capture mouse for look
-			Input.MouseMode = Input.MouseModeEnum.Visible;
+			Input.MouseMode = Input.MouseModeEnum.Captured;
 			isMouseLocked = true;
 		}
 

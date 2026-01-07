@@ -7,35 +7,47 @@ namespace V12
     public class V12World
     {
         public string Name { get; set; }
-        public World3D World3D { get; private set; }
-        public Node3D Viewport { get; private set; }
+        public World3D? World3D { get; private set; }
+        public Node3D? Viewport { get; private set; }
         public Element RootElement { get; private set; }
-        public SceneGenerator sceneGenerator { get; private set; }
+        public SceneGenerator? sceneGenerator { get; private set; }
         public List<Action> LoopCallbacks { get; set; } = new();
         public bool IsLocalOnly { get; set; } = false; // For worlds like UserSpace that aren't synced
         public bool CanBeLeft { get; set; } = true; // Whether the world can be switched away from
         public bool CanBeClosed { get; set; } = true; // Whether the world can be deleted/disposed
         public bool IsActive { get; private set; } = false;
 
-        public V12World(string name)
+        // If headless is true, avoid creating Godot engine objects (World3D/Node3D) so this class can be used
+        // in non-Godot host processes (unit tests, headless servers).
+        public V12World(string name, bool headless = false)
         {
             Name = name;
-            World3D = new World3D();
-            Viewport = new Node3D();
             RootElement = new Element { Name = "Root" };
-            sceneGenerator = new SceneGenerator(RootElement, Viewport);
+
+            if (!headless)
+            {
+                World3D = new World3D();
+                Viewport = new Node3D();
+                sceneGenerator = new SceneGenerator(RootElement, Viewport);
+            }
+            else
+            {
+                World3D = null;
+                Viewport = null;
+                sceneGenerator = null;
+            }
         }
 
         public void Activate(Node? parent = null)
         {
             if (IsActive) return;
-            if (parent != null && Viewport.GetParent() != parent)
+            if (Viewport != null && parent != null && Viewport.GetParent() != parent)
             {
                 parent.AddChild(Viewport);
             }
             // Register as current world
             WorldManager.SetCurrent(this);
-            sceneGenerator.RegenerateTree();
+            sceneGenerator?.RegenerateTree();
             // Make node visible and enable processing so the world becomes active
             InternalSetVisible(true);
             InternalSetProcessing(true);
@@ -82,24 +94,28 @@ namespace V12
         {
             try
             {
-                Viewport.Visible = visible;
+                if (Viewport != null) Viewport.Visible = visible;
             }
             catch
             {
                 // If Viewport doesn't expose Visible directly, fall back to calling Show/Hide on Controls
-                if (visible)
+                if (Viewport != null)
                 {
-                    (Viewport as Node)?.CallDeferred("show");
-                }
-                else
-                {
-                    (Viewport as Node)?.CallDeferred("hide");
+                    if (visible)
+                    {
+                        (Viewport as Node)?.CallDeferred("show");
+                    }
+                    else
+                    {
+                        (Viewport as Node)?.CallDeferred("hide");
+                    }
                 }
             }
         }
 
         public void InternalSetProcessing(bool processing)
         {
+            if (Viewport == null) return;
             Viewport.SetProcess(processing);
             Viewport.SetPhysicsProcess(processing);
             Viewport.SetProcessUnhandledInput(processing);
