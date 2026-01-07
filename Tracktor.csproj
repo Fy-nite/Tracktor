@@ -1,25 +1,7 @@
 <Project Sdk="Godot.NET.Sdk/4.5.1">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net10.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="V12\**" />
-    <EmbeddedResource Remove="V12\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="V12/V12.csproj" />
-	<PackageReference Include="System.CommandLine" Version="2.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="android\" />
-    <Folder Include="Scenes\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include=".gitignore" />
-    <None Include="Readme.md" />
-    <None Include="XRInteraction.md" />
-  </ItemGroup>
-  <!-- lets hope we dont loose this Project again.... -->
 </Project>
