@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://4l8cvbldfvuw"]
+[gd_scene format=3 uid="uid://4l8cvbldfvuw"]
 
 [ext_resource type="Script" uid="uid://bspdfeh7bgpw8" path="res://CSharp/V12WorldToolLoader.cs" id="1_bxsma"]
 [ext_resource type="Script" uid="uid://c6rc3t6i2t4dd" path="res://CSharp/EngineInit.cs" id="1_xj5yv"]
@@ -16,11 +16,11 @@ sky = SubResource("Sky_lkrbl")
 adjustment_enabled = true
 adjustment_saturation = 2.61
 
-[node name="GameRoot" type="Node3D"]
+[node name="GameRoot" type="Node3D" unique_id=1731309968]
 script = ExtResource("1_bxsma")
 
-[node name="WorldRoot" type="Node3D" parent="."]
+[node name="WorldRoot" type="Node3D" parent="." unique_id=366108909]
 script = ExtResource("1_xj5yv")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=35546455]
 environment = SubResource("Environment_xj5yv")
