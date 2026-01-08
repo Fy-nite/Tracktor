@@ -139,6 +139,12 @@ namespace V12.Headless
                 lock (_sync)
                 {
                     _clients.Add(result.RemoteEndPoint);
+                    // update metrics for connected players (best-effort)
+                    try
+                    {
+                        V12.Headless.Data.MetricsClient.SetConnectedPlayers(_clients.Count);
+                    }
+                    catch { }
                 }
 
                 if (!_registrations.TryGetValue(messageName, out var registration))
@@ -204,6 +210,29 @@ namespace V12.Headless
         {
             _cts.Cancel();
             _udp.Dispose();
+        }
+
+        // Expose connected clients for management UI
+        public int GetConnectedClientCount()
+        {
+            lock (_sync)
+            {
+                return _clients.Count;
+            }
+        }
+
+        public string[] GetConnectedClientEndpoints()
+        {
+            lock (_sync)
+            {
+                var arr = new string[_clients.Count];
+                int i = 0;
+                foreach (var ep in _clients)
+                {
+                    arr[i++] = ep.ToString();
+                }
+                return arr;
+            }
         }
     }
 }
