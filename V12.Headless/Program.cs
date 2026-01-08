@@ -5,6 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using V12.Headless;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 
 internal static class Program
 {
@@ -27,8 +32,34 @@ internal static class Program
         headless.Start();
         Console.WriteLine($"Headless UDP server listening on port {udpPort}");
 
-        // Start a simple HTTP management server using HttpListener to avoid bringing ASP.NET packages into the headless app
-        var webTask = HeadlessMiddleWare.SimpleHttpServer.StartAsync(httpPort, udpPort, cts.Token);
+        // Start an ASP.NET Core management server
+        var builder = WebApplication.CreateBuilder(args);
+        // Listen on the configured port
+        builder.WebHost.ConfigureKestrel(options => options.ListenAnyIP(httpPort));
+        builder.Services.ConfigureOpenTelemetryTracerProvider(telemetry =>
+        {
+            telemetry.AddAspNetCoreInstrumentation();
+            telemetry.AddHttpClientInstrumentation();
+            telemetry.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault());
+            telemetry.AddHttpClientInstrumentation();
+        });
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddPrometheusExporter();
+            });
+
+        var app = builder.Build();
+
+        app.MapGet("/", () => new { status = "ok", udpPort });
+        app.MapGet("/health", () => "healthy");
+        app.UseOpenTelemetryPrometheusScrapingEndpoint();
+        app.MapPost("/shutdown", () => { cts.Cancel(); return new { shuttingDown = true }; });
+
+        var webTask = app.RunAsync();
         Console.WriteLine($"HTTP management server listening on port {httpPort}");
 
         Console.CancelKeyPress += (_, e) =>

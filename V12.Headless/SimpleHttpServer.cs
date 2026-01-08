@@ -68,6 +68,17 @@ namespace HeadlessMiddleWare
                     res.ContentLength64 = data.Length;
                     res.OutputStream.Write(data, 0, data.Length);
                 }
+                // prometheus metrics endpoint
+                else if (req.HttpMethod == "GET" && req.Url.AbsolutePath == "/metrics")
+                {
+                    var body = "# HELP headless_udp_port UDP port the headless server is listening on\n" +
+                               "# TYPE headless_udp_port gauge\n" +
+                               $"headless_udp_port {udpPort}\n";
+                    var data = Encoding.UTF8.GetBytes(body);
+                    res.ContentType = "text/plain; version=0.0.4";
+                    res.ContentLength64 = data.Length;
+                    res.OutputStream.Write(data, 0, data.Length);
+                }
                 else
                 {
                     res.StatusCode = 404;

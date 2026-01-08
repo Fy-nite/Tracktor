@@ -28,6 +28,7 @@ XRToolsRumbleManager="*uid://by853dk86g1qw"
 [dotnet]
 
 project/assembly_name="Tracktor"
+project/solution_directory="Tracktor.Game"
 
 [editor]
 

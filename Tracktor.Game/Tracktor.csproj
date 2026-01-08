@@ -15,7 +15,7 @@
     <PackageReference Include="Pyroscope" Version="0.13.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="V12\V12.Core.csproj" />
-    <ProjectReference Include="V12.Bindings\V12.Bindings.csproj" />
+    <ProjectReference Include="../V12\V12.Core.csproj" />
+    <ProjectReference Include="../V12.Bindings\V12.Bindings.csproj" />
   </ItemGroup>
 </Project>
