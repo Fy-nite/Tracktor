@@ -9,6 +9,7 @@ public class SceneGenerator
     public Node3D sceneRoot { get; private set; }
     public IWorldElement rootElement { get; private set; }
     const bool DEBUGMODE = true;
+    private Dictionary<IComponent,bool> isAwake = new(); // dict use so we dont call on awake twice on the same component 
     public SceneGenerator(IWorldElement rootElement, Node3D sceneRoot)
     {
         this.sceneRoot = sceneRoot;
@@ -42,17 +43,6 @@ public class SceneGenerator
             GenerateElement(elem);
         }
     }
-
-    // trigger full regeneration for a world root and ensure previous scene nodes are removed
-    public void RegenerateFull()
-    {
-        // clear existing children of sceneRoot
-        foreach (var child in sceneRoot.GetChildren())
-        {
-            if (child is Node c) c.QueueFree();
-        }
-        RegenerateTree(rootElement, sceneRoot);
-    }
     public void AwakeComponents(IWorldElement root)
     {
         foreach (var elem in root.ChildElements)
@@ -63,7 +53,10 @@ public class SceneGenerator
         foreach (var comp in root.Components)
         {
             comp.attachedElement = root;
-            comp.OnAwake();
+            if (!isAwake.ContainsKey(comp) || !isAwake[comp]) {
+                comp.OnAwake(); 
+                isAwake[comp] = true;
+            }
         }
     }
     public List<IWorldElement> FlattenTree(IWorldElement root)

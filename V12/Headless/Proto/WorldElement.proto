@@ -1,4 +1,5 @@
 ﻿syntax = "proto3";
+import "google/protobuf/any.proto";
 package v12.headless;
 
 option csharp_namespace = "V12.Headless";
@@ -18,8 +19,9 @@ message ComponentProto {
   string category = 3;
   // Allow nested addons for component trees
   repeated ComponentProto addons = 4;
+  map<string, bytes> properties = 5;
   // unique id for the component (optional)
-  string id = 5;
+  string id = 6;
 }
 
 // Recursive element representation. Matches fields from V12.Types.Element

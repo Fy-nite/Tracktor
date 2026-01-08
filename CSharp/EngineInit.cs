@@ -18,8 +18,8 @@ public partial class EngineInit : Node3D
 	public V12Engine engine;
 	XRInteractionHandler xrHandler = new XRInteractionHandler();
 	public int currentWorldIndex = 0;
-    // optional network client for requesting world from server
-    V12.Headless.WorldClient? networkClient;
+	// optional network client for requesting world from server
+	V12.Headless.WorldClient? networkClient;
 	V12.Headless.WorldServer? localServer;
 	// track worlds added by the network so we can remove them on disconnect
 	List<V12World> networkWorlds = new();
@@ -43,19 +43,19 @@ public partial class EngineInit : Node3D
 		}
 	}
 
-    // Thread-safe queue for actions that must run on the main thread
-    private readonly Queue<Action> _mainThreadActions = new();
-    private readonly object _mainThreadLock = new();
+	// Thread-safe queue for actions that must run on the main thread
+	private readonly Queue<Action> _mainThreadActions = new();
+	private readonly object _mainThreadLock = new();
 
-    // Enqueue an action from background threads to be executed on the main thread
-    public void RunOnMainThread(Action action)
-    {
-        if (action == null) return;
-        lock (_mainThreadLock)
-        {
-            _mainThreadActions.Enqueue(action);
-        }
-    }
+	// Enqueue an action from background threads to be executed on the main thread
+	public void RunOnMainThread(Action action)
+	{
+		if (action == null) return;
+		lock (_mainThreadLock)
+		{
+			_mainThreadActions.Enqueue(action);
+		}
+	}
 
 
 	public override void _Ready()
@@ -100,7 +100,7 @@ public partial class EngineInit : Node3D
 		world.CanBeLeft = true;
 		world.CanBeClosed = false;
 
-        foreach (var w in engine.Worlds)
+		foreach (var w in engine.Worlds)
 		{
 			GD.Print("World added: " + w.Name);
 		}
@@ -142,7 +142,7 @@ public partial class EngineInit : Node3D
 				var hostWorld = V12.World.Hub.CreateHubWorld("HostWorld", headless: true);
 
 
-                try
+				try
 				{
 					localServer = new V12.Headless.WorldServer(port, () => hostWorld);
 					GD.Print($"[EngineInit] Started local WorldServer on port {port}");
@@ -163,8 +163,8 @@ public partial class EngineInit : Node3D
 				int portIdx = lower.IndexOf("--port");
 				if (portIdx != -1 && portIdx + 1 < args.Length && int.TryParse(args[portIdx + 1], out var p)) port = p;
 
-                networkClient = new V12.Headless.WorldClient(serverAddress, port);
-                networkClient.OnFullWorldReceived += (full) =>
+				networkClient = new V12.Headless.WorldClient(serverAddress, port);
+				networkClient.OnFullWorldReceived += (full) =>
 				{
 					GD.Print($"[Network] Received full world '{full.Name}'");
 					// build a V12World from proto
@@ -205,7 +205,7 @@ public partial class EngineInit : Node3D
                         var sg = remote.sceneGenerator;
                         if (sg != null)
                         {
-                            sg.RegenerateFull();
+                            sg.RegenerateTree();
                         }
                     });
 
@@ -476,7 +476,7 @@ public partial class EngineInit : Node3D
 				currentWorldIndex = engine.Worlds.Count - 1;
 				UpdateNetworkUIConnected(true);
 					var sg = remote.sceneGenerator;
-					if (sg != null) sg.RegenerateFull();
+					if (sg != null) sg.RegenerateTree();
 				});
 			}
 			catch (Exception ex)

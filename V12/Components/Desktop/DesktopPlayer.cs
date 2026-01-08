@@ -13,7 +13,7 @@ namespace V12.Components
 		[InspectorExpose]
 		public Vector3 Scale { get; set; }
 		public bool IsCameralocal { get; set; } = true; // set this to false to disable camera control for non -local players
-        private Camera3D _camera;
+		private Camera3D _camera;
 		public Camera3D camera
 		{
 			get { return _camera; }
@@ -155,6 +155,8 @@ namespace V12.Components
 
 				// Move using CharacterBody3D physics
 				body.Velocity = velocity;
+				// GD.Print(sceneElement.GetPath());
+				// GD.Print(sceneElement.Scale);
 				body.MoveAndSlide();
 				// Update velocity after MoveAndSlide
 				velocity = body.Velocity;

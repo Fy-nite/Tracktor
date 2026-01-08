@@ -4,6 +4,8 @@ using V12.Headless;
 using Google.Protobuf;
 using V12.Types;
 using System;
+using System.Runtime.Serialization.Formatters.Binary;
+using Godot;
 
 namespace V12.Types.Models
 {
@@ -76,11 +78,47 @@ namespace V12.Types.Models
             if (comp == null) return new ComponentProto();
             var dto = new ComponentProto
             {
-                Name = comp.Name ?? string.Empty,
+                //Name = comp.Name ?? string.Empty,
+                Name = comp.GetType().Name,
                 Description = comp.Description ?? string.Empty,
                 Category = comp.Category ?? string.Empty
             };
             foreach (var addon in comp.Addons ?? new()) dto.Addons.Add(addon.ToFullProto());
+            Type type = comp.GetType();
+
+            foreach (var f in type.GetFields().Where(f => f.IsPublic))
+            {
+                var value = f.GetValue(comp);
+                ByteString? result = null;
+                byte[]? bytes = null;
+                if (value is string s)
+                {
+                    result = ByteString.CopyFromUtf8(s);
+                }
+                else if (value is bool b) bytes = BitConverter.GetBytes(b);
+                else if (value is char c) bytes = BitConverter.GetBytes(c);
+                else if (value is double d) bytes = BitConverter.GetBytes(d);
+                else if (value is Half h) bytes = BitConverter.GetBytes(h);
+                else if (value is short st) bytes = BitConverter.GetBytes(st);
+                else if (value is int i) bytes = BitConverter.GetBytes(i);
+                else if (value is long l) bytes = BitConverter.GetBytes(l);
+                else if (value is float fl) bytes = BitConverter.GetBytes(fl);
+                else if (value is ushort u) bytes = BitConverter.GetBytes(u);
+                else if (value is uint ui) bytes = BitConverter.GetBytes(ui);
+                else if (value is ulong ul) bytes = BitConverter.GetBytes(ul);
+                if (bytes != null) {
+                    if (BitConverter.IsLittleEndian)
+                        Array.Reverse(bytes);
+                    result = ByteString.CopyFrom(bytes);
+                }
+                if (result == null)
+                {
+                    GD.Print($"unknown type for {f.Name}, skipping");
+                } else
+                {
+                    dto.Properties[f.Name] = result;
+                }
+            }
             return dto;
         }
 
@@ -100,7 +138,7 @@ namespace V12.Types.Models
         // Proto -> Engine mapping
         public static V12.Types.DoubleVector3 ToDoubleVector(this Vector4D v)
         {
-            if (v == null) return new V12.Types.DoubleVector3(0,0,0,0);
+            if (v == null) return new V12.Types.DoubleVector3(0, 0, 0, 0);
             return new V12.Types.DoubleVector3(v.X, v.Y, v.Z, v.W);
         }
 
@@ -111,9 +149,9 @@ namespace V12.Types.Models
                 Description = dto.Description,
                 Type = dto.Type,
                 Level = dto.Level,
-                Position = dto.Position != null ? dto.Position.ToDoubleVector() : new V12.Types.DoubleVector3(0,0,0,0),
-                Rotation = dto.Rotation != null ? dto.Rotation.ToDoubleVector() : new V12.Types.DoubleVector3(0,0,0,0),
-                Scale = dto.Scale != null ? dto.Scale.ToDoubleVector() : new V12.Types.DoubleVector3(1,1,1,0)
+                Position = dto.Position != null ? dto.Position.ToDoubleVector() : new V12.Types.DoubleVector3(0, 0, 0, 0),
+                Rotation = dto.Rotation != null ? dto.Rotation.ToDoubleVector() : new V12.Types.DoubleVector3(0, 0, 0, 0),
+                Scale = dto.Scale != null ? dto.Scale.ToDoubleVector() : new V12.Types.DoubleVector3(1, 1, 1, 0)
             };
 
             // apply id

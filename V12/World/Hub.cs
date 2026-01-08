@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Godot;
 
 namespace V12.World
 {
@@ -37,7 +38,7 @@ namespace V12.World
 
             // Spawn / Desktop player element (local players will instantiate their own player)
             var spawn = new V12.Types.Element("SpawnPoint") { Description = "Default spawn point for visitors" };
-            spawn.AddComponent(new V12.Components.DesktopPlayer { Position = new Godot.Vector3(0, 2, 0), Rotation = Godot.Vector3.Zero, Scale = new Godot.Vector3(1, 1, 1), MoveSpeed = 4.0f });
+            //spawn.AddComponent(new V12.Components.DesktopPlayer { Position = new Godot.Vector3(0, 2, 0), Rotation = Godot.Vector3.Zero, Scale = new Godot.Vector3(1, 1, 1), MoveSpeed = 4.0f });
 
             // In-world inspector so users can inspect hub elements
             var inspectorEl = new V12.Types.Element("Hub Inspector") { Description = "Inspect hub elements" };
@@ -54,6 +55,47 @@ namespace V12.World
             root.AddChild(spawn);
             root.AddChild(inspectorEl);
             root.AddChild(info);
+            root.AddChild(new Types.Element
+                    {
+                        Name = "EventTesting",
+                        Components = new List<Interfaces.IComponent>
+                        {
+                            new Components.Test.BlinkBox
+                            {
+                                Position = new Vector3(1, 1, 1),
+                                Rotation = new Vector3(0, 0, 0),
+                                Scale = new Vector3(1, 1, 1)
+                            }
+                        },
+                        ChildElements = new List<Interfaces.IWorldElement>
+                        {
+                            new Types.Element
+                            {
+                                Name = "test",
+                                ChildElements = new List<Interfaces.IWorldElement>
+                                {
+                                    new Types.Element
+                                    {
+                                        Name = "test2",
+                                        Components = new List<Interfaces.IComponent>
+                                        {
+                                            new Components.Test.BlinkBox
+                                            {
+                                                Position = new Vector3(1, 2.1f, 1),
+                                                Rotation = new Vector3(0, 0, 0),
+                                                Scale = new Vector3(1, 1, 1)
+                                            },
+                                            new Components.Test.EventSender
+                                            {
+                                                Event = "TestEvent",
+                                                Interval = 1
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
 
             // World flags
             world.IsLocalOnly = false;
