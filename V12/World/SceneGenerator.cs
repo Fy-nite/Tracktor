@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Godot;
 using V12.Components;
+using V12.Bindings;
 using V12.Interfaces;
 using V12.Types;
 

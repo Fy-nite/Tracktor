@@ -5,9 +5,13 @@ VisualStudioVersion = 18.3.11312.210
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tracktor", "Tracktor.csproj", "{4853C75B-1D75-4FC4-9D12-F1A69B3EE472}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "V12", "V12\V12.csproj", "{C04C6E4C-4518-1061-45A7-B2144718CF84}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "V12.Core", "V12\V12.Core.csproj", "{C04C6E4C-4518-1061-45A7-B2144718CF84}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "V12.Tests", "V12.Tests\V12.Tests.csproj", "{FF918D11-382D-48BA-94EF-C184C5E05833}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "V12.Headless", "HeadlessMiddleWare\V12.Headless.csproj", "{A23F51DA-F802-4705-A351-50BB9B826883}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "V12.Bindings", "V12.Bindings\V12.Bindings.csproj", "{62892C26-F4EB-4C96-A30B-719E6A96D23E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +38,18 @@ Global
 		{FF918D11-382D-48BA-94EF-C184C5E05833}.ExportDebug|Any CPU.Build.0 = Release|Any CPU
 		{FF918D11-382D-48BA-94EF-C184C5E05833}.ExportRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{FF918D11-382D-48BA-94EF-C184C5E05833}.ExportRelease|Any CPU.Build.0 = Release|Any CPU
+		{A23F51DA-F802-4705-A351-50BB9B826883}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A23F51DA-F802-4705-A351-50BB9B826883}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A23F51DA-F802-4705-A351-50BB9B826883}.ExportDebug|Any CPU.ActiveCfg = Release|Any CPU
+		{A23F51DA-F802-4705-A351-50BB9B826883}.ExportDebug|Any CPU.Build.0 = Release|Any CPU
+		{A23F51DA-F802-4705-A351-50BB9B826883}.ExportRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{A23F51DA-F802-4705-A351-50BB9B826883}.ExportRelease|Any CPU.Build.0 = Release|Any CPU
+		{62892C26-F4EB-4C96-A30B-719E6A96D23E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62892C26-F4EB-4C96-A30B-719E6A96D23E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62892C26-F4EB-4C96-A30B-719E6A96D23E}.ExportDebug|Any CPU.ActiveCfg = Release|Any CPU
+		{62892C26-F4EB-4C96-A30B-719E6A96D23E}.ExportDebug|Any CPU.Build.0 = Release|Any CPU
+		{62892C26-F4EB-4C96-A30B-719E6A96D23E}.ExportRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{62892C26-F4EB-4C96-A30B-719E6A96D23E}.ExportRelease|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

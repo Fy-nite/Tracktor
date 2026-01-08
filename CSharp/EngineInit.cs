@@ -1,8 +1,10 @@
+#if GODOT
 using Godot;
 using System.Collections.Generic;
 using System.Linq;
 using Tracktor.CSharp;
 using V12;
+using V12.Bindings;
 using V12.Components.VR;
 using V12.Extensions;
 using V12.Interfaces;
@@ -12,98 +14,158 @@ using V12.Headless.Messages;
 using System.Threading.Tasks;
 using V12.Types.Models;
 using System;
+using Pyroscope;
+using System.Threading;
 
 public partial class EngineInit : Node3D
 {
-	public V12Engine engine;
-	XRInteractionHandler xrHandler = new XRInteractionHandler();
-	public int currentWorldIndex = 0;
-	// optional network client for requesting world from server
-	V12.Headless.WorldClient? networkClient;
-	V12.Headless.WorldServer? localServer;
-	// track worlds added by the network so we can remove them on disconnect
-	List<V12World> networkWorlds = new();
+    public V12Engine engine;
+    XRInteractionHandler xrHandler = new XRInteractionHandler();
+    public int currentWorldIndex = 0;
+    // optional network client for requesting world from server
+    V12.Headless.WorldClient? networkClient;
+    V12.Headless.WorldServer? localServer;
+    // track worlds added by the network so we can remove them on disconnect
+    List<V12World> networkWorlds = new();
 
-	// simple runtime UI
-	CanvasLayer? uiLayer;
-	Label? statusLabel;
-	Button? connectButton;
-	Button? disconnectButton;
+    // simple runtime UI
+    CanvasLayer? uiLayer;
+    Label? statusLabel;
+    Button? connectButton;
+    Button? disconnectButton;
 
-	// Called when the node enters the scene tree for the first time.
-	public void RecursePrint(Node node)
-	{
-		GD.Print(node.Name);
-		foreach (var child in node.GetChildren())
-		{
-			if (child is Node childNode)
-			{
-				RecursePrint(childNode);
-			}
-		}
-	}
+    // Called when the node enters the scene tree for the first time.
+    public void RecursePrint(Node node)
+    {
+        GD.Print(node.Name);
+        foreach (var child in node.GetChildren())
+        {
+            if (child is Node childNode)
+            {
+                RecursePrint(childNode);
+            }
+        }
+    }
 
-	// Thread-safe queue for actions that must run on the main thread
-	private readonly Queue<Action> _mainThreadActions = new();
-	private readonly object _mainThreadLock = new();
+    // Thread-safe queue for actions that must run on the main thread
+    private readonly Queue<Action> _mainThreadActions = new();
+    private readonly object _mainThreadLock = new();
 
-	// Enqueue an action from background threads to be executed on the main thread
-	public void RunOnMainThread(Action action)
-	{
-		if (action == null) return;
-		lock (_mainThreadLock)
-		{
-			_mainThreadActions.Enqueue(action);
-		}
-	}
+    // Enqueue an action from background threads to be executed on the main thread
+    public void RunOnMainThread(Action action)
+    {
+        if (action == null) return;
+        lock (_mainThreadLock)
+        {
+            _mainThreadActions.Enqueue(action);
+        }
+    }
 
 
-	public override void _Ready()
-	{
-
+    public override void _Ready()
+    {
         GD.Print("Engine Init");
-		AddToGroup("engine_init");
-		AddChild(V12.Components.VR.VRPlayer.Generate()); // Add VRPlayer to the scene, and make sure the player can be used all worlds (AT THE ROOT!)
+        // register Godot engine bridge so V12 code can call into Godot
+        EngineBridgeProvider.Instance = new GodotEngineBridge(this);
+        AddToGroup("engine_init");
+        AddChild(V12.Components.VR.VRPlayer.Generate()); // Add VRPlayer to the scene, and make sure the player can be used all worlds (AT THE ROOT!)
+        engine = new V12Engine();
 
-		engine = new V12Engine();
+        var world = new V12World("LocalWorld");
+        new WorldInit().InitializeLocalHome(world);
+        var userWorld = new V12World("UserSpace");
 
-		var world = new V12World("LocalWorld");
-		new WorldInit().InitializeLocalHome(world);
-		var userWorld = new V12World("UserSpace");
+        // Add worlds through the engine (activation decides parenting/visibility)
+        engine.AddWorld(world);
+        engine.AddWorld(userWorld);
+        // are we on android without VR support?
+        // let's hope we get eventual Android Support.
+        if (OS.GetName() == "Android")
+        {
+            var AndroidPlayer = new V12.Components.Android.AndroidPlayer().GenerateAndroidPlayer();
+            AddChild(AndroidPlayer); // Add AndroidPlayer to the scene, and make sure the player can be used all worlds
+        }
+        else
+        {
+            //var VRPlayer = new V12.Components.VRControllerHandler.VRPlayer();
+            //AddChild(VRPlayer); // Add VRPlayer to the scene, and make sure the player can be used all worlds
+            //vrInteractionController = new(VRPlayer);
 
-		// Add worlds through the engine (activation decides parenting/visibility)
-		engine.AddWorld(world);
-		engine.AddWorld(userWorld);
-		// are we on android without VR support?
-		// let's hope we get eventual Android Support.
-		if (OS.GetName() == "Android")
-		{
-			var AndroidPlayer = new V12.Components.Android.AndroidPlayer().GenerateAndroidPlayer();
-			AddChild(AndroidPlayer); // Add AndroidPlayer to the scene, and make sure the player can be used all worlds
-		}
-		else
-		{
-			//var VRPlayer = new V12.Components.VRControllerHandler.VRPlayer();
-			//AddChild(VRPlayer); // Add VRPlayer to the scene, and make sure the player can be used all worlds
-			//vrInteractionController = new(VRPlayer);
+        }
+        // Activate the main world so it's visible, and also activate the local UserSpace so it remains visible
+        engine.ActivateWorld(0, this);
+        userWorld.Activate(this);
 
-		}
-		// Activate the main world so it's visible, and also activate the local UserSpace so it remains visible
-		engine.ActivateWorld(0, this);
-		userWorld.Activate(this);
+        userWorld.IsLocalOnly = true;
+        userWorld.CanBeLeft = true;
+        userWorld.CanBeClosed = false;
+        userWorld.RootElement.AddChild(V12.World.Userspace.Generate());
+        world.IsLocalOnly = true;
+        world.CanBeLeft = true;
+        world.CanBeClosed = false;
 
-		userWorld.IsLocalOnly = true;
-		userWorld.CanBeLeft = true;
-		userWorld.CanBeClosed = false;
-		userWorld.RootElement.AddChild(V12.World.Userspace.Generate());
-		world.IsLocalOnly = true;
-		world.CanBeLeft = true;
-		world.CanBeClosed = false;
+        foreach (var w in engine.Worlds)
+        {
+            GD.Print("World added: " + w.Name);
+        }
+#else
+using System;
+using System.Collections.Generic;
+using V12;
+using V12.Bindings;
 
-		foreach (var w in engine.Worlds)
-		{
-			GD.Print("World added: " + w.Name);
-		}
+// Minimal headless-friendly EngineInit: no Godot dependencies.
+public partial class EngineInit
+{
+    public V12Engine engine;
+    public int currentWorldIndex = 0;
+    List<V12World> networkWorlds = new();
+
+    // Thread-safe queue for actions that must run on the main thread
+    private readonly Queue<Action> _mainThreadActions = new();
+    private readonly object _mainThreadLock = new();
+
+    public EngineInit()
+    {
+        // register a null bridge for headless execution
+        EngineBridgeProvider.Instance = new NullEngineBridge();
+        engine = new V12Engine();
+
+        var world = new V12World("LocalWorld");
+        new WorldInit().InitializeLocalHome(world);
+        var userWorld = new V12World("UserSpace");
+        engine.AddWorld(world);
+        engine.AddWorld(userWorld);
+
+        userWorld.IsLocalOnly = true;
+        userWorld.CanBeLeft = true;
+        userWorld.CanBeClosed = false;
+        world.IsLocalOnly = true;
+        world.CanBeLeft = true;
+        world.CanBeClosed = false;
+
+        engine.Run();
+    }
+
+    public void RunOnMainThread(Action action)
+    {
+        if (action == null) return;
+        lock (_mainThreadLock)
+        {
+            _mainThreadActions.Enqueue(action);
+        }
+        // execute immediately in headless mode
+        while (_mainThreadActions.Count > 0)
+        {
+            Action work;
+            lock (_mainThreadLock)
+            {
+                work = _mainThreadActions.Dequeue();
+            }
+            try { work(); } catch { }
+        }
+    }
+#endif
 		//foreach (var item in userWorld.RootElement.ChildElements)
 		//{
 		//    GD.Print("UserSpace Child Element: " + item.Name);

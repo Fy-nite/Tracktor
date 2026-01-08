@@ -9,12 +9,15 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.33.2" />
+    <PackageReference Include="Grafana.OpenTelemetry" Version="1.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.3.9" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
     <PackageReference Include="System.CommandLine" Version="2.0.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\V12\V12.csproj" />
+    <ProjectReference Include="..\V12\V12.Core.csproj" />
   </ItemGroup>
 
 </Project>
