@@ -61,7 +61,7 @@ public partial class EngineInit : Node3D
 	public override void _Ready()
 	{
 
-
+        GD.Print("Engine Init");
 		AddToGroup("engine_init");
 		AddChild(V12.Components.VR.VRPlayer.Generate()); // Add VRPlayer to the scene, and make sure the player can be used all worlds (AT THE ROOT!)
 
@@ -137,6 +137,7 @@ public partial class EngineInit : Node3D
 				int port = 7777;
 				int portIdx = lower.IndexOf("--port");
 				if (portIdx != -1 && portIdx + 1 < args.Length && int.TryParse(args[portIdx + 1], out var p)) port = p;
+				GD.Print($"[EngineInit] Starting local WorldServer on port {port}");
 
 				// build a simple host world with children (headless)
 				var hostWorld = V12.World.Hub.CreateHubWorld("HostWorld", headless: true);
