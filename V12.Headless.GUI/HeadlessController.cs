@@ -7,9 +7,12 @@ public class HeadlessController
     {
         Control root = new Control();
         root.Name = "HeadlessController";
-        Label label = new Label();
-        label.Text = "Headless Controller Active";
-        root.AddChild(label);
+        
+        TabContainer TC = new TabContainer();
+        TC.AddChild(GenerateTCPages());
+
+
+
         return root;
     }
 }

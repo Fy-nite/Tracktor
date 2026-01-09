@@ -193,15 +193,14 @@ public partial class EngineInit
 			var lower = new List<string>();
 			foreach (var a in args) lower.Add(a.ToLowerInvariant());
 
-			// allow starting a local headless server from the game process (use headless world)
-			if (lower.Contains("--start-server"))
+            //  if the GUI build is started with --start-server, launch a local WorldServer or if headless build
+            if (lower.Contains("--start-server") || OS.HasFeature("headless_build"))
 			{
 				int port = 7777;
 				int portIdx = lower.IndexOf("--port");
 				if (portIdx != -1 && portIdx + 1 < args.Length && int.TryParse(args[portIdx + 1], out var p)) port = p;
 				GD.Print($"[EngineInit] Starting local WorldServer on port {port}");
 
-				// build a simple host world with children (headless)
 				var hostWorld = V12.World.Hub.CreateHubWorld("HostWorld", headless: true);
 
 
