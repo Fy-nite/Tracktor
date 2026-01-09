@@ -83,7 +83,6 @@ internal static class Program
                     .AddMeter("V12.Headless.Server")
                     .AddPrometheusExporter();
             });
-
         var app = builder.Build();
 
         // serve a simple management UI at /

@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://drykxhodcltba"]
+
+[ext_resource type="Script" uid="uid://dkjx0s8edwqx7" path="res://Tracktor.Game/CSharp/Headless.cs" id="1_iixnr"]
+
+[node name="HeadlessController" type="Control" unique_id=52151359]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_iixnr")

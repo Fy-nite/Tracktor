@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://4l8cvbldfvuw"]
 
-[ext_resource type="Script" uid="uid://c6rc3t6i2t4dd" path="res://CSharp/EngineInit.cs" id="1_xj5yv"]
+[ext_resource type="Script" uid="uid://c6rc3t6i2t4dd" path="res://Tracktor.Game/CSharp/EngineInit.cs" id="1_xj5yv"]
 [ext_resource type="Texture2D" uid="uid://k7v31hdsj1n2" path="res://Assets/Day.hdr" id="2_pjpa4"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_bxsma"]
