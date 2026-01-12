@@ -37,11 +37,4 @@
 	  <None Include="V12.csproj" />
 	</ItemGroup>
 
-
-
-  <ItemGroup>
-    <Protobuf Include="Headless\Proto\WorldElement.proto" />
-    <Protobuf Include="Headless\Proto\chat.proto" />
-  </ItemGroup>
-
 </Project>

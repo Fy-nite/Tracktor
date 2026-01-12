@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using V12.Headless;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +12,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
+using System.Text.Json;
+using V12.Types;
+using V12.Interfaces;
 
 internal static class Program
 {
@@ -32,6 +36,20 @@ internal static class Program
         var headless = new Server(udpPort);
         headless.Start();
         Console.WriteLine($"Headless UDP server listening on port {udpPort}");
+
+        // Create a simple headless world instance and register a RequestWorld handler
+        var world = new V12.V12World("Headless", headless: true);
+        // never use protobuf for any world messaging or serialization.
+
+        // proper JSON handler for RequestWorld, json should be the only format used for world data.
+        headless.RegisterJson("RequestWorldJson", async (ep, json) =>
+        {
+          
+            var response = JsonSerializer.Serialize(world);
+            Console.WriteLine($"Sending world data to {ep}");
+            Console.WriteLine(response);
+            await headless.SendJsonAsync(ep, response, "WorldData");
+        });
 
         // Periodically push player metrics to the configured metrics server
         // Include labels so the central metrics server can distinguish instances
@@ -129,6 +147,29 @@ internal static class Program
         });
 
         app.MapGet("/health", () => "healthy");
+        app.MapGet("/RequestWorld", () =>
+        {
+            return JsonSerializer.Serialize(new Element
+            {
+                Id = "world_root",
+                Name = "World Root",
+                Type = "World",
+                Description = "The root element of the world",
+                ChildElements = new List<IWorldElement>
+                {
+                    new Element {
+                        Id = "element_1",
+                        Name = "Sample Element 1",
+                        Type = "Environment",
+                        Description = "A sample environment element",
+                        Position = new DoubleVector3(0,0,0),
+                        Rotation = new DoubleVector3(0,0,0),
+                        Scale = new DoubleVector3(1,1,1)
+                    }
+                }
+            });
+        });
+
         app.UseOpenTelemetryPrometheusScrapingEndpoint();
         //app.MapPost("/shutdown", () => { cts.Cancel(); return new { shuttingDown = true }; });
 

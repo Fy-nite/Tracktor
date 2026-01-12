@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="V12.Bindings\V12.Bindings.csproj" />
     <ProjectReference Include="V12.Headless.GUI\V12.Headless.GUI.csproj" />
+    <ProjectReference Include="V12.Headless\V12.Headless.csproj" />
     <ProjectReference Include="V12.MetricsServer\V12.MetricsServer.csproj" />
     <ProjectReference Include="V12.Tests\V12.Tests.csproj" />
     <ProjectReference Include="V12\V12.Core.csproj" />

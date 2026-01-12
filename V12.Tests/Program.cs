@@ -3,6 +3,7 @@ using System.Threading;
 using Godot;
 using V12.Headless;
 
+
 namespace V12.Tests;
 
 public class Program
@@ -77,21 +78,21 @@ public class Program
 			shutdown.Cancel();
 		};
 
-		client.OnFullWorldReceived += world =>
-		{
-			Console.WriteLine($"[Client] Full world received: {world.Name}");
-			try
-			{
-				var json = world.Root != null ? Google.Protobuf.JsonFormatter.Default.Format(world) : "(no root)";
-				Console.WriteLine($"[Client] World JSON: {json}");
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"[Client] JSON format failed: {ex.Message}");
-			}
-		};
+        client.OnFullWorldReceived += world =>
+        {
+            Console.WriteLine($"[Client] Full world received: {world?.Name}");
+            try
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(world);
+                Console.WriteLine($"[Client] World JSON: {json}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Client] JSON format failed: {ex.Message}");
+            }
+        };
 
-		client.OnElementProtoReceived += elem => Console.WriteLine($"[Client] Incremental element received: {elem.Name}");
+        client.OnElementReceived += elem => Console.WriteLine($"[Client] Incremental element received: {elem?.Name}");
 
 		await client.ConnectAsync();
 		await client.RequestWorldAsync();

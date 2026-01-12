@@ -17,11 +17,10 @@ public partial class EditorConnect : EditorScript
 			var client = new WorldClient("127.0.0.1", 7777);
 			client.OnFullWorldReceived += (world) =>
 			{
-				GD.Print($"[EditorConnect] Full world received: {world.Name}");
-				// Optional: print JSON diagnostic
+				GD.Print($"[EditorConnect] Full world received: {world?.Name}");
 				try
 				{
-					var json = world.Root != null ? Google.Protobuf.JsonFormatter.Default.Format(world) : "(no root)";
+					var json = System.Text.Json.JsonSerializer.Serialize(world);
 					GD.Print($"[EditorConnect] World JSON: {json}");
 				}
 				catch (Exception ex)
@@ -29,9 +28,9 @@ public partial class EditorConnect : EditorScript
 					GD.PrintErr($"[EditorConnect] JSON format failed: {ex.Message}");
 				}
 			};
-			client.OnElementProtoReceived += (elem) =>
+			client.OnElementReceived += (elem) =>
 			{
-				GD.Print($"[EditorConnect] Incremental element received: {elem.Name}");
+				GD.Print($"[EditorConnect] Incremental element received: {elem?.Name}");
 			};
 
 			// Start listener and request world on a background task so the editor UI doesn't block
@@ -42,6 +41,7 @@ public partial class EditorConnect : EditorScript
 					await client.ConnectAsync();
 					await client.RequestWorldAsync();
 					GD.Print("[EditorConnect] RequestWorld sent");
+					
 				}
 				catch (Exception ex)
 				{

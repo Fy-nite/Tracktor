@@ -35,7 +35,7 @@ namespace V12.Core.Elements.Designers
             button.text = text;
             if (onClick != null)
             {
-                button.Pressed += () => onClick();
+                button.OnPressed += () => onClick();
             }
         }
 

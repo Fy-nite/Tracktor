@@ -16,6 +16,13 @@ namespace V12.Types
             this.z = z;
             this.w = w;
         }
+        public DoubleVector3(double X, double Y, double Z)
+        {
+            this.x = X;
+            this.y = Y;
+            this.z = Z;
+            this.w = 0;
+        }
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -30,7 +37,7 @@ namespace V12.Types
             return x.GetHashCode();
         }
 
-        internal Vector3 ToVector3()
+        public Vector3 ToVector3()
         {
             return new Vector3((float)x, (float)y, (float)z);
         }

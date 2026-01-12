@@ -1,18 +1,9 @@
-#if GODOT
+
 using Godot;
 using System.Collections.Generic;
-using System.Linq;
 using Tracktor.CSharp;
 using V12;
-using V12.Bindings;
 using V12.Components.VR;
-using V12.Extensions;
-using V12.Interfaces;
-using V12.Types;
-using V12.Headless;
-using V12.Headless.Messages;
-using System.Threading.Tasks;
-using V12.Types.Models;
 using System;
 
 using System.Threading;
@@ -22,11 +13,8 @@ public partial class EngineInit : Node3D
     public V12Engine engine;
     XRInteractionHandler xrHandler = new XRInteractionHandler();
     public int currentWorldIndex = 0;
-    // optional network client for requesting world from server
-    V12.Headless.WorldClient? networkClient;
-    V12.Headless.WorldServer? localServer;
-    // track worlds added by the network so we can remove them on disconnect
-    List<V12World> networkWorlds = new();
+    // network manager (handles connecting/disconnecting and remote worlds)
+    NetworkManager? networkManager;
 
     // simple runtime UI
     CanvasLayer? uiLayer;
@@ -65,8 +53,7 @@ public partial class EngineInit : Node3D
     public override void _Ready()
     {
         GD.Print("Engine Init");
-        // register Godot engine bridge so V12 code can call into Godot
-        EngineBridgeProvider.Instance = new GodotEngineBridge(this);
+
         AddToGroup("engine_init");
         AddChild(V12.Components.VR.VRPlayer.Generate()); // Add VRPlayer to the scene, and make sure the player can be used all worlds (AT THE ROOT!)
         engine = new V12Engine();
@@ -108,219 +95,77 @@ public partial class EngineInit : Node3D
         {
             GD.Print("World added: " + w.Name);
         }
-#else
-using System;
-using System.Collections.Generic;
-using V12;
-using V12.Bindings;
 
-// Minimal headless-friendly EngineInit: no Godot dependencies.
-public partial class EngineInit
-{
-    public V12Engine engine;
-    public int currentWorldIndex = 0;
-    List<V12World> networkWorlds = new();
-
-    // Thread-safe queue for actions that must run on the main thread
-    private readonly Queue<Action> _mainThreadActions = new();
-    private readonly object _mainThreadLock = new();
-
-    public EngineInit()
-    {
-        // register a null bridge for headless execution
-        EngineBridgeProvider.Instance = new NullEngineBridge();
-        engine = new V12Engine();
-
-        var world = new V12World("LocalWorld");
-        new WorldInit().InitializeLocalHome(world);
-        var userWorld = new V12World("UserSpace");
-        engine.AddWorld(world);
-        engine.AddWorld(userWorld);
-
-        userWorld.IsLocalOnly = true;
-        userWorld.CanBeLeft = true;
-        userWorld.CanBeClosed = false;
-        world.IsLocalOnly = true;
-        world.CanBeLeft = true;
-        world.CanBeClosed = false;
 
         engine.Run();
-    }
 
-    public void RunOnMainThread(Action action)
-    {
-        if (action == null) return;
-        lock (_mainThreadLock)
+        // create simple UI for connect/disconnect
+        CreateNetworkUI();
+
+        // create network manager and wire callbacks
+        networkManager = new NetworkManager(engine, RunOnMainThread, UpdateNetworkUIConnected, this);
+        networkManager.OnWorldAdded += (remote, idx) =>
         {
-            _mainThreadActions.Enqueue(action);
-        }
-        // execute immediately in headless mode
-        while (_mainThreadActions.Count > 0)
+            currentWorldIndex = idx;
+            var sg = remote.sceneGenerator;
+            if (sg != null) sg.RegenerateTree();
+        };
+        // subscribe to connection events for immediate UI feedback
+        networkManager.OnConnected += () =>
         {
-            Action work;
-            lock (_mainThreadLock)
-            {
-                work = _mainThreadActions.Dequeue();
-            }
-            try { work(); } catch { }
-        }
-    }
-#endif
-		//foreach (var item in userWorld.RootElement.ChildElements)
-		//{
-		//    GD.Print("UserSpace Child Element: " + item.Name);
-		//    foreach (var comp in item.Components)
-		//    {
-		//        GD.Print(" - Component: " + comp.GetType().FullName);
-		//    }
-		//    foreach (var item2 in item.ChildElements)
-		//    {
-		//        GD.Print("   - Child Element: " + item2.Name);
-		//    }
-		//}
-		//var inspector = new V12.UI.Inspector(userWorld.RootElement);
-		//AddChild(inspector.UIRoot); // Add to the scene as a UI overlay
-	   
-		engine.Run();
+            try { GD.Print("[EngineInit] NetworkManager signaled connected"); } catch { }
+            UpdateNetworkUIConnected(true);
+        };
+        networkManager.OnDisconnected += () =>
+        {
+            try { GD.Print("[EngineInit] NetworkManager signaled disconnected"); } catch { }
+            UpdateNetworkUIConnected(false);
+        };
 
-		// create simple UI for connect/disconnect
-		CreateNetworkUI();
-		
-		// connect to server if requested via command line
-		try
-		{
-			var args = OS.GetCmdlineArgs();
-			var lower = new List<string>();
-			foreach (var a in args) lower.Add(a.ToLowerInvariant());
+        // connect to server or start local server if requested via command line
+        try
+        {
+            var args = OS.GetCmdlineArgs();
+            var lower = new List<string>();
+            foreach (var a in args) lower.Add(a.ToLowerInvariant());
 
-            //  if the GUI build is started with --start-server, launch a local WorldServer or if headless build
+            // if the GUI build is started with --start-server, launch a local WorldServer or if headless build
             if (lower.Contains("--start-server") || OS.HasFeature("headless_build"))
-			{
-				int port = 7777;
-				int portIdx = lower.IndexOf("--port");
-				if (portIdx != -1 && portIdx + 1 < args.Length && int.TryParse(args[portIdx + 1], out var p)) port = p;
-				GD.Print($"[EngineInit] Starting local WorldServer on port {port}");
+            {
+                int port = 7777;
+                int portIdx = lower.IndexOf("--port");
+                if (portIdx != -1 && portIdx + 1 < args.Length && int.TryParse(args[portIdx + 1], out var p)) port = p;
+                GD.Print($"[EngineInit] Starting local WorldServer on port {port}");
 
-				var hostWorld = V12.World.Hub.CreateHubWorld("HostWorld", headless: true);
+                var hostWorld = V12.World.Hub.CreateHubWorld("HostWorld", headless: true);
+                try
+                {
+                    networkManager.StartLocalServer(port, () => hostWorld);
+                    GD.Print($"[EngineInit] Started local WorldServer on port {port}");
+                    if (statusLabel != null) statusLabel.Text = $"Server: running ({port})";
+                }
+                catch (Exception ex)
+                {
+                    GD.PrintErr($"[EngineInit] Failed to start local server: {ex.Message}");
+                }
+            }
 
+            if (lower.Contains("--connect-server"))
+            {
+                string serverAddress = "127.0.0.1";
+                int port = 7777;
+                int serverIdx = lower.IndexOf("--server");
+                if (serverIdx != -1 && serverIdx + 1 < args.Length) serverAddress = args[serverIdx + 1];
+                int portIdx = lower.IndexOf("--port");
+                if (portIdx != -1 && portIdx + 1 < args.Length && int.TryParse(args[portIdx + 1], out var p)) port = p;
 
-				try
-				{
-					localServer = new V12.Headless.WorldServer(port, () => hostWorld);
-					GD.Print($"[EngineInit] Started local WorldServer on port {port}");
-					if (statusLabel != null) statusLabel.Text = $"Server: running ({port})";
-				}
-				catch (Exception ex)
-				{
-					GD.PrintErr($"[EngineInit] Failed to start local server: {ex.Message}");
-				}
-			}
-
-			if (lower.Contains("--connect-server"))
-			{
-				string serverAddress = "127.0.0.1";
-				int port = 7777;
-				int serverIdx = lower.IndexOf("--server");
-				if (serverIdx != -1 && serverIdx + 1 < args.Length) serverAddress = args[serverIdx + 1];
-				int portIdx = lower.IndexOf("--port");
-				if (portIdx != -1 && portIdx + 1 < args.Length && int.TryParse(args[portIdx + 1], out var p)) port = p;
-
-				networkClient = new V12.Headless.WorldClient(serverAddress, port);
-				networkClient.OnFullWorldReceived += (full) =>
-				{
-					GD.Print($"[Network] Received full world '{full.Name}'");
-					// build a V12World from proto
-					var remote = new V12World(full.Name ?? "RemoteWorld");
-					remote.IsLocalOnly = full.IsLocalOnly;
-					remote.CanBeLeft = full.CanBeLeft;
-					remote.CanBeClosed = full.CanBeClosed;
-
-					if (full.Root != null)
-					{
-						// convert the proto root to engine Element
-						var rootEl = full.Root.ToElement();
-						// copy basic info into the world's existing RootElement
-						remote.RootElement.Name = rootEl.Name;
-						remote.RootElement.Description = rootEl.Description;
-						remote.RootElement.Type = rootEl.Type;
-						remote.RootElement.Level = rootEl.Level;
-						remote.RootElement.Position = rootEl.Position;
-						remote.RootElement.Rotation = rootEl.Rotation;
-						remote.RootElement.Scale = rootEl.Scale;
-
-						// attach children and components
-						foreach (var child in rootEl.ChildElements)
-						{
-							remote.RootElement.AddChild(child);
-						}
-						foreach (var comp in rootEl.Components)
-						{
-							remote.RootElement.AddComponent(comp);
-						}
-					}
-
-                    // Enqueue main-thread action to add and activate the remote world
-                    RunOnMainThread(() =>
-                    {
-                        engine.AddWorld(remote, this);
-                        engine.ActivateWorld(engine.Worlds.Count - 1, this);
-                        var sg = remote.sceneGenerator;
-                        if (sg != null)
-                        {
-                            sg.RegenerateTree();
-                        }
-                    });
-
-					// subscribe to incremental element updates for this remote world
-					var worldName = full.Name ?? "RemoteWorld";
-					networkClient.OnElementProtoReceived += (elemProto) =>
-					{
-                        // Enqueue incremental element handling on the main thread
-                        RunOnMainThread(() =>
-                        {
-                            try
-                            {
-                                GD.Print($"[Network][Deferred] Incremental element received: {elemProto.Name} for world {worldName}");
-                                var element = elemProto.ToElement();
-                                var remoteWorld = engine.Worlds.Find(w => w.Name == worldName);
-                                if (remoteWorld != null)
-                                {
-                                    var existing = remoteWorld.RootElement.FindChild(element.Name);
-                                    if (existing != null)
-                                    {
-                                        existing.Description = element.Description;
-                                        existing.Type = element.Type;
-                                        existing.Level = element.Level;
-                                        existing.Position = element.Position;
-                                        existing.Rotation = element.Rotation;
-                                        existing.Scale = element.Scale;
-                                    }
-                                    else
-                                    {
-                                        remoteWorld.RootElement.AddChild(element);
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                GD.PrintErr($"[Network][Deferred] Error handling element proto: {ex.Message}");
-                            }
-                        });
-					};
-				};
-
-				// start listening and request world
-				_ = Task.Run(async () =>
-				{
-					await networkClient.ConnectAsync();
-					await networkClient.RequestWorldAsync();
-				});
-			}
-		}
-		catch (Exception ex)
-		{
-			GD.PrintErr($"[EngineInit] Network error: {ex.Message}");
-		}
+                networkManager.ConnectToAddress(serverAddress, port);
+            }
+        }
+        catch (Exception ex)
+        {
+            GD.PrintErr($"[EngineInit] Network error: {ex.Message}");
+        }
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -367,12 +212,21 @@ public partial class EngineInit
 
 			connectButton = new Button();
 			connectButton.Text = "Connect (F12)";
-			connectButton.Pressed += () => ConnectToLocalHost();
+			connectButton.Pressed += () =>
+			{
+				try { GD.Print("[EngineInit] Connect button pressed"); } catch { }
+				networkManager?.ConnectToLocalHost();
+			};
 			vbox.AddChild(connectButton);
 
 			disconnectButton = new Button();
 			disconnectButton.Text = "Disconnect";
-			disconnectButton.Pressed += () => DisconnectAndUpdateUI();
+			disconnectButton.Pressed += () =>
+			{
+				try { GD.Print("[EngineInit] Disconnect button pressed"); } catch { }
+				networkManager?.Disconnect();
+				UpdateNetworkUIConnected(false);
+			};
 			disconnectButton.Disabled = true;
 			vbox.AddChild(disconnectButton);
 		}
@@ -391,7 +245,7 @@ public partial class EngineInit
 
 	private void DisconnectAndUpdateUI()
 	{
-		DisconnectNetworkClient();
+		networkManager?.Disconnect();
 		UpdateNetworkUIConnected(false);
 	}
 
@@ -407,182 +261,12 @@ public partial class EngineInit
 			// Press F12 to connect to a local host world server (127.0.0.1:7777)
 			if (keyEvent.Keycode == Key.F12)
 			{
-				if (networkClient != null)
-				{
-					GD.Print("[EngineInit] Already connected to world server.");
-				}
-				else
-				{
-					ConnectToLocalHost();
-				}
+				networkManager?.ConnectToLocalHost();
 			}
 		}
 	}
 
-	// Create and start a WorldClient connected to localhost:7777 and wire handlers
-	public void ConnectToLocalHost()
-	{
-		try
-		{
-			GD.Print("[EngineInit] Connecting to local world server 127.0.0.1:7777...");
-			networkClient = new V12.Headless.WorldClient("127.0.0.1", 7777);
-			SetupNetworkHandlers(networkClient);
-
-			_ = System.Threading.Tasks.Task.Run(async () =>
-			{
-				try
-				{
-					await networkClient.ConnectAsync();
-					await networkClient.RequestWorldAsync();
-					GD.Print("[EngineInit] Requested world from local server.");
-				}
-				catch (Exception ex)
-				{
-					GD.PrintErr($"[EngineInit] Network error: {ex.Message}");
-				}
-			});
-		}
-		catch (Exception ex)
-		{
-			GD.PrintErr($"[EngineInit] Failed to start WorldClient: {ex.Message}");
-		}
-	}
-
-	public void DisconnectNetworkClient()
-	{
-		if (networkClient == null && networkWorlds.Count == 0) return;
-
-		// remove any worlds that were added by the network
-		try
-		{
-			foreach (var rw in networkWorlds.ToList())
-			{
-				try
-				{
-					// deactivate and remove from scene tree if present
-					if (rw.IsActive) rw.Deactivate();
-					if (rw.Viewport != null && rw.Viewport.GetParent() == this)
-					{
-						RemoveChild(rw.Viewport);
-					}
-					// remove from engine list
-					engine.Worlds.Remove(rw);
-				}
-				catch (Exception ex)
-				{
-					GD.PrintErr($"[Network] Error removing remote world '{rw?.Name}': {ex.Message}");
-				}
-			}
-			networkWorlds.Clear();
-		}
-		catch (Exception ex)
-		{
-			GD.PrintErr($"[Network] Error cleaning up remote worlds: {ex.Message}");
-		}
-
-		// dispose network client
-		try
-		{
-			networkClient?.Dispose();
-		}
-		catch { }
-		networkClient = null;
-
-		// reset UI and current world index
-		UpdateNetworkUIConnected(false);
-		currentWorldIndex = 0;
-	}
-
-	private void SetupNetworkHandlers(V12.Headless.WorldClient client)
-	{
-		client.OnFullWorldReceived += (full) =>
-		{
-			GD.Print($"[Network] Received full world '{full.Name}'");
-			// build a V12World from proto on a background thread, then enqueue attachment on main thread
-			try
-			{
-				var remote = new V12World(full.Name ?? "RemoteWorld");
-				remote.IsLocalOnly = full.IsLocalOnly;
-				remote.CanBeLeft = full.CanBeLeft;
-				remote.CanBeClosed = full.CanBeClosed;
-
-				if (full.Root != null)
-				{
-					var rootEl = full.Root.ToElement();
-					remote.RootElement.Name = rootEl.Name;
-					remote.RootElement.Description = rootEl.Description;
-					remote.RootElement.Type = rootEl.Type;
-					remote.RootElement.Level = rootEl.Level;
-					remote.RootElement.Position = rootEl.Position;
-					remote.RootElement.Rotation = rootEl.Rotation;
-					remote.RootElement.Scale = rootEl.Scale;
-
-					foreach (var child in rootEl.ChildElements)
-					{
-						remote.RootElement.AddChild(child);
-					}
-					foreach (var comp in rootEl.Components)
-					{
-						remote.RootElement.AddComponent(comp);
-					}
-				}
-
-				// Enqueue the scene-tree modifications on the main thread
-				RunOnMainThread(() =>
-				{
-				engine.AddWorld(remote, this);
-				engine.ActivateWorld(engine.Worlds.Count - 1, this);
-				// remember that this world came from the network so we can remove it on disconnect
-				networkWorlds.Add(remote);
-				// remember the newly activated world as the current index so SwitchWorld works
-				currentWorldIndex = engine.Worlds.Count - 1;
-				UpdateNetworkUIConnected(true);
-					var sg = remote.sceneGenerator;
-					if (sg != null) sg.RegenerateTree();
-				});
-			}
-			catch (Exception ex)
-			{
-				GD.PrintErr($"[Network] Error processing full world: {ex.Message}");
-			}
-		};
-
-			client.OnElementProtoReceived += (elemProto) =>
-		{
-			// Enqueue incremental element handling on main thread
-			RunOnMainThread(() =>
-			{
-				try
-				{
-					GD.Print($"[Network][Deferred] Incremental element received: {elemProto.Name}");
-					var element = elemProto.ToElement();
-				// fallback: pick the first non-local world (excluding LocalWorld)
-				var remoteWorld = engine.Worlds.FirstOrDefault(w => !w.IsLocalOnly && w.Name != "LocalWorld");
-					if (remoteWorld != null)
-					{
-						var existing = remoteWorld.RootElement.FindChild(element.Name);
-						if (existing != null)
-						{
-							existing.Description = element.Description;
-							existing.Type = element.Type;
-							existing.Level = element.Level;
-							existing.Position = element.Position;
-							existing.Rotation = element.Rotation;
-							existing.Scale = element.Scale;
-						}
-						else
-						{
-							remoteWorld.RootElement.AddChild(element);
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					GD.PrintErr($"[Network][Deferred] Error handling element proto: {ex.Message}");
-				}
-			});
-		};
-	}
+	// Network methods moved to NetworkManager
 
 	public void SwitchWorld()
 	{

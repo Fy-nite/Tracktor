@@ -8,4 +8,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<None Remove="**\*.uid" />
+	</ItemGroup>
 </Project>

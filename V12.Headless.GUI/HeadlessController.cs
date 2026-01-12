@@ -7,12 +7,18 @@ public class HeadlessController
     {
         Control root = new Control();
         root.Name = "HeadlessController";
-        
+
         TabContainer TC = new TabContainer();
         TC.AddChild(GenerateTCPages());
 
 
 
         return root;
+    }
+    private static Control GenerateTCPages()
+    {
+        Control pages = new Control();
+        pages.Name = "Pages";
+        return pages;
     }
 }
