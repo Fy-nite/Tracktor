@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://bxrj46wti3h1s"]
+
+[ext_resource type="Script" uid="uid://bslegccfrww4q" path="res://V12/UI/Inspector.cs" id="1_yrjlx"]
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_y1apm"]
+viewport_path = NodePath("SubViewport")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y1apm"]
+resource_local_to_scene = true
+albedo_texture = SubResource("ViewportTexture_y1apm")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_yrjlx"]
+resource_local_to_scene = true
+lightmap_size_hint = Vector2i(12, 12)
+material = SubResource("StandardMaterial3D_y1apm")
+
+[node name="Inspector" type="Node3D"]
+
+[node name="SubViewport" type="SubViewport" parent="."]
+
+[node name="Control" type="Control" parent="SubViewport"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_yrjlx")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_yrjlx")

@@ -1,8 +1,7 @@
-﻿
-using V12.Interfaces;
+﻿using V12.Interfaces;
 using V12.Types;
 
-namespace V12.World.Templates
+namespace Tracktor.Tracktor.Game.CSharp.World.Templates
 {
     public class SuperFLAT
     {

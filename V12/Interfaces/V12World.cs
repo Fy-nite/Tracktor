@@ -2,26 +2,9 @@
 using V12.Interfaces;
 using V12.Types;
 
-namespace V12
+namespace Tracktor
 {
-    // set up SceneGenerator as a implementable class
-    public class SceneGenerator
-    {
-        private Element rootElement;
-        private Node3D rootNode;
-        public SceneGenerator(Element rootElement, Node3D rootNode)
-        {
-            this.rootElement = rootElement;
-            this.rootNode = rootNode;
-        }
-        public void RegenerateTree()
-        {
-            // Clear existing children
-            rootElement.ChildElements.Clear();
-            // Generate new element tree from the rootNode
-            V12World.GenerateElementTree(rootNode, rootElement);
-        }
-    }
+    
     public class V12World
     {
         public string Name { get; set; }

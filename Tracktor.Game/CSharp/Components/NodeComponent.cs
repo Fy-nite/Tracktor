@@ -1,7 +1,7 @@
 using Godot;
 using V12.Interfaces;
 
-namespace V12.Components
+namespace Tracktor.Components
 {
     public class NodeComponent : Component, IExist
     {

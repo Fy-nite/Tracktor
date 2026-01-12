@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
-namespace V12.Components
+namespace Tracktor.Components
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class InspectorExposeAttribute : Attribute { }

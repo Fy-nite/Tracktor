@@ -23,7 +23,7 @@ namespace V12.Components.Tools
         
         public void RegisterToolUseTip()
         {
-            V12.WorldManager.RootElement?.eventManager.registerEvent<IEvent>("Tool_Use", (evt) => ShowTip(), this);
+            Tracktor.Tracktor.Game.CSharp.World.WorldManager.RootElement?.eventManager.registerEvent<IEvent>("Tool_Use", (evt) => ShowTip(), this);
         }
     }
 }

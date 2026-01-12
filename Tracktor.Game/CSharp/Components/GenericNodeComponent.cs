@@ -1,7 +1,7 @@
 using System;
 using Godot;
 
-namespace V12.Components
+namespace Tracktor.Components
 {
     /// <summary>
     /// Fallback component that instantiates a Godot Node3D by type name when no specific V12 component exists.

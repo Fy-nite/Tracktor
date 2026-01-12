@@ -5,6 +5,9 @@ using V12.Bindings;
 using V12.Components;
 using V12.Interfaces;
 using V12.Types;
+using Tracktor.Components;
+namespace Tracktor
+{
 
 public class SceneGenerator
 {
@@ -106,4 +109,6 @@ public class SceneGenerator
         GenerateElement(element);
         oldElem?.QueueFree();
     }
+}
+
 }

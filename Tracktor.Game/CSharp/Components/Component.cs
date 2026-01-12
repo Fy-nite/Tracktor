@@ -4,7 +4,7 @@ using V12;
 using V12.Interfaces;
 using V12.Types;
 
-namespace V12.Components
+namespace Tracktor.Components
 {
     public abstract class Component : IComponent
     {

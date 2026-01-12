@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using V12.Core.Interfaces;
 
-namespace V12.Core.UI.UITemplates
+namespace Tracktor.Tracktor.Game.CSharp.UI.UITemplates
 {
     public class UIButton : IUIElement
     {

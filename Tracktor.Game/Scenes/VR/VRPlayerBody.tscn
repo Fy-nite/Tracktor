@@ -1,0 +1,52 @@
+[gd_scene load_steps=4 format=3 uid="uid://cpj7vtj6gr3tv"]
+
+[ext_resource type="Script" uid="uid://cyk7wbo7ya7qm" path="res://Scenes/player.gd" id="1_fnqq2"]
+[ext_resource type="PackedScene" uid="uid://drsxox4crata0" path="res://V12/Scenes/VR/Hand.tscn" id="2_huiyi"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xe2ly"]
+
+[node name="VRPlayer" type="Node3D"]
+
+[node name="Glasses" type="SubViewport" parent="."]
+use_xr = true
+size = Vector2i(0, 0)
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="Glasses"]
+script = ExtResource("1_fnqq2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Glasses/CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_xe2ly")
+
+[node name="XROrigin3D" type="XROrigin3D" parent="Glasses/CharacterBody3D"]
+
+[node name="XRCamera3D" type="XRCamera3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.1)
+current = true
+far = 1000.0
+
+[node name="Neck" type="Node3D" parent="Glasses/CharacterBody3D/XROrigin3D/XRCamera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0.1)
+
+[node name="LeftHand" parent="Glasses/CharacterBody3D/XROrigin3D" instance=ExtResource("2_huiyi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 1, -0.5)
+
+[node name="RightHand" parent="Glasses/CharacterBody3D/XROrigin3D" instance=ExtResource("2_huiyi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1, -0.5)
+tracker = &"right_hand"
+pose = &"default"
+
+[node name="Head" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+tracker = &"head"
+
+[node name="LeftFoot" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+tracker = &"/user/vive_tracker_htcx/role/left_foot"
+
+[node name="RightFoot" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+tracker = &"/user/vive_tracker_htcx/role/right_foot"
+
+[node name="LeftElbow" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+tracker = &"/user/vive_tracker_htcx/role/left_elbow"
+
+[node name="RightElbow" type="XRController3D" parent="Glasses/CharacterBody3D/XROrigin3D"]
+tracker = &"/user/vive_tracker_htcx/role/right_elbow"

@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Text;
 using Godot;
+using V12;
 
-namespace V12.World
+namespace Tracktor.Tracktor.Game.CSharp.World
 {
 
     public static class Hub
     {
         // Create a hub-style world prepopulated with useful elements and components.
         // When running headless, pass headless=true to avoid creating Godot engine objects.
-        public static V12.V12World CreateHubWorld(string name = "HubWorld", bool headless = false)
+        public static V12World CreateHubWorld(string name = "HubWorld", bool headless = false)
         {
-            var world = new V12.V12World(name, headless: headless);
+            var world = new V12World(name, headless: headless);
 
             // Root element
             var root = world.RootElement;

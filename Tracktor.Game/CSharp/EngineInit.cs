@@ -7,6 +7,7 @@ using V12.Components.VR;
 using System;
 
 using System.Threading;
+using Tracktor.Tracktor.Game.CSharp.World;
 
 public partial class EngineInit : Node3D
 {
@@ -137,7 +138,7 @@ public partial class EngineInit : Node3D
                 if (portIdx != -1 && portIdx + 1 < args.Length && int.TryParse(args[portIdx + 1], out var p)) port = p;
                 GD.Print($"[EngineInit] Starting local WorldServer on port {port}");
 
-                var hostWorld = V12.World.Hub.CreateHubWorld("HostWorld", headless: true);
+                var hostWorld = Hub.CreateHubWorld("HostWorld", headless: true);
                 try
                 {
                     networkManager.StartLocalServer(port, () => hostWorld);

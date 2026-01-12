@@ -1,10 +1,11 @@
 ﻿using Godot;
+using Tracktor.Tracktor.Game.CSharp.World;
 using V12.Extensions;
 using V12.Interfaces;
 using V12.Types;
 using V12.UI;
 
-namespace V12.Components
+namespace Tracktor.Components
 {
     public class Inspector : NodeComponent
     {

@@ -1,8 +1,8 @@
 using Godot;
 
 using V12.Interfaces;
-
-namespace V12.Extensions
+using Tracktor.Components;
+namespace Tracktor.Extensions
 {
     public static class WorldExtensions
     {

@@ -1,7 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 
-namespace V12.Components
+namespace Tracktor.Components
 {
     public class BoxMesh : NodeComponent
     {

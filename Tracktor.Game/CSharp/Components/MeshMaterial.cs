@@ -2,7 +2,7 @@
 using System;
 using V12.Interfaces;
 
-namespace V12.Components
+namespace Tracktor.Components
 {
     public class MeshMaterial : Component, IMaterial
     {

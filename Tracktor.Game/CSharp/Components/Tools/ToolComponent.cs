@@ -58,7 +58,7 @@ namespace V12.Components.Tools
 
 
             var toolNode = this.sceneElement;
-            var worldRoot = V12.WorldManager.RootElement?.sceneElement;
+            var worldRoot = Tracktor.Tracktor.Game.CSharp.World.WorldManager.RootElement?.sceneElement;
             if (toolNode != null && worldRoot != null && toolNode.GetParent() != worldRoot)
             {
                 toolNode.GetParent()?.RemoveChild(toolNode);
@@ -66,7 +66,7 @@ namespace V12.Components.Tools
             }
 
             // Update ECS/world model
-            this.attachedElement = V12.WorldManager.RootElement;
+            this.attachedElement = Tracktor.Tracktor.Game.CSharp.World.WorldManager.RootElement;
 
             ToolUnequipped?.Invoke(this, PrevOwner);
         }
@@ -79,7 +79,7 @@ namespace V12.Components.Tools
         public void RegisterActionEvent<E>(string eventName, Action<E> callback) where E : IEvent
         {
             // Register for an event using the EventManager
-            V12.WorldManager.RootElement?.eventManager.registerEvent<E>(eventName, (evt) => callback((E)evt), this);
+            Tracktor.Tracktor.Game.CSharp.World.WorldManager.RootElement?.eventManager.registerEvent<E>(eventName, (evt) => callback((E)evt), this);
         }
         public Element GetParent()
         { 

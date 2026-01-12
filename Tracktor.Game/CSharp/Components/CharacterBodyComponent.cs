@@ -1,6 +1,6 @@
 using Godot;
 
-namespace V12.Components
+namespace Tracktor.Components
 {
     public class CharacterBodyComponent : NodeComponent
     {

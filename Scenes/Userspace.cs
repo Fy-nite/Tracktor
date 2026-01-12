@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using V12.Interfaces;
 using V12.Types;
-using BoxMesh = V12.Components.BoxMesh;
+using BoxMesh = Tracktor.Components.BoxMesh;
 
 namespace V12.World
 {

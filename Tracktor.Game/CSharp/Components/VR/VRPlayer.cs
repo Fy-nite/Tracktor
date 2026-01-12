@@ -45,7 +45,7 @@ namespace V12.Components.VR
 
         private static ToolComponent? FindNearbyToolWithWorld(Vector3 handPosition, float radius = 1.0f)
         {
-            var rootElement = V12.WorldManager.CurrentWorld?.RootElement;
+            var rootElement = Tracktor.Tracktor.Game.CSharp.World.WorldManager.CurrentWorld?.RootElement;
             if (rootElement == null)
                 return null;
 
@@ -98,7 +98,7 @@ namespace V12.Components.VR
                     var exclude = new Godot.Collections.Array { rightHand };
                     
                     //var pe = new V12.Elements.PointerEvent(V12.Elements.PointerEvent.Kind.Pressed, rightHand, target, hitPos, hitPos);
-                    var root = V12.WorldManager.RootElement;
+                    var root = Tracktor.Tracktor.Game.CSharp.World.WorldManager.RootElement;
                     if (root != null) { }
                         //root.eventManager.fireEvent(pe, "pointer");
                 };

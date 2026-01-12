@@ -19,6 +19,12 @@
     <EmbeddedResource Remove="V12\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Tracktor.Game\Scenes\DesktopPlayer.tscn" />
+    <None Include="Tracktor.Game\Scenes\Inspector.tscn" />
+    <None Include="Tracktor.Game\Scenes\VR\Hand.tscn" />
+    <None Include="Tracktor.Game\Scenes\VR\VRPlayerBody.tscn" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="V12.Bindings\V12.Bindings.csproj" />
     <ProjectReference Include="V12.Headless.GUI\V12.Headless.GUI.csproj" />
     <ProjectReference Include="V12.Headless\V12.Headless.csproj" />
