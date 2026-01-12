@@ -44,7 +44,7 @@ namespace V12.Components
             if (sceneElement == null)
             {
                 GD.Print($"{WorldManager.CurrentWorld?.Name ?? "<null>"}");
-                Root ??= attachedElement ?? WorldManager.CurrentWorld?.sceneGenerator.rootElement ?? WorldManager.CurrentWorld?.RootElement;
+                Root ??= attachedElement ?? WorldManager.CurrentWorld?.sceneGenerator?.rootElement ?? WorldManager.CurrentWorld?.RootElement;
                 if (Root == null)
                 {
                     GD.PrintErr("[InspectorComponent] No root element available for inspector.");

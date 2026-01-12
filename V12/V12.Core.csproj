@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+	  <OutputType>Library</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -35,6 +36,62 @@
 
 	<ItemGroup>
 	  <None Include="V12.csproj" />
+	</ItemGroup>
+
+
+
+	<ItemGroup>
+	  <Compile Update="Components\Desktop\DesktopPlayer.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\OmniLight.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\PanoramaSky.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\RayCastComponent.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\Spotlight.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\SubViewport.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\Test\BlinkBox.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\Test\EventSender.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\Tools\DevTipComponent.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\Tools\ToolComponent.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\TransformComponent.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\VR\VRCameraComponent.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\VR\VRControllerComponent.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\VR\VRLocomotionComponent.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\VR\VROriginComponent.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\VR\VRPlayer.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
+	  <Compile Update="Components\WorldSkybox.cs">
+	    <SubType>Component</SubType>
+	  </Compile>
 	</ItemGroup>
 
 </Project>
